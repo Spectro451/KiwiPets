@@ -1,5 +1,4 @@
 # KiwiPets
-# Aplicación de Adopción de Mascotas
 
 Aplicación móvil híbrida inspirada en el estilo de navegación tipo "Tinder", diseñada para facilitar la adopción de mascotas.  
 El objetivo es mostrar de manera sencilla las mascotas disponibles en centros de adopción cercanos, permitiendo que los centros se comuniquen más fácilmente con los interesados en adoptar.
