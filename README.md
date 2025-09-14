@@ -33,7 +33,7 @@ El objetivo es mostrar de manera sencilla las mascotas disponibles en centros de
 ```bash
 # Clonar el repositorio
 git clone https://github.com/tu-usuario/adopcion-mascotas.git
-cd adopcion-mascotas
+cd KiwiPets
 
 # Instalar dependencias
 npm install
