@@ -1,6 +1,7 @@
-import { View, Text, Image, StyleSheet, Dimensions, ScrollView } from "react-native";
+import { View, Text, Image, StyleSheet, Dimensions, ScrollView, Button, Platform } from "react-native";
 
 const { width } = Dimensions.get("window");
+const isWeb = Platform.OS === "web";
 
 export type Pet = {
   nombre: string;
@@ -20,42 +21,57 @@ type PetCardProps = {
   pet: Pet;
 };
 
-export default function PetCard({ pet }: PetCardProps) {
+export default function PetCardWithButtons({ pet }: PetCardProps) {
   return (
-    <View style={styles.card}>
-      <View style={styles.imageContainer}>
-        <Image source={{ uri: pet.foto }} style={styles.image} resizeMode="cover" />
-        <View style={styles.infoOverlay}>
-          <Text style={styles.nombre}>{pet.nombre}</Text>
-          <Text style={styles.raza}>{pet.raza}</Text>
+    <View style={{ alignItems: "center", marginVertical: 20 }}>
+      {/* Tarjeta */}
+      <View style={styles.card}>
+        <View style={styles.imageContainer}>
+          <Image source={{ uri: pet.foto }} style={styles.image} resizeMode="cover" />
+          <View style={styles.infoOverlay}>
+            <Text style={styles.nombre}>{pet.nombre}</Text>
+            <Text style={styles.raza}>{pet.raza}</Text>
+          </View>
         </View>
+
+        <View style={styles.chipsContainer}>
+          {pet.edad && <View style={styles.chip}><Text style={styles.chipText}>{pet.edad}</Text></View>}
+          {pet.tamano && <View style={styles.chip}><Text style={styles.chipText}>{pet.tamano}</Text></View>}
+          {pet.genero && <View style={styles.chip}><Text style={styles.chipText}>{pet.genero}</Text></View>}
+          {pet.esterilizado !== undefined && <View style={styles.chip}><Text style={styles.chipText}>{pet.esterilizado ? "Esterilizado" : "No esterilizado"}</Text></View>}
+        </View>
+
+        <ScrollView style={styles.details}>
+          <Text style={styles.detailText}>
+            {pet.descripcion && <Text>{pet.descripcion + "\n\n"}</Text>}
+            {pet.personalidad && (
+              <Text>
+                <Text style={{ fontWeight: "bold" }}>Personalidad: </Text>
+                {pet.personalidad + "\n"}
+              </Text>
+            )}
+            {pet.tiempo_en_refugio && (
+              <Text>
+                <Text style={{ fontWeight: "bold" }}>Tiempo en refugio: </Text>
+                {pet.tiempo_en_refugio}
+              </Text>
+            )}
+          </Text>
+        </ScrollView>
       </View>
 
-      <View style={styles.chipsContainer}>
-        {pet.edad && <View style={styles.chip}><Text style={styles.chipText}>{pet.edad}</Text></View>}
-        {pet.tamano && <View style={styles.chip}><Text style={styles.chipText}>{pet.tamano}</Text></View>}
-        {pet.genero && <View style={styles.chip}><Text style={styles.chipText}>{pet.genero}</Text></View>}
-        {pet.esterilizado !== undefined && <View style={styles.chip}><Text style={styles.chipText}>{pet.esterilizado ? "Esterilizado" : "No esterilizado"}</Text></View>}
+      <View style={styles.buttonsContainer}>
+        <Button title="Like" onPress={() => {}} />
+        <Button title="Favorito" onPress={() => {}} />
+        <Button title="Siguiente" onPress={() => {}} />
       </View>
-      <ScrollView style={styles.details}>
-        {pet.descripcion && <Text style={styles.detailText}>{pet.descripcion}</Text>}
-        {pet.personalidad && (
-          <Text style={styles.detailText}>
-            <Text style={{ fontWeight: "bold" }}>Personalidad:</Text> {pet.personalidad}
-          </Text>
-        )}
-        {pet.tiempo_en_refugio && (
-          <Text style={styles.detailText}>
-            <Text style={{ fontWeight: "bold" }}>Tiempo en refugio:</Text> {pet.tiempo_en_refugio}
-          </Text>
-        )}
-      </ScrollView>
     </View>
   );
 }
 
-const CARD_HEIGHT = width * 1.8;
-const CARD_WIDTH = width * 0.95;
+const CARD_WIDTH = isWeb ? Math.min(width * 0.6, 480) : Math.min(width * 0.94, 480);
+const CARD_HEIGHT = isWeb ? CARD_WIDTH * 1.6 : CARD_WIDTH * 1.7; // más alta en móvil
+
 const styles = StyleSheet.create({
   card: {
     width: CARD_WIDTH,
@@ -110,7 +126,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "center", // centra horizontalmente
     alignItems: "center",     // centra verticalmente
-    gap:12,
+    gap: 12,
     paddingVertical: 4,
     backgroundColor: "#fff",
     width: "100%",
@@ -135,7 +151,11 @@ const styles = StyleSheet.create({
   detailText: {
     fontSize: 14,
     color: "#555",
-    marginBottom: 4,
+  },
+  buttonsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    width: '100%',
+    marginTop: 12,
   },
 });
-
