@@ -1,4 +1,5 @@
-import { View, Text, Image, StyleSheet, Dimensions, ScrollView, Button, Platform } from "react-native";
+import { View, Text, Image, StyleSheet, Dimensions, ScrollView, Button, Platform, TouchableOpacity } from "react-native";
+import { useTheme } from "../theme/ThemeContext"; // Ajusta la ruta
 
 const { width } = Dimensions.get("window");
 const isWeb = Platform.OS === "web";
@@ -22,27 +23,60 @@ type PetCardProps = {
 };
 
 export default function PetCardWithButtons({ pet }: PetCardProps) {
+  const { theme } = useTheme();
+
   return (
     <View style={{ alignItems: "center", marginVertical: 20 }}>
-      {/* Tarjeta */}
-      <View style={styles.card}>
+      <View style={[styles.card, { backgroundColor: theme.colors.backgroundSecondary }]}>
         <View style={styles.imageContainer}>
           <Image source={{ uri: pet.foto }} style={styles.image} resizeMode="cover" />
-          <View style={styles.infoOverlay}>
-            <Text style={styles.nombre}>{pet.nombre}</Text>
-            <Text style={styles.raza}>{pet.raza}</Text>
+          <View style={[styles.Overlay, { backgroundColor: theme.colors.overlayBackground }]}>
+            <Text
+              style={[
+                styles.nombre,
+                { color: theme.colors.overlayText, textShadowColor: theme.colors.overlayTextShadow },
+              ]}
+            >
+              {pet.nombre}
+            </Text>
+            <Text
+              style={[
+                styles.raza,
+                { color: theme.colors.overlayText, textShadowColor: theme.colors.overlayTextShadow },
+              ]}
+            >
+              {pet.raza}
+            </Text>
           </View>
         </View>
 
-        <View style={styles.chipsContainer}>
-          {pet.edad && <View style={styles.chip}><Text style={styles.chipText}>{pet.edad}</Text></View>}
-          {pet.tamano && <View style={styles.chip}><Text style={styles.chipText}>{pet.tamano}</Text></View>}
-          {pet.genero && <View style={styles.chip}><Text style={styles.chipText}>{pet.genero}</Text></View>}
-          {pet.esterilizado !== undefined && <View style={styles.chip}><Text style={styles.chipText}>{pet.esterilizado ? "Esterilizado" : "No esterilizado"}</Text></View>}
+        <View style={[styles.statsContainer, { backgroundColor: theme.colors.backgroundTertiary }]}>
+          {pet.edad && (
+            <View style={[styles.stats, { backgroundColor: theme.colors.backgroundTertiary }]}>
+              <Text style={[styles.statText, { color: theme.colors.primary}]}>{pet.edad}</Text>
+            </View>
+          )}
+          {pet.tamano && (
+            <View style={[styles.stats, { backgroundColor: theme.colors.backgroundTertiary }]}>
+              <Text style={[styles.statText, { color: theme.colors.primary}]}>{pet.tamano}</Text>
+            </View>
+          )}
+          {pet.genero && (
+            <View style={[styles.stats, { backgroundColor: theme.colors.backgroundTertiary }]}>
+              <Text style={[styles.statText, { color: theme.colors.primary}]}>{pet.genero}</Text>
+            </View>
+          )}
+          {pet.esterilizado !== undefined && (
+            <View style={[styles.stats, { backgroundColor: theme.colors.backgroundTertiary }]}>
+              <Text style={[styles.statText, { color: theme.colors.primary}]}>
+                {pet.esterilizado ? "Esterilizado" : "No esterilizado"}
+              </Text>
+            </View>
+          )}
         </View>
 
-        <ScrollView style={styles.details}>
-          <Text style={styles.detailText}>
+        <ScrollView style={[styles.descripcion, { backgroundColor: theme.colors.backgroundSecondary }]}>
+          <Text style={[styles.descripcionText, { color: theme.colors.text }]}>
             {pet.descripcion && <Text>{pet.descripcion + "\n\n"}</Text>}
             {pet.personalidad && (
               <Text>
@@ -61,22 +95,29 @@ export default function PetCardWithButtons({ pet }: PetCardProps) {
       </View>
 
       <View style={styles.buttonsContainer}>
-        <Button title="Like" onPress={() => {}} />
-        <Button title="Favorito" onPress={() => {}} />
-        <Button title="Siguiente" onPress={() => {}} />
+        <TouchableOpacity style={[styles.button, { backgroundColor: theme.colors.backgroundTertiary }]} onPress={() => {}}>
+          <Text style={{ color: theme.colors.secondary, fontWeight: "bold" }}>Like</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={[styles.button, { backgroundColor: theme.colors.backgroundTertiary }]} onPress={() => {}}>
+          <Text style={{ color: theme.colors.secondary, fontWeight: "bold" }}>Favorito</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={[styles.button, { backgroundColor: theme.colors.backgroundTertiary }]} onPress={() => {}}>
+          <Text style={{ color: theme.colors.secondary, fontWeight: "bold" }}>Siguiente</Text>
+        </TouchableOpacity>
       </View>
+
     </View>
   );
 }
 
+//para los anchos web/móvil
 const CARD_WIDTH = isWeb ? Math.min(width * 0.6, 480) : Math.min(width * 0.94, 480);
-const CARD_HEIGHT = isWeb ? CARD_WIDTH * 1.6 : CARD_WIDTH * 1.7; // más alta en móvil
+const CARD_HEIGHT = isWeb ? CARD_WIDTH * 1.6 : CARD_WIDTH * 1.7;
 
 const styles = StyleSheet.create({
   card: {
     width: CARD_WIDTH,
     height: CARD_HEIGHT,
-    backgroundColor: "#fff",
     borderRadius: 20,
     overflow: "hidden",
     shadowColor: "#000",
@@ -96,66 +137,61 @@ const styles = StyleSheet.create({
     width: "100%",
     height: "100%",
   },
-  infoOverlay: {
+  Overlay: {
     position: "absolute",
-    bottom: 10,
-    left: 8,
-    right: 8,
-    backgroundColor: "rgba(0,0,0,0.35)",
+    bottom: 0,
     paddingVertical: 6,
     paddingHorizontal: 10,
     borderRadius: 10,
   },
   nombre: {
-    color: "#fff",
-    fontSize: 28,
+    fontSize: 30,
     fontWeight: "bold",
-    textShadowColor: "rgba(0,0,0,0.7)",
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 4,
   },
   raza: {
-    color: "#fff",
-    fontSize: 16,
+    fontSize: 18,
     marginTop: 2,
-    textShadowColor: "rgba(0,0,0,0.7)",
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 3,
   },
-  chipsContainer: {
+  statsContainer: {
     flexDirection: "row",
-    justifyContent: "center", // centra horizontalmente
-    alignItems: "center",     // centra verticalmente
-    gap: 12,
-    paddingVertical: 4,
-    backgroundColor: "#fff",
+    justifyContent: "space-between",
+    alignItems: "center",
+    gap: 5,
+    paddingVertical: 6,
     width: "100%",
   },
-  chip: {
-    backgroundColor: "#eee",
+  stats: {
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 20,
-    marginRight: 6,
+    marginHorizontal: 4,
   },
-  chipText: {
+  statText: {
     fontSize: 13,
-    color: "#333",
   },
-  details: {
+  descripcion: {
     flex: 1,
     paddingHorizontal: 12,
     paddingVertical: 4,
-    backgroundColor: "#fff",
   },
-  detailText: {
+  descripcionText: {
     fontSize: 14,
-    color: "#555",
   },
   buttonsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    width: '100%',
-    marginTop: 12,
+    flexDirection: "row",
+    justifyContent: "space-around",
+    width: "100%",
+    margin: 10,
+  },
+  button: {
+    width: 65,
+    height: 48,
+    borderRadius: 24,
+    alignItems: "center",
+    justifyContent: "center",
   },
 });

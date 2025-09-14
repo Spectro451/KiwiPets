@@ -1,5 +1,8 @@
-import { View, Text } from "react-native";
+import { View} from "react-native";
 import PetCard from "../components/PetCard";
+import { useTheme } from "../theme/ThemeContext";
+
+
 
 
 const pets = [
@@ -19,8 +22,9 @@ const pets = [
  
 ];
 export default function HomeScreen() {
+  const { theme } = useTheme();
   return (
-    <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
+    <View style={{ flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: theme.colors.background}}>
       <PetCard pet={pets[0]} />
     </View>
   );

@@ -1,7 +1,10 @@
-import { Text, View } from "react-native";
+import { ThemeProvider } from "./src/theme/ThemeContext";
 import BottomTabs from "./src/navigation/Tabs";
 
 export default function App() {
-  return <BottomTabs/>
-  
+  return (
+    <ThemeProvider>
+      <BottomTabs/>
+    </ThemeProvider>
+  );
 }
