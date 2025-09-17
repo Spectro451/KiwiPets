@@ -27,7 +27,7 @@ export type Pet = {
   raza?: string;
   foto?: string;
   edad?: string;
-  tamano?: string;
+  tamaño?: string;
   especie?: string;
   genero?: string;
   vacunado?: boolean;
@@ -39,7 +39,7 @@ export type Pet = {
   personalidad?: string;
   posee_descendencia?: boolean;
   fecha_ingreso?: string;
-  requisitos_adopcion?: string;
+  requisito_adopcion?: string;
 
   vacunas?: Vacuna[];
   historial_clinico?: HistorialClinico[];
@@ -86,9 +86,9 @@ export default function PetCardWithButtons({ pet }: PetCardProps) {
               <Text style={[styles.statText, { color: theme.colors.primary}]}>{pet.edad}</Text>
             </View>
           )}
-          {pet.tamano && (
+          {pet.tamaño && (
             <View style={[styles.stats, { backgroundColor: theme.colors.backgroundTertiary }]}>
-              <Text style={[styles.statText, { color: theme.colors.primary}]}>{pet.tamano}</Text>
+              <Text style={[styles.statText, { color: theme.colors.primary}]}>{pet.tamaño}</Text>
             </View>
           )}
           {pet.genero && (
@@ -136,10 +136,10 @@ export default function PetCardWithButtons({ pet }: PetCardProps) {
               {pet.posee_descendencia ? "Sí\n" : "No\n"}
             </Text>
 
-            {pet.requisitos_adopcion && (
+            {pet.requisito_adopcion && (
               <Text>
                 <Text style={{ fontWeight: "bold" }}>Requiero lo siguiente para ser adoptado: </Text>
-                {pet.requisitos_adopcion + "\n"}
+                {pet.requisito_adopcion + "\n"}
               </Text>
             )}
 

@@ -1,8 +1,11 @@
-import { View, TouchableOpacity, Text, StyleSheet } from "react-native";
+import { View, TouchableOpacity, Text, StyleSheet,  } from "react-native";
+import { useFocusEffect } from '@react-navigation/native';
 import SwipeCards from "../components/SwipeCards"; // Importa el componente nuevo
 import { useTheme } from "../theme/ThemeContext";
+import { useCallback, useEffect, useState } from "react";
+import { getMascotas } from "../services/api";
 
-const pets = [
+/* const pets = [
   {
     id: "1",
     refugio_id: "ref123",
@@ -137,10 +140,24 @@ const pets = [
     ]
   }
 ];
-
+ */
 
 export default function HomeScreen() {
   const { theme } = useTheme();
+  const [pets, setPets] = useState([]);
+  useFocusEffect(
+    useCallback(() => {
+      const fetchPets = async () => {
+        try {
+          const data = await getMascotas();
+          setPets(data); // Setea los datos traídos del backend
+        } catch (error) {
+          console.error("Error al obtener mascotas:", error);
+        }
+      };
+      fetchPets();
+    }, [])
+  );
 
   return (
     <View style={{ flex: 1, backgroundColor: theme.colors.background }}>
