@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { View, StyleSheet, Dimensions, Text, PanResponder, Animated } from "react-native";
-import PetCard, { Pet } from "./PetCard";
+import PetCard from "./PetCard";
+import { Mascota } from "../types/mascota";
 
 const { width } = Dimensions.get("window");
 
 type SwipeCardsProps = {
-  pets: Pet[];
+  pets: Mascota[];
 };
 
 export default function SwipeCardsSimple({ pets }: SwipeCardsProps) {

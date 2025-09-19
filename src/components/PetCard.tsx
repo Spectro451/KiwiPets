@@ -1,68 +1,44 @@
 import { View, Text, Image, StyleSheet, Dimensions, ScrollView, Platform } from "react-native";
 import { useTheme } from "../theme/ThemeContext"; // Ajusta la ruta
+import { Mascota } from "../types/mascota";
 
 const { width } = Dimensions.get("window");
 const isWeb = Platform.OS === "web";
 
-export type Vacuna = {
-  id: number;
-  nombre: string;
-  fecha_aplicacion: string;
-  proxima_dosis?: string;
-  observaciones?: string;
-};
-
-export type HistorialClinico = {
-  id: number;
-  fecha: string;
-  descripcion: string;
-  veterinario?: string;
-  tratamiento?: string;
-};
-
-export type Pet = {
-  id_mascota: number;
-  refugio: { nombre?: string };
-  nombre: string;
-  raza: string;
-  foto?: string;
-  edad: number;
-  tamaño: string;
-  especie: string;
-  genero: string;
-  vacunado: boolean;
-  esterilizado: boolean;
-  veces_adoptado: number;
-  discapacidad: boolean;
-  descripcion: string;
-  personalidad: string;
-  posee_descendencia: boolean;
-  fecha_ingreso: string;
-  requisito_adopcion: string;
-  estado_adopcion: string;
-
-  vacunas: Vacuna[];
-  historialClinico: HistorialClinico[];
-};
-
 type PetCardProps = {
-  pet: Pet;
+  pet: Mascota;
 };
 
 export default function PetCardWithButtons({ pet }: PetCardProps) {
   const { theme } = useTheme();
 
-  function formatFecha(fechaStr: string) {
-    const fecha = new Date(fechaStr);
+  // Convertir fecha_ingreso a Date si viene
+  const fechaIngreso = pet.fecha_ingreso ? new Date(pet.fecha_ingreso) : undefined;
+
+  // Convertir fechas de vacunas
+  pet.vacunas?.forEach(v => {
+    v.fecha_aplicacion = new Date(v.fecha_aplicacion);
+    if (v.proxima_dosis) v.proxima_dosis = new Date(v.proxima_dosis);
+  });
+
+  // Convertir fechas de historial clínico
+  pet.historialClinico?.forEach(h => {
+    h.fecha = new Date(h.fecha);
+  });
+
+  // Función para formatear fechas
+  function formatFecha(fecha?: Date) {
+    if (!fecha) return "-";
     const dia = fecha.getDate().toString().padStart(2, "0");
     const mes = (fecha.getMonth() + 1).toString().padStart(2, "0");
     const anio = fecha.getFullYear();
     return `${dia}/${mes}/${anio}`;
   }
 
-  function tiempoEnRefugio(fechaIngresoStr: string) {
-    const fechaIngreso = new Date(fechaIngresoStr);
-    const diffMs = Date.now() - fechaIngreso.getTime();
+  // Función para calcular tiempo en refugio
+  function tiempoEnRefugio(fecha?: Date) {
+    if (!fecha) return "Hoy";
+    const diffMs = Date.now() - fecha.getTime();
     const dias = Math.floor(diffMs / (1000 * 60 * 60 * 24));
     const años = Math.floor(dias / 365);
     const meses = Math.floor((dias % 365) / 30);
@@ -74,7 +50,8 @@ export default function PetCardWithButtons({ pet }: PetCardProps) {
       diasRestantes ? `${diasRestantes} día${diasRestantes > 1 ? "s" : ""}` : null
     ].filter(Boolean).join(", ") || "Hoy";
   }
-  const tiempo = pet.fecha_ingreso ? tiempoEnRefugio(pet.fecha_ingreso) : "";
+
+  const tiempo = tiempoEnRefugio(fechaIngreso);
 
   return (
     <View style={{ alignItems: "center", marginVertical: 20 }}>
