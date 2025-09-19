@@ -1,11 +1,11 @@
-import { View, Text, Image, StyleSheet, Dimensions, ScrollView, Button, Platform, TouchableOpacity } from "react-native";
+import { View, Text, Image, StyleSheet, Dimensions, ScrollView, Platform } from "react-native";
 import { useTheme } from "../theme/ThemeContext"; // Ajusta la ruta
 
 const { width } = Dimensions.get("window");
 const isWeb = Platform.OS === "web";
 
 export type Vacuna = {
-  id?: string;
+  id: number;
   nombre: string;
   fecha_aplicacion: string;
   proxima_dosis?: string;
@@ -13,7 +13,7 @@ export type Vacuna = {
 };
 
 export type HistorialClinico = {
-  id?: string;
+  id: number;
   fecha: string;
   descripcion: string;
   veterinario?: string;
@@ -21,30 +21,29 @@ export type HistorialClinico = {
 };
 
 export type Pet = {
-  id?: string;
-  refugio_id?: string;
-  nombre?: string;
-  raza?: string;
+  id_mascota: number;
+  refugio: { nombre?: string };
+  nombre: string;
+  raza: string;
   foto?: string;
-  edad?: string;
-  tamaño?: string;
-  especie?: string;
-  genero?: string;
-  vacunado?: boolean;
-  esterilizado?: boolean;
-  veces_adoptado?: number;
-  tiempo_en_refugio?: string;
-  discapacidad?: boolean;
-  descripcion?: string;
-  personalidad?: string;
-  posee_descendencia?: boolean;
-  fecha_ingreso?: string;
-  requisito_adopcion?: string;
+  edad: number;
+  tamaño: string;
+  especie: string;
+  genero: string;
+  vacunado: boolean;
+  esterilizado: boolean;
+  veces_adoptado: number;
+  discapacidad: boolean;
+  descripcion: string;
+  personalidad: string;
+  posee_descendencia: boolean;
+  fecha_ingreso: string;
+  requisito_adopcion: string;
+  estado_adopcion: string;
 
-  vacunas?: Vacuna[];
-  historial_clinico?: HistorialClinico[];
+  vacunas: Vacuna[];
+  historialClinico: HistorialClinico[];
 };
-
 
 type PetCardProps = {
   pet: Pet;
@@ -52,6 +51,30 @@ type PetCardProps = {
 
 export default function PetCardWithButtons({ pet }: PetCardProps) {
   const { theme } = useTheme();
+
+  function formatFecha(fechaStr: string) {
+    const fecha = new Date(fechaStr);
+    const dia = fecha.getDate().toString().padStart(2, "0");
+    const mes = (fecha.getMonth() + 1).toString().padStart(2, "0");
+    const anio = fecha.getFullYear();
+    return `${dia}/${mes}/${anio}`;
+  }
+
+  function tiempoEnRefugio(fechaIngresoStr: string) {
+    const fechaIngreso = new Date(fechaIngresoStr);
+    const diffMs = Date.now() - fechaIngreso.getTime();
+    const dias = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+    const años = Math.floor(dias / 365);
+    const meses = Math.floor((dias % 365) / 30);
+    const diasRestantes = (dias % 365) % 30;
+
+    return [
+      años ? `${años} año${años > 1 ? "s" : ""}` : null,
+      meses ? `${meses} mes${meses > 1 ? "es" : ""}` : null,
+      diasRestantes ? `${diasRestantes} día${diasRestantes > 1 ? "s" : ""}` : null
+    ].filter(Boolean).join(", ") || "Hoy";
+  }
+  const tiempo = pet.fecha_ingreso ? tiempoEnRefugio(pet.fecha_ingreso) : "";
 
   return (
     <View style={{ alignItems: "center", marginVertical: 20 }}>
@@ -83,7 +106,7 @@ export default function PetCardWithButtons({ pet }: PetCardProps) {
         <View style={[styles.statsContainer, { backgroundColor: theme.colors.backgroundTertiary }]}>
           {pet.edad && (
             <View style={[styles.stats, { backgroundColor: theme.colors.backgroundTertiary }]}>
-              <Text style={[styles.statText, { color: theme.colors.primary}]}>{pet.edad}</Text>
+              <Text style={[styles.statText, { color: theme.colors.primary}]}>{pet.edad} años</Text>
             </View>
           )}
           {pet.tamaño && (
@@ -96,10 +119,10 @@ export default function PetCardWithButtons({ pet }: PetCardProps) {
               <Text style={[styles.statText, { color: theme.colors.primary}]}>{pet.genero}</Text>
             </View>
           )}
-          {pet.esterilizado !== undefined && (
+          {pet.estado_adopcion !== undefined && (
             <View style={[styles.stats, { backgroundColor: theme.colors.backgroundTertiary }]}>
               <Text style={[styles.statText, { color: theme.colors.primary}]}>
-                {pet.esterilizado ? "Esterilizado" : "No esterilizado"}
+                {pet.estado_adopcion}
               </Text>
             </View>
           )}
@@ -114,11 +137,35 @@ export default function PetCardWithButtons({ pet }: PetCardProps) {
               </Text>
             )}
 
+            {/* Refugio: SOLO nombre si viene */}
+            {pet.refugio?.nombre && (
+              <Text>
+                <Text style={{ fontWeight: "bold" }}>Refugio: </Text>
+                {pet.refugio.nombre + "\n"}
+              </Text>
+            )}
+
+            {/* Especie */}
+            {pet.especie && (
+              <Text>
+                <Text style={{ fontWeight: "bold" }}>Especie: </Text>
+                {pet.especie + "\n"}
+              </Text>
+            )}
+
+            {/* Esterilizado */}
+            <Text>
+              <Text style={{ fontWeight: "bold" }}>Esterilizado: </Text>
+              {pet.esterilizado ? "Sí\n" : "No\n"}
+            </Text>
+
+            {/* Vacunado */}
             <Text>
               <Text style={{ fontWeight: "bold" }}>Vacunado: </Text>
               {pet.vacunado ? "Sí\n" : "No\n"}
             </Text>
 
+            {/* Veces adoptado */}
             {pet.veces_adoptado !== undefined && pet.veces_adoptado !== null && (
               <Text>
                 <Text style={{ fontWeight: "bold" }}>Me han adoptado: </Text>
@@ -126,11 +173,13 @@ export default function PetCardWithButtons({ pet }: PetCardProps) {
               </Text>
             )}
 
+            {/* Discapacidad */}
             <Text>
               <Text style={{ fontWeight: "bold" }}>Poseo discapacidad: </Text>
               {pet.discapacidad ? "Sí\n" : "No\n"}
             </Text>
 
+            {/* Descendencia */}
             <Text>
               <Text style={{ fontWeight: "bold" }}>Tengo descendencia: </Text>
               {pet.posee_descendencia ? "Sí\n" : "No\n"}
@@ -150,43 +199,45 @@ export default function PetCardWithButtons({ pet }: PetCardProps) {
               </Text>
             )}
 
-            {pet.tiempo_en_refugio && (
+            {/* Tiempo (calculado a partir de fecha_ingreso) */}
+            {tiempo && (
               <Text>
                 <Text style={{ fontWeight: "bold" }}>Tiempo en refugio: </Text>
-                {pet.tiempo_en_refugio + "\n"}
+                {tiempo + "\n"}
               </Text>
             )}
 
-            {/* Vacunas */}
-            {(pet.vacunas?.length ?? 0) > 0 && (
-              <Text>
-                <Text style={{ fontWeight: "bold" }}>Vacunas:</Text>
-                {(pet.vacunas ?? []).map((v, i) => (
-                  <Text key={v.id || i}>
-                    {"\n"}Nombre: {v.nombre}{"\n"}
-                    Fecha de aplicación: {v.fecha_aplicacion}{"\n"}
-                    {v.proxima_dosis && <>Próxima dosis: {v.proxima_dosis}{"\n"}</>}
-                    {v.observaciones && <>Observaciones: {v.observaciones}{"\n"}</>}
-                    
-                  </Text>
-                ))}
-              </Text>
-            )}
+{/* Vacunas */}
+{(pet.vacunas?.length ?? 0) > 0 && (
+  <Text>
+    <Text style={{ fontWeight: "bold" }}>Vacunas:</Text>
+    {(pet.vacunas ?? []).map((v, i) => (
+      <Text key={v.id || i}>
+        {"\n"}{"\t"}<Text style={{ fontWeight: "bold" }}>Nombre: </Text>{v.nombre}{"\n"}
+        {"\t"}<Text style={{ fontWeight: "bold" }}>Fecha de aplicación: </Text>{formatFecha(v.fecha_aplicacion)}{"\n"}
+        {v.proxima_dosis && <>{"\t"}<Text style={{ fontWeight: "bold" }}>Próxima dosis: </Text>{formatFecha(v.proxima_dosis)}{"\n"}</>}
+        {v.observaciones && <>{"\t"}<Text style={{ fontWeight: "bold" }}>Observaciones: </Text>{v.observaciones}{"\n"}</>}
+      </Text>
+    ))}
+  </Text>
+)}
 
-            {/* Historial clínico */}
-            {(pet.historial_clinico?.length ?? 0) > 0 && (
-              <Text>
-                <Text style={{ fontWeight: "bold" }}>Historial clínico:</Text>
-                {(pet.historial_clinico ?? []).map((h, i) => (
-                  <Text key={h.id || i}>
-                    {"\n"}Fecha: {h.fecha}{"\n"}
-                    Descripción: {h.descripcion}{"\n"}
-                    {h.veterinario && <>Veterinario: {h.veterinario}{"\n"}</>}
-                    {h.tratamiento && <>Tratamiento: {h.tratamiento}{"\n"}</>}
-                  </Text>
-                ))}
-              </Text>
-            )}
+{/* Historial clínico */}
+{(pet.historialClinico?.length ?? 0) > 0 && (
+  <Text>
+    <Text style={{ fontWeight: "bold" }}>Historial clínico:</Text>
+    {(pet.historialClinico ?? []).map((h, i) => (
+      <Text key={h.id || i}>
+        {"\n"}{"\t"}<Text style={{ fontWeight: "bold" }}>Fecha: </Text>{formatFecha(h.fecha)}{"\n"}
+        {"\t"}<Text style={{ fontWeight: "bold" }}>Descripción: </Text>{h.descripcion}{"\n"}
+        {h.veterinario && <>{"\t"}<Text style={{ fontWeight: "bold" }}>Veterinario: </Text>{h.veterinario}{"\n"}</>}
+        {h.tratamiento && <>{"\t"}<Text style={{ fontWeight: "bold" }}>Tratamiento: </Text>{h.tratamiento}{"\n"}</>}
+      </Text>
+    ))}
+  </Text>
+)}
+
+
           </Text>
         </ScrollView>
       </View>

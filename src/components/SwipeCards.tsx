@@ -14,7 +14,8 @@ export default function SwipeCardsSimple({ pets }: SwipeCardsProps) {
   const position = new Animated.ValueXY();
 
   const panResponder = PanResponder.create({
-    onStartShouldSetPanResponder: () => true,
+    onStartShouldSetPanResponder: (_, gesture) => Math.abs(gesture.dx) > Math.abs(gesture.dy),
+    onMoveShouldSetPanResponder: (_, gesture) => Math.abs(gesture.dx) > Math.abs(gesture.dy),
     onPanResponderMove: (_, gesture) => {
       position.setValue({ x: gesture.dx, y: 0 });
     },
