@@ -183,38 +183,34 @@ export default function PetCardWithButtons({ pet }: PetCardProps) {
                 {tiempo + "\n"}
               </Text>
             )}
-
-{/* Vacunas */}
-{(pet.vacunas?.length ?? 0) > 0 && (
-  <Text>
-    <Text style={{ fontWeight: "bold" }}>Vacunas:</Text>
-    {(pet.vacunas ?? []).map((v, i) => (
-      <Text key={v.id || i}>
-        {"\n"}{"\t"}<Text style={{ fontWeight: "bold" }}>Nombre: </Text>{v.nombre}{"\n"}
-        {"\t"}<Text style={{ fontWeight: "bold" }}>Fecha de aplicación: </Text>{formatFecha(v.fecha_aplicacion)}{"\n"}
-        {v.proxima_dosis && <>{"\t"}<Text style={{ fontWeight: "bold" }}>Próxima dosis: </Text>{formatFecha(v.proxima_dosis)}{"\n"}</>}
-        {v.observaciones && <>{"\t"}<Text style={{ fontWeight: "bold" }}>Observaciones: </Text>{v.observaciones}{"\n"}</>}
-      </Text>
-    ))}
-  </Text>
-)}
-
-{/* Historial clínico */}
-{(pet.historialClinico?.length ?? 0) > 0 && (
-  <Text>
-    <Text style={{ fontWeight: "bold" }}>Historial clínico:</Text>
-    {(pet.historialClinico ?? []).map((h, i) => (
-      <Text key={h.id || i}>
-        {"\n"}{"\t"}<Text style={{ fontWeight: "bold" }}>Fecha: </Text>{formatFecha(h.fecha)}{"\n"}
-        {"\t"}<Text style={{ fontWeight: "bold" }}>Descripción: </Text>{h.descripcion}{"\n"}
-        {h.veterinario && <>{"\t"}<Text style={{ fontWeight: "bold" }}>Veterinario: </Text>{h.veterinario}{"\n"}</>}
-        {h.tratamiento && <>{"\t"}<Text style={{ fontWeight: "bold" }}>Tratamiento: </Text>{h.tratamiento}{"\n"}</>}
-      </Text>
-    ))}
-  </Text>
-)}
-
-
+            {/* Vacunas */}
+            {(pet.vacunas?.length ?? 0) > 0 && (
+              <Text>
+                <Text style={{ fontWeight: "bold" }}>Vacunas:</Text>
+                {(pet.vacunas ?? []).map((v, i) => (
+                  <Text key={v.id || i}>
+                    {"\n"}{"\t"}<Text style={{ fontWeight: "bold" }}>Nombre: </Text>{v.nombre}{"\n"}
+                    {"\t"}<Text style={{ fontWeight: "bold" }}>Fecha de aplicación: </Text>{formatFecha(v.fecha_aplicacion)}{"\n"}
+                    {v.proxima_dosis && <>{"\t"}<Text style={{ fontWeight: "bold" }}>Próxima dosis: </Text>{formatFecha(v.proxima_dosis)}{"\n"}</>}
+                    {v.observaciones && <>{"\t"}<Text style={{ fontWeight: "bold" }}>Observaciones: </Text>{v.observaciones}{"\n"}</>}
+                  </Text>
+                ))}
+              </Text>
+            )}
+            {/* Historial clínico */}
+            {(pet.historialClinico?.length ?? 0) > 0 && (
+              <Text>
+                <Text style={{ fontWeight: "bold" }}>Historial clínico:</Text>
+                {(pet.historialClinico ?? []).map((h, i) => (
+                  <Text key={h.id || i}>
+                    {"\n"}{"\t"}<Text style={{ fontWeight: "bold" }}>Fecha: </Text>{formatFecha(h.fecha)}{"\n"}
+                    {"\t"}<Text style={{ fontWeight: "bold" }}>Descripción: </Text>{h.descripcion}{"\n"}
+                    {h.veterinario && <>{"\t"}<Text style={{ fontWeight: "bold" }}>Veterinario: </Text>{h.veterinario}{"\n"}</>}
+                    {h.tratamiento && <>{"\t"}<Text style={{ fontWeight: "bold" }}>Tratamiento: </Text>{h.tratamiento}{"\n"}</>}
+                  </Text>
+                ))}
+              </Text>
+            )}
           </Text>
         </ScrollView>
       </View>
