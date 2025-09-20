@@ -11,7 +11,6 @@ const Tab = createBottomTabNavigator();
 export default function BottomTabs() {
   const { theme } = useTheme();
   return (
-    <NavigationContainer>
       <Tab.Navigator
         screenOptions={{
           headerShown: false,
@@ -26,6 +25,5 @@ export default function BottomTabs() {
         <Tab.Screen name='Notificaciones' component={NotificationScreen}/>
         <Tab.Screen name='Perfil' component={ProfileScreen}/>
       </Tab.Navigator>
-    </NavigationContainer>
   );
 }
