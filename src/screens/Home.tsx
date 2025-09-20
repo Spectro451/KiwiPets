@@ -2,7 +2,7 @@ import { View, TouchableOpacity, Text, StyleSheet } from "react-native";
 import { useFocusEffect } from '@react-navigation/native';
 import { useTheme } from "../theme/ThemeContext";
 import { useCallback, useState, useRef } from "react";
-import { getMascotas } from "../services/api";
+import { getMascotas } from "../services/fetchMascotas";
 import SwipeCardsSimple from "../components/SwipeCards"; // Asegúrate de usar la versión con forwardRef
 
 export default function HomeScreen() {
