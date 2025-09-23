@@ -2,40 +2,50 @@ import { api } from "./api";
 
 export const getUsuario = async () => {
   try {
-    const response = await api.get("/usuario")
+    const response = await api.get("/usuario");
     return response.data;
   } catch (error) {
-    console.error("Error al obtener usuarioes:", error);
-    return [];
+    console.error("Error al obtener usuarios:", error);
+    return null;
   }
 };
 
-export const getUsuarioId = async () => {
+export const getUsuarioId = async (id: number) => {
   try {
-    const response = await api.get("/usuario/${id}")
+    const response = await api.get(`/usuario/${id}`);
     return response.data;
   } catch (error) {
     console.error("Error al obtener usuario:", error);
-    return [];
+    return null;
   }
 };
 
-export const updateUsuario = async () => {
+export const updateUsuario = async (id: number, data: any) => {
   try {
-    const response = await api.put("/usuario")
+    const response = await api.put(`/usuario/${id}`, data);
     return response.data;
   } catch (error) {
     console.error("Error al modificar usuario:", error);
-    return [];
+    return null;
   }
 };
 
-export const deleteUsuario = async () => {
+export const deleteUsuario = async (id: number) => {
   try {
-    const response = await api.delete("/usuario/{id}")
+    const response = await api.delete(`/usuario/${id}`);
     return response.data;
   } catch (error) {
     console.error("Error al borrar usuario:", error);
-    return [];
+    return null;
+  }
+};
+
+export const loginUsuario = async (correo: string, contraseña: string) => {
+  try {
+    const response = await api.post("/usuario/login", { correo, contraseña });
+    return response.data;
+  } catch (error: any) {
+    console.error("Error al hacer login:", error.response?.data || error.message);
+    return null;
   }
 };

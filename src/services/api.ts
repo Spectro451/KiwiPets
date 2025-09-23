@@ -1,21 +1,31 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 
 
 export const api = axios.create({
-  baseURL: "http://192.168.1.7:3000",
+  baseURL: "https://kiwipetsbackend.onrender.com",
   timeout:10000,
 });
 
+api.interceptors.request.use(
+  async config => {
+    const token = await AsyncStorage.getItem('token');
+    if (token && config.headers) {
+      config.headers['Authorization'] = `Bearer ${token}`;
+    }
+    return config;
+  },
+  error => Promise.reject(error)
+);
 
 //interceptor loco para cuando no tenga acceso
 api.interceptors.response.use(
-  response=>response,
-  error=>{
-    if(error.response?.status===401){
-      console.log("Token invalido o expirado, de vuelta pal login");
-
-      
+  response => response,
+  async error => {
+    if (error.response?.status === 401) {
+      console.log("Token inválido o expirado");
+      await AsyncStorage.removeItem('token'); // opcional limpiar
     }
+    return Promise.reject(error);
   }
-)
-
+);
