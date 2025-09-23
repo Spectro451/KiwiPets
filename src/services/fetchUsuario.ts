@@ -49,3 +49,18 @@ export const loginUsuario = async (correo: string, contraseña: string) => {
     return null;
   }
 };
+
+export const createUsuario = async(data:{
+  correo: string;
+  contraseña: string;
+  tipo: 'Adoptante' | 'Refugio';
+}) => {
+  try{
+    const response = await api.post("/usuario", data);
+    return response.data;
+  } catch(error: any){
+    console.error("Error al crear el usuario:", error.response?.data || error.message);
+    return null;
+  }
+};
+

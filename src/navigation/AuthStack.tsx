@@ -1,12 +1,14 @@
-import React from 'react';
+import { Dispatch, SetStateAction } from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import LoginScreen from '../screens/Login';
 import RegisterScreen from '../screens/Register';
+import FormularioAdoptante from '../screens/FormularioAdoptante';
+import FormularioRefugio from '../screens/FormularioRefugio';
 
 type AuthStackProps = {
-  setToken: React.Dispatch<React.SetStateAction<string | null>>;
-  setUser: React.Dispatch<
-    React.SetStateAction<{ id: number; tipo: string; admin: boolean } | null>
+  setToken: Dispatch<SetStateAction<string | null>>;
+  setUser: Dispatch<
+    SetStateAction<{ id: number; tipo: string; admin: boolean } | null>
   >;
 };
 
@@ -18,7 +20,9 @@ export default function AuthStack({ setToken, setUser }: AuthStackProps) {
       <Stack.Screen name="Login">
         {props => <LoginScreen {...props} setToken={setToken} setUser={setUser} />}
       </Stack.Screen>
-      <Stack.Screen name="Register" component={RegisterScreen} />
+      <Stack.Screen name="Register">
+        {props => <RegisterScreen {...props} setToken={setToken} setUser={setUser} />}
+      </Stack.Screen>
     </Stack.Navigator>
   );
 }

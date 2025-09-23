@@ -20,13 +20,13 @@ export const getRefugioId = async () => {
   }
 };
 
-export const updateRefugio = async () => {
+export const updateRefugio = async (id: number, data: { nombre: string; direccion: string; telefono: string }) => {
   try {
-    const response = await api.put("/refugio")
+    const response = await api.put(`/refugio/${id}`, data);
     return response.data;
   } catch (error) {
     console.error("Error al modificar refugio:", error);
-    return [];
+    return null;
   }
 };
 
@@ -37,5 +37,15 @@ export const deleteRefugio = async () => {
   } catch (error) {
     console.error("Error al borrar refugio:", error);
     return [];
+  }
+};
+
+export const refugioByUsuarioId = async () => {
+  try {
+    const response = await api.get("/refugio/yo");
+    return response.data;
+  } catch (error) {
+    console.error("No se encontro el refugio:", error);
+    return null;
   }
 };

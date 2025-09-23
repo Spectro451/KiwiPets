@@ -7,6 +7,7 @@ export const api = axios.create({
   timeout:10000,
 });
 
+//envia el token al header de cada consulta
 api.interceptors.request.use(
   async config => {
     const token = await AsyncStorage.getItem('token');

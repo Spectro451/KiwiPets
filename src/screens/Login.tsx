@@ -1,16 +1,17 @@
 import React, { useState } from 'react';
-import { View, TextInput, Button, Alert, StyleSheet, ActivityIndicator } from 'react-native';
+import { View, TextInput, Button, Alert, StyleSheet, ActivityIndicator, TouchableOpacity, Text } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { loginUsuario } from '../services/fetchUsuario';
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
-type LoginProps = {
+type LoginProps = NativeStackScreenProps<any> & {
   setToken: React.Dispatch<React.SetStateAction<string | null>>;
   setUser: React.Dispatch<
     React.SetStateAction<{ id: number; tipo: string; admin: boolean } | null>
   >;
 };
 
-const LoginScreen = ({ setToken, setUser }: LoginProps) => {
+const LoginScreen = ({ setToken, setUser, navigation }: LoginProps) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loadingLogin, setLoadingLogin] = useState(false);
@@ -48,6 +49,9 @@ const LoginScreen = ({ setToken, setUser }: LoginProps) => {
       <TextInput placeholder="Correo" value={email} onChangeText={setEmail} style={styles.input} autoCapitalize="none" />
       <TextInput placeholder="Contraseña" value={password} onChangeText={setPassword} secureTextEntry style={styles.input} />
       {loadingLogin ? <ActivityIndicator /> : <Button title="Login" onPress={handleLogin} />}
+      <TouchableOpacity onPress={() => navigation.navigate('Register')} style={{ marginTop: 15 }}>
+        <Text style={{ color: 'blue', textAlign: 'center' }}>¿No tienes cuenta? Regístrate</Text>
+      </TouchableOpacity>
     </View>
   );
 };

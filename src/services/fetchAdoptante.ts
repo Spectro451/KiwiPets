@@ -20,13 +20,13 @@ export const getAdoptanteId = async () => {
   }
 };
 
-export const updateAdoptante = async () => {
+export const updateAdoptante = async (id: number, data: { nombre: string; direccion: string; telefono: string }) => {
   try {
-    const response = await api.put("/adoptante")
+    const response = await api.put(`/adoptante/${id}`, data);
     return response.data;
   } catch (error) {
     console.error("Error al modificar adoptante:", error);
-    return [];
+    return null;
   }
 };
 
@@ -37,5 +37,15 @@ export const deleteAdoptante = async () => {
   } catch (error) {
     console.error("Error al borrar adoptante:", error);
     return [];
+  }
+};
+
+export const adoptanteByUsuarioId = async () => {
+  try {
+    const response = await api.get("/adoptante/yo");
+    return response.data;
+  } catch (error) {
+    console.error("No se encontro el adoptante:", error);
+    return null;
   }
 };

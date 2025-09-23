@@ -1,5 +1,4 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { NavigationContainer } from '@react-navigation/native';
 import HomeScreen from '../screens/Home';
 import FavScreen from '../screens/Favoritos';
 import NotificationScreen from '../screens/Notificaciones';
@@ -8,22 +7,34 @@ import { useTheme } from '../theme/ThemeContext';
 
 const Tab = createBottomTabNavigator();
 
-export default function BottomTabs() {
+interface BottomTabsProps {
+  user: { id: number; tipo: string; admin: boolean };
+}
+
+export default function BottomTabs({ user }: BottomTabsProps) {
   const { theme } = useTheme();
+
   return (
-      <Tab.Navigator
-        screenOptions={{
-          headerShown: false,
-          tabBarStyle: { backgroundColor: theme.colors.background, borderTopWidth: 0,},
-          tabBarActiveTintColor: theme.colors.secondary,
-          tabBarInactiveTintColor: theme.colors.overlayTextShadow,
-          
-        }}
-      >
-        <Tab.Screen name='Home' component={HomeScreen}/>
-        <Tab.Screen name='Favoritos' component={FavScreen}/>
-        <Tab.Screen name='Notificaciones' component={NotificationScreen}/>
-        <Tab.Screen name='Perfil' component={ProfileScreen}/>
-      </Tab.Navigator>
+    <Tab.Navigator
+      screenOptions={{
+        headerShown: false,
+        tabBarStyle: { backgroundColor: theme.colors.background, borderTopWidth: 0 },
+        tabBarActiveTintColor: theme.colors.secondary,
+        tabBarInactiveTintColor: theme.colors.overlayTextShadow,
+      }}
+    >
+      {user.tipo === "Adoptante" ? (
+        <>
+          <Tab.Screen name="Home" component={HomeScreen} />
+          <Tab.Screen name="Favoritos" component={FavScreen} />
+          <Tab.Screen name="Notificaciones" component={NotificationScreen} />
+          <Tab.Screen name="Perfil" component={ProfileScreen} />
+        </>
+      ) : (
+        <>
+          <Tab.Screen name="Notificaciones" component={NotificationScreen} />
+        </>
+      )}
+    </Tab.Navigator>
   );
 }
