@@ -22,8 +22,7 @@ export default function App() {
       if (!auth.user) return;
       const flag = await AsyncStorage.getItem("goToFormulario");
       if (flag === "true") {
-        await AsyncStorage.removeItem("goToFormulario");
-        setRedirect(auth.user.tipo); // "Adoptante" o "Refugio"
+        setRedirect(auth.user.tipo);
       }
     };
     checkRedirect();

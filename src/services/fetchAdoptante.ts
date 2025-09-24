@@ -10,19 +10,30 @@ export const getAdoptante = async () => {
   }
 };
 
-export const getAdoptanteId = async () => {
+export const getAdoptanteId = async (rut:string) => {
   try {
-    const response = await api.get("/adoptante/${id}")
+    const response = await api.get(`/adoptante/${rut}`)
     return response.data;
   } catch (error) {
     console.error("Error al obtener adoptante:", error);
-    return [];
+    return null;
   }
 };
 
-export const updateAdoptante = async (id: number, data: { nombre: string; direccion: string; telefono: string }) => {
+export const updateAdoptante = async (rut: string, data: {
+  nombre: string;
+  edad: number;
+  telefono: string;
+  direccion: string;
+  cantidad_mascotas: number;
+  especie_preferida: 'Gato' | 'Perro' | 'Ave' | 'Reptil' | 'Cualquiera';
+  tipo_vivienda: 'Casa con patio' | 'Casa sin patio' | 'Departamento con patio' | 'Departamento sin patio';
+  sexo: 'Masculino' | 'Femenino' | 'Cualquiera';
+  edad_buscada: 'Cachorro' | 'Joven' | 'Adulto';
+  motivo_adopcion: string;
+}) => {
   try {
-    const response = await api.put(`/adoptante/${id}`, data);
+    const response = await api.put(`/adoptante/${rut}`, data);
     return response.data;
   } catch (error) {
     console.error("Error al modificar adoptante:", error);

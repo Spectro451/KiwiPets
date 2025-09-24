@@ -1,26 +1,31 @@
-import React, { useState } from 'react';
-import { View, TextInput, Button, Alert, StyleSheet, ActivityIndicator, TouchableOpacity, Text } from 'react-native';
+import { Dispatch, SetStateAction, useState } from 'react';
+import { View, TextInput, Alert, StyleSheet, TouchableOpacity, Text, Dimensions, Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { loginUsuario } from '../services/fetchUsuario';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { useTheme } from '../theme/ThemeContext';
 
 type LoginProps = NativeStackScreenProps<any> & {
-  setToken: React.Dispatch<React.SetStateAction<string | null>>;
-  setUser: React.Dispatch<
-    React.SetStateAction<{ id: number; tipo: string; admin: boolean } | null>
-  >;
+  setToken: Dispatch<SetStateAction<string | null>>;
+  setUser: Dispatch<SetStateAction<{ id: number; tipo: string; admin: boolean } | null>>;
 };
 
-const LoginScreen = ({ setToken, setUser, navigation }: LoginProps) => {
+const { width } = Dimensions.get("window");
+const isWeb = Platform.OS === "web";
+const FORM_CARD_WIDTH = isWeb ? Math.min(width * 0.6, 480) : Math.min(width * 0.94, 400);
+
+export default function LoginScreen  ({ setToken, setUser, navigation }: LoginProps) {
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [contraseña, setContraseña] = useState('');
   const [loadingLogin, setLoadingLogin] = useState(false);
+  const { theme } = useTheme();
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleLogin = async () => {
     if (loadingLogin) return;
     setLoadingLogin(true);
     try {
-      const data = await loginUsuario(email, password); // asegúrate que fetch use { correo, contraseña } si tu backend lo pide
+      const data = await loginUsuario(email, contraseña);
       if (!data?.token) {
         Alert.alert('Login fallido', data?.message || 'Correo o contraseña incorrectos');
         return;
@@ -32,10 +37,9 @@ const LoginScreen = ({ setToken, setUser, navigation }: LoginProps) => {
         JSON.stringify({ id: data.id, tipo: data.tipo, admin: data.admin })
       );
 
-      // Actualizamos la instancia que App.tsx está usando
+      // Le mando los datos y el token al app.tsx
       setToken(data.token);
       setUser({ id: data.id, tipo: data.tipo, admin: data.admin });
-      // NO navigation.replace aquí: App.tsx cambiará automáticamente a BottomTabs
     } catch (err: any) {
       console.error('login error', err);
       Alert.alert('Error', err.response?.data?.message || 'Error de conexión');
@@ -45,20 +49,72 @@ const LoginScreen = ({ setToken, setUser, navigation }: LoginProps) => {
   };
 
   return (
-    <View style={styles.container}>
-      <TextInput placeholder="Correo" value={email} onChangeText={setEmail} style={styles.input} autoCapitalize="none" />
-      <TextInput placeholder="Contraseña" value={password} onChangeText={setPassword} secureTextEntry style={styles.input} />
-      {loadingLogin ? <ActivityIndicator /> : <Button title="Login" onPress={handleLogin} />}
-      <TouchableOpacity onPress={() => navigation.navigate('Register')} style={{ marginTop: 15 }}>
-        <Text style={{ color: 'blue', textAlign: 'center' }}>¿No tienes cuenta? Regístrate</Text>
-      </TouchableOpacity>
+    <View style={{ flex: 1, padding: 20, backgroundColor:theme.colors.background, justifyContent:"center", alignItems: "center",  }}>
+      <View style = {{
+        width: FORM_CARD_WIDTH,
+        backgroundColor:theme.colors.backgroundSecondary,
+        padding:20,
+        borderRadius:10,
+        borderWidth:2,
+        borderColor:theme.colors.accent,
+      }}>
+        <Text style={[styles.label, { color: theme.colors.secondary }]}>Correo:</Text>
+        <TextInput
+          value={email}
+          onChangeText={setEmail}
+          placeholder="Correo"
+          style={[styles.input, { color: theme.colors.text }]}
+          placeholderTextColor={theme.colors.text}
+          autoCapitalize="none"
+          keyboardType="email-address"
+        />
+        <Text style={[styles.label, { color: theme.colors.secondary }]}>Contraseña:</Text>
+        <TextInput
+          value={contraseña}
+          onChangeText={setContraseña}
+          placeholder="Contraseña"
+          style={[styles.input, { color: theme.colors.text }]}
+          placeholderTextColor={theme.colors.text}
+          secureTextEntry
+          autoCapitalize="none"
+        />
+        <TouchableOpacity
+          style={[styles.button, { backgroundColor: theme.colors.backgroundTertiary }]}
+          onPress={handleLogin}
+          disabled={loadingLogin}
+        >
+          <Text style={{ color: theme.colors.secondary, fontWeight: "bold" }}>
+            {loadingLogin ? "Ingresando..." : "Login"}
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity onPress={() => navigation.navigate('Register')} style={{ marginTop: 15 }}>
+          <Text style={{ color: theme.colors.secondary, textAlign: 'center' }}>
+            ¿No tienes cuenta? Regístrate
+          </Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
-};
-
+}
 const styles = StyleSheet.create({
-  container: { flex: 1, justifyContent: 'center', padding: 20 },
-  input: { borderWidth: 1, borderColor: '#ccc', padding: 10, marginBottom: 10, borderRadius: 5 }
+  label: {
+    marginBottom: 6,
+    fontSize: 15,
+    fontWeight: "bold"
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: "gray",
+    padding: 8,
+    borderRadius: 4,
+    marginBottom: 10
+  },
+  button: {
+    width: "100%",
+    height: 48,
+    borderRadius: 10,
+    alignItems: "center",
+    justifyContent: "center",
+  },
 });
-
-export default LoginScreen;

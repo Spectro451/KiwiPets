@@ -2,8 +2,6 @@ import { Dispatch, SetStateAction } from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import LoginScreen from '../screens/Login';
 import RegisterScreen from '../screens/Register';
-import FormularioAdoptante from '../screens/FormularioAdoptante';
-import FormularioRefugio from '../screens/FormularioRefugio';
 
 type AuthStackProps = {
   setToken: Dispatch<SetStateAction<string | null>>;
