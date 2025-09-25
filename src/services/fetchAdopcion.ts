@@ -40,3 +40,13 @@ export const deleteAdopcion = async (id:number) => {
     return [];
   }
 };
+
+export const createAdopcion = async (mascotaId: number) => {
+  try {
+    const response = await api.post("/adopcion", { mascota: { id_mascota: mascotaId } });
+    return response.data;
+  } catch (error) {
+    console.error("Error al crear adopción:", error);
+    return null;
+  }
+};

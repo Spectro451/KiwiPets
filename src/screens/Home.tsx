@@ -11,6 +11,21 @@ export default function HomeScreen() {
   const [pets, setPets] = useState([]);
   const swipeRef = useRef<{ triggerSwipe: (dir: "left" | "right") => void }>(null);
   const [loading, setLoading] = useState(true);
+  const [isButtonDisabled, setIsButtonDisabled] = useState(false);
+
+const handleSwipe = (dir: "left" | "right") => {
+  if (isButtonDisabled) return;
+
+  setIsButtonDisabled(true);
+
+  requestAnimationFrame(() => {
+    swipeRef.current?.triggerSwipe(dir);
+
+    setTimeout(() => {
+      setIsButtonDisabled(false);
+    }, 400);
+  });
+};
 
   useFocusEffect(
     useCallback(() => {
@@ -51,26 +66,40 @@ export default function HomeScreen() {
   }
   if (!pets.length) return <Text>No hay mascotas disponibles.</Text>;
 
-  return (
+return (
     <View style={{ flex: 1, backgroundColor: theme.colors.background }}>
-      {/* Renderizamos petSwipe una sola vez y pasamos el ref */}
       <PetSwipe ref={swipeRef} pets={pets} />
 
       <View style={styles.buttonsContainer}>
         <TouchableOpacity
-          style={[styles.button, { backgroundColor: theme.colors.backgroundTertiary }]}
-          onPress={() => swipeRef.current?.triggerSwipe("left")} // Siguiente → swipe izquierda
+          style={[
+            styles.button,
+            { backgroundColor: isButtonDisabled ? theme.colors.backgroundSecondary : theme.colors.backgroundTertiary },
+          ]}
+          onPress={() => handleSwipe("left")}
+          disabled={isButtonDisabled}
         >
           <Text style={{ color: theme.colors.secondary, fontWeight: "bold" }}>Siguiente</Text>
         </TouchableOpacity>
+
         <TouchableOpacity
-          style={[styles.button, { backgroundColor: theme.colors.backgroundTertiary }]}
-          onPress={() => console.log("poto")}>
+          style={[
+            styles.button,
+            { backgroundColor: isButtonDisabled ? theme.colors.backgroundSecondary : theme.colors.backgroundTertiary },
+          ]}
+          onPress={() => console.log("Favorito")}
+          disabled={isButtonDisabled}
+        >
           <Text style={{ color: theme.colors.secondary, fontWeight: "bold" }}>Favorito</Text>
         </TouchableOpacity>
+
         <TouchableOpacity
-          style={[styles.button, { backgroundColor: theme.colors.backgroundTertiary }]}
-          onPress={() => swipeRef.current?.triggerSwipe("right")} // Like → swipe derecha
+          style={[
+            styles.button,
+            { backgroundColor: isButtonDisabled ? theme.colors.backgroundSecondary : theme.colors.backgroundTertiary },
+          ]}
+          onPress={() => handleSwipe("right")}
+          disabled={isButtonDisabled}
         >
           <Text style={{ color: theme.colors.secondary, fontWeight: "bold" }}>Like</Text>
         </TouchableOpacity>
