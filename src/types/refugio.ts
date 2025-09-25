@@ -6,7 +6,6 @@ export type Refugio ={
   nombre:string;
   direccion:string;
   telefono:string;
-  email:string;
   validado:boolean;
   usuario:Usuario;
   mascotas?:Mascota[];

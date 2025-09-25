@@ -9,6 +9,7 @@ export type Adoptante ={
   edad:number;
   telefono:string;
   direccion:string;
+  experiencia_mascotas:string;
   cantidad_mascotas:number;
   especie_preferida:EspeciePreferida;
   tipo_vivienda:Vivienda;

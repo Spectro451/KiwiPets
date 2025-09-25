@@ -84,7 +84,7 @@ export default function FormularioRefugio({ setRedirect }: FormularioRefugioProp
         <Text style={[styles.label, {color:theme.colors.secondary}]}>Dirección:</Text>
         <TextInput value={direccion} onChangeText={setDireccion} placeholder="Dirección" style={[styles.input, {color:theme.colors.text}]} placeholderTextColor={theme.colors.text} />
         <Text style={[styles.label, {color:theme.colors.secondary}]}>Teléfono:</Text>
-        <TextInput value={telefono} onChangeText={setTelefono} placeholder="Teléfono" keyboardType="phone-pad" style={[styles.input, {color:theme.colors.text}]} placeholderTextColor={theme.colors.text} />
+        <TextInput value={telefono} onChangeText={setTelefono} placeholder="+56912345678" keyboardType="phone-pad" style={[styles.input, {color:theme.colors.text}]} placeholderTextColor={theme.colors.text} />
         {error && <Text style={[styles.error, {color:theme.colors.error}]}>{error}</Text>}
 
         <TouchableOpacity

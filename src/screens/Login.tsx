@@ -19,7 +19,6 @@ export default function LoginScreen  ({ setToken, setUser, navigation }: LoginPr
   const [contraseña, setContraseña] = useState('');
   const [loadingLogin, setLoadingLogin] = useState(false);
   const { theme } = useTheme();
-  const [showPassword, setShowPassword] = useState(false);
 
   const handleLogin = async () => {
     if (loadingLogin) return;
@@ -67,6 +66,7 @@ export default function LoginScreen  ({ setToken, setUser, navigation }: LoginPr
           placeholderTextColor={theme.colors.text}
           autoCapitalize="none"
           keyboardType="email-address"
+          returnKeyType="next" 
         />
         <Text style={[styles.label, { color: theme.colors.secondary }]}>Contraseña:</Text>
         <TextInput
@@ -77,6 +77,7 @@ export default function LoginScreen  ({ setToken, setUser, navigation }: LoginPr
           placeholderTextColor={theme.colors.text}
           secureTextEntry
           autoCapitalize="none"
+          onSubmitEditing={handleLogin}
         />
         <TouchableOpacity
           style={[styles.button, { backgroundColor: theme.colors.backgroundTertiary }]}
