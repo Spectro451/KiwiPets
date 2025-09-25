@@ -3,31 +3,58 @@ import { useFocusEffect } from '@react-navigation/native';
 import { useTheme } from "../theme/ThemeContext";
 import { useCallback, useState, useRef } from "react";
 import { getMascotas } from "../services/fetchMascotas";
-import SwipeCardsSimple from "../components/SwipeCards"; // Asegúrate de usar la versión con forwardRef
+import PetSwipe from "../components/petSwipe";
+import SkeletonCard from "../components/skeletonCard";
 
 export default function HomeScreen() {
   const { theme } = useTheme();
   const [pets, setPets] = useState([]);
   const swipeRef = useRef<{ triggerSwipe: (dir: "left" | "right") => void }>(null);
+  const [loading, setLoading] = useState(true);
 
   useFocusEffect(
     useCallback(() => {
       const fetchPets = async () => {
+        setLoading(true)
         try {
           const data = await getMascotas();
           setPets(data);
         } catch (error) {
           console.error("Error al obtener mascotas:", error);
+        } finally{
+          setLoading(false)
         }
       };
       fetchPets();
     }, [])
   );
 
+  if (loading) {
+    return (
+      <View style={{ flex: 1, backgroundColor: theme.colors.background }}>
+        <SkeletonCard />
+
+        {/* Botones Skeleton */}
+        <View style={styles.buttonsContainer}>
+          {[...Array(3)].map((_, i) => (
+            <View
+              key={i}
+              style={[
+                styles.button,
+                { backgroundColor: theme.colors.backgroundTertiary, opacity: 0.5 },
+              ]}
+            />
+          ))}
+        </View>
+      </View>
+    );
+  }
+  if (!pets.length) return <Text>No hay mascotas disponibles.</Text>;
+
   return (
     <View style={{ flex: 1, backgroundColor: theme.colors.background }}>
-      {/* Renderizamos SwipeCards una sola vez y pasamos el ref */}
-      <SwipeCardsSimple ref={swipeRef} pets={pets} />
+      {/* Renderizamos petSwipe una sola vez y pasamos el ref */}
+      <PetSwipe ref={swipeRef} pets={pets} />
 
       <View style={styles.buttonsContainer}>
         <TouchableOpacity

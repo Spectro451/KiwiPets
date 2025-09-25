@@ -10,7 +10,7 @@ type SwipeCardsProps = {
 };
 
 // Usamos forwardRef para exponer la función
-const SwipeCardsSimple = forwardRef(({ pets }: SwipeCardsProps, ref) => {
+const PetSwipe = forwardRef(({ pets }: SwipeCardsProps, ref) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const position = new Animated.ValueXY();
 
@@ -50,8 +50,6 @@ const SwipeCardsSimple = forwardRef(({ pets }: SwipeCardsProps, ref) => {
     },
   });
 
-  if (!pets.length) return <Text>No hay mascotas disponibles.</Text>;
-
   return (
     <View style={styles.container}>
       <Animated.View {...panResponder.panHandlers} style={[position.getLayout(), { width: "100%" }]}>
@@ -61,7 +59,7 @@ const SwipeCardsSimple = forwardRef(({ pets }: SwipeCardsProps, ref) => {
   );
 });
 
-export default SwipeCardsSimple;
+export default PetSwipe;
 
 const styles = StyleSheet.create({
   container: {
