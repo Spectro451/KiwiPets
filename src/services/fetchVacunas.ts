@@ -1,18 +1,9 @@
 import { api } from "./api";
+import { Vacunas } from "../types/vacunas";
 
 export const getVacunas = async () => {
   try {
-    const response = await api.get("/vacunas")
-    return response.data;
-  } catch (error) {
-    console.error("Error al obtener vacunases:", error);
-    return [];
-  }
-};
-
-export const getVacunasId = async () => {
-  try {
-    const response = await api.get("/vacunas/${id}")
+    const response = await api.get("/vacunas");
     return response.data;
   } catch (error) {
     console.error("Error al obtener vacunas:", error);
@@ -20,22 +11,32 @@ export const getVacunasId = async () => {
   }
 };
 
-export const updateVacunas = async () => {
+export const getVacunasId = async (id: number) => {
   try {
-    const response = await api.put("/vacunas")
+    const response = await api.get(`/vacunas/${id}`);
     return response.data;
   } catch (error) {
-    console.error("Error al modificar vacunas:", error);
-    return [];
+    console.error("Error al obtener vacuna:", error);
+    return null;
   }
 };
 
-export const deleteVacunas = async () => {
+export const updateVacunas = async (id: number, data: Partial<Vacunas>) => {
   try {
-    const response = await api.delete("/vacunas/{id}")
+    const response = await api.put(`/vacunas/${id}`, data);
     return response.data;
   } catch (error) {
-    console.error("Error al borrar vacunas:", error);
-    return [];
+    console.error("Error al modificar vacuna:", error);
+    return null;
+  }
+};
+
+export const deleteVacunas = async (id: number) => {
+  try {
+    const response = await api.delete(`/vacunas/${id}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error al borrar vacuna:", error);
+    return null;
   }
 };

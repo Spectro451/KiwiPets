@@ -1,3 +1,4 @@
+import { Adopcion } from "../types/adopcion";
 import { api } from "./api";
 
 export const getAdopcion = async () => {
@@ -10,9 +11,9 @@ export const getAdopcion = async () => {
   }
 };
 
-export const getAdopcionId = async () => {
+export const getAdopcionId = async (id:number) => {
   try {
-    const response = await api.get("/adopcion/${id}")
+    const response = await api.get(`/adopcion/${id}`)
     return response.data;
   } catch (error) {
     console.error("Error al obtener adopcion:", error);
@@ -20,19 +21,19 @@ export const getAdopcionId = async () => {
   }
 };
 
-export const updateAdopcion = async () => {
+export const updateAdopcion = async (id: number, data: Partial<Adopcion>) => {
   try {
-    const response = await api.put("/adopcion")
+    const response = await api.put(`/adopcion/${id}`, data);
     return response.data;
   } catch (error) {
     console.error("Error al modificar adopcion:", error);
-    return [];
+    return null;
   }
 };
 
-export const deleteAdopcion = async () => {
+export const deleteAdopcion = async (id:number) => {
   try {
-    const response = await api.delete("/adopcion/{id}")
+    const response = await api.delete(`/adopcion/${id}`)
     return response.data;
   } catch (error) {
     console.error("Error al borrar adopcion:", error);

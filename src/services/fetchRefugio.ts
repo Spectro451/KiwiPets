@@ -1,3 +1,4 @@
+import { Refugio } from "../types/refugio";
 import { api } from "./api";
 
 export const getRefugio = async () => {
@@ -10,9 +11,9 @@ export const getRefugio = async () => {
   }
 };
 
-export const getRefugioId = async () => {
+export const getRefugioId = async (id: number) => {
   try {
-    const response = await api.get("/refugio/${id}")
+    const response = await api.get(`/refugio/${id}`)
     return response.data;
   } catch (error) {
     console.error("Error al obtener refugio:", error);
@@ -20,7 +21,7 @@ export const getRefugioId = async () => {
   }
 };
 
-export const updateRefugio = async (id: number, data: { nombre: string; direccion: string; telefono: string }) => {
+export const updateRefugio = async (id: number, data: Partial<Refugio>) => {
   try {
     const response = await api.put(`/refugio/${id}`, data);
     return response.data;
@@ -30,9 +31,9 @@ export const updateRefugio = async (id: number, data: { nombre: string; direccio
   }
 };
 
-export const deleteRefugio = async () => {
+export const deleteRefugio = async (id: number) => {
   try {
-    const response = await api.delete("/refugio/{id}")
+    const response = await api.delete(`/refugio/${id}`)
     return response.data;
   } catch (error) {
     console.error("Error al borrar refugio:", error);

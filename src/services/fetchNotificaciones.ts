@@ -1,3 +1,4 @@
+import { Notificaciones } from "../types/notificaciones";
 import { api } from "./api";
 
 export const getNotificaciones = async () => {
@@ -10,9 +11,9 @@ export const getNotificaciones = async () => {
   }
 };
 
-export const getNotificacionesId = async () => {
+export const getNotificacionesId = async (id:number) => {
   try {
-    const response = await api.get("/notificaciones/${id}")
+    const response = await api.get(`/notificaciones/${id}`)
     return response.data;
   } catch (error) {
     console.error("Error al obtener notificaciones:", error);
@@ -20,19 +21,19 @@ export const getNotificacionesId = async () => {
   }
 };
 
-export const updateNotificaciones = async () => {
+export const updateNotificaciones = async (id: number, data: Partial<Notificaciones>) => {
   try {
-    const response = await api.put("/notificaciones")
+    const response = await api.put(`/notificaciones/${id}`, data);
     return response.data;
   } catch (error) {
     console.error("Error al modificar notificaciones:", error);
-    return [];
+    return null;
   }
 };
 
-export const deleteNotificaciones = async () => {
+export const deleteNotificaciones = async (id:number) => {
   try {
-    const response = await api.delete("/notificaciones/{id}")
+    const response = await api.delete(`/notificaciones/${id}`)
     return response.data;
   } catch (error) {
     console.error("Error al borrar notificaciones:", error);

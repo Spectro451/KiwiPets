@@ -1,3 +1,4 @@
+import { Adoptante } from "../types/adoptante";
 import { api } from "./api";
 
 export const getAdoptante = async () => {
@@ -20,18 +21,7 @@ export const getAdoptanteId = async (rut:string) => {
   }
 };
 
-export const updateAdoptante = async (rut: string, data: {
-  nombre: string;
-  edad: number;
-  telefono: string;
-  direccion: string;
-  cantidad_mascotas: number;
-  especie_preferida: 'Gato' | 'Perro' | 'Ave' | 'Reptil' | 'Cualquiera';
-  tipo_vivienda: 'Casa con patio' | 'Casa sin patio' | 'Departamento con patio' | 'Departamento sin patio';
-  sexo: 'Masculino' | 'Femenino' | 'Cualquiera';
-  edad_buscada: 'Cachorro' | 'Joven' | 'Adulto';
-  motivo_adopcion: string;
-}) => {
+export const updateAdoptante = async (rut: string, data: Partial<Adoptante>) => {
   try {
     const response = await api.put(`/adoptante/${rut}`, data);
     return response.data;
@@ -41,9 +31,9 @@ export const updateAdoptante = async (rut: string, data: {
   }
 };
 
-export const deleteAdoptante = async () => {
+export const deleteAdoptante = async (rut:string) => {
   try {
-    const response = await api.delete("/adoptante/{id}")
+    const response = await api.delete(`/adoptante/${rut}`)
     return response.data;
   } catch (error) {
     console.error("Error al borrar adoptante:", error);

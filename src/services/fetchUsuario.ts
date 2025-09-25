@@ -1,3 +1,4 @@
+import { Usuario } from "../types/usuario";
 import { api } from "./api";
 
 export const getUsuario = async () => {
@@ -20,7 +21,7 @@ export const getUsuarioId = async (id: number) => {
   }
 };
 
-export const updateUsuario = async (id: number, data: any) => {
+export const updateUsuario = async (id: number, data: Partial<Usuario>) => {
   try {
     const response = await api.put(`/usuario/${id}`, data);
     return response.data;

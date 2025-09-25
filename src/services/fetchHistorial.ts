@@ -1,8 +1,9 @@
 import { api } from "./api";
+import { Historial } from "../types/historial";
 
 export const getHistorial = async () => {
   try {
-    const response = await api.get("/historial")
+    const response = await api.get("/historial");
     return response.data;
   } catch (error) {
     console.error("Error al obtener historiales:", error);
@@ -10,9 +11,9 @@ export const getHistorial = async () => {
   }
 };
 
-export const getHistorialId = async () => {
+export const getHistorialId = async (id: number) => {
   try {
-    const response = await api.get("/historial/${id}")
+    const response = await api.get(`/historial/${id}`);
     return response.data;
   } catch (error) {
     console.error("Error al obtener historial:", error);
@@ -20,19 +21,19 @@ export const getHistorialId = async () => {
   }
 };
 
-export const updateHistorial = async () => {
+export const updateHistorial = async (id: number, data: Partial<Historial>) => {
   try {
-    const response = await api.put("/historial")
+    const response = await api.put(`/historial/${id}`, data);
     return response.data;
   } catch (error) {
     console.error("Error al modificar historial:", error);
-    return [];
+    return null;
   }
 };
 
-export const deleteHistorial = async () => {
+export const deleteHistorial = async (id: number) => {
   try {
-    const response = await api.delete("/historial/{id}")
+    const response = await api.delete(`/historial/${id}`);
     return response.data;
   } catch (error) {
     console.error("Error al borrar historial:", error);

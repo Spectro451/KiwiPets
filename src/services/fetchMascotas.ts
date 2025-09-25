@@ -1,8 +1,9 @@
 import { api } from "./api";
+import { Mascota } from "../types/mascota";
 
 export const getMascotas = async () => {
   try {
-    const response = await api.get("/mascota")
+    const response = await api.get("/mascota");
     return response.data;
   } catch (error) {
     console.error("Error al obtener mascotas:", error);
@@ -10,32 +11,32 @@ export const getMascotas = async () => {
   }
 };
 
-export const getMascotasId = async () => {
+export const getMascotasId = async (id: number) => {
   try {
-    const response = await api.get("/mascota/${id}")
+    const response = await api.get(`/mascota/${id}`);
     return response.data;
   } catch (error) {
-    console.error("Error al obtener mascotas:", error);
-    return [];
+    console.error("Error al obtener mascota:", error);
+    return null;
   }
 };
 
-export const updateMascotas = async () => {
+export const updateMascotas = async (id: number, data: Partial<Mascota>) => {
   try {
-    const response = await api.put("/mascota")
+    const response = await api.put(`/mascota/${id}`, data);
     return response.data;
   } catch (error) {
-    console.error("Error al obtener mascotas:", error);
-    return [];
+    console.error("Error al modificar mascota:", error);
+    return null;
   }
 };
 
-export const deleteMascotas = async () => {
+export const deleteMascotas = async (id: number) => {
   try {
-    const response = await api.delete("/mascota/{id}")
+    const response = await api.delete(`/mascota/${id}`);
     return response.data;
   } catch (error) {
-    console.error("Error al obtener mascotas:", error);
+    console.error("Error al borrar mascota:", error);
     return [];
   }
 };

@@ -1,8 +1,9 @@
 import { api } from "./api";
+import { Favoritos } from "../types/favoritos";
 
 export const getFavorito = async () => {
   try {
-    const response = await api.get("/favoritos")
+    const response = await api.get("/favoritos");
     return response.data;
   } catch (error) {
     console.error("Error al obtener favoritos:", error);
@@ -10,9 +11,9 @@ export const getFavorito = async () => {
   }
 };
 
-export const getFavoritoId = async () => {
+export const getFavoritoId = async (id: number) => {
   try {
-    const response = await api.get("/favoritos/${id}")
+    const response = await api.get(`/favoritos/${id}`);
     return response.data;
   } catch (error) {
     console.error("Error al obtener favoritos:", error);
@@ -20,19 +21,19 @@ export const getFavoritoId = async () => {
   }
 };
 
-export const updateFavorito = async () => {
+export const updateFavorito = async (id: number, data: Partial<Favoritos>) => {
   try {
-    const response = await api.put("/favoritos")
+    const response = await api.put(`/favoritos/${id}`, data);
     return response.data;
   } catch (error) {
     console.error("Error al modificar favoritos:", error);
-    return [];
+    return null;
   }
 };
 
-export const deleteFavorito = async () => {
+export const deleteFavorito = async (id: number) => {
   try {
-    const response = await api.delete("/favoritos/{id}")
+    const response = await api.delete(`/favoritos/${id}`);
     return response.data;
   } catch (error) {
     console.error("Error al borrar favoritos:", error);
