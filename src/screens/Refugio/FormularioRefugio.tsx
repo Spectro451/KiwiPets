@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { View, Text, TextInput, ActivityIndicator, Dimensions, Platform, StyleSheet, TouchableOpacity } from "react-native";
-import { refugioByUsuarioId, updateRefugio } from "../services/fetchRefugio";
+import { refugioByUsuarioId, updateRefugio } from "../../services/fetchRefugio";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useTheme } from "../theme/ThemeContext";
+import { useTheme } from "../../theme/ThemeContext";
 
 type FormularioRefugioProps = {
   setRedirect: (val: string | null) => void;

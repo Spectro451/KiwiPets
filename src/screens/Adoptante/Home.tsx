@@ -1,14 +1,14 @@
 import { View, TouchableOpacity, Text, StyleSheet } from "react-native";
 import { useFocusEffect } from '@react-navigation/native';
-import { useTheme } from "../theme/ThemeContext";
+import { useTheme } from "../../theme/ThemeContext";
 import { useCallback, useState, useRef } from "react";
-import { getMascotas } from "../services/fetchMascotas";
-import PetSwipe from "../components/petSwipe";
-import SkeletonCard from "../components/skeletonCard";
-import { createAdopcion } from "../services/fetchAdopcion";
-import { createFavorito, deleteFavorito, getFavorito } from "../services/fetchFavoritos";
-import { Mascota } from "../types/mascota";
-import { Favoritos } from "../types/favoritos";
+import { getMascotas } from "../../services/fetchMascotas";
+import PetSwipe from "../../components/petSwipe";
+import SkeletonCard from "../../components/skeletonCard";
+import { createAdopcion } from "../../services/fetchAdopcion";
+import { createFavorito, deleteFavorito, getFavorito } from "../../services/fetchFavoritos";
+import { Mascota } from "../../types/mascota";
+import { Favoritos } from "../../types/favoritos";
 
 export default function HomeScreen() {
   const { theme } = useTheme();

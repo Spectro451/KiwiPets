@@ -26,6 +26,7 @@ api.interceptors.response.use(
     if (error.response?.status === 401) {
       console.log("Token inválido o expirado");
       await AsyncStorage.removeItem('token'); // opcional limpiar
+      window.dispatchEvent(new Event("logout"));
     }
     return Promise.reject(error);
   }

@@ -43,5 +43,17 @@ export const useAuth = () => {
     loadToken();
   }, []);
 
+  useEffect(() => {
+    const logoutListener = () => {
+      setToken(null);
+      setUser(null);
+    };
+
+    window.addEventListener("logout", logoutListener);
+    return () => {
+      window.removeEventListener("logout", logoutListener);
+    };
+  }, []);
+
   return { token, user, loading, setToken, setUser };
 };

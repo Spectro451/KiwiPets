@@ -5,8 +5,8 @@ import { useAuth } from './src/hooks/useAuth';
 import { NavigationContainer } from '@react-navigation/native';
 import { ActivityIndicator, View } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import FormularioAdoptante from "./src/screens/FormularioAdoptante";
-import FormularioRefugio from "./src/screens/FormularioRefugio";
+import FormularioRefugio from "./src/screens/Refugio/FormularioRefugio";
+import FormularioAdoptante from "./src/screens/Adoptante/FormularioAdoptante";
 import { useEffect, useState } from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 

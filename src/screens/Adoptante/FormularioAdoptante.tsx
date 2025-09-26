@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { View, Text, TextInput, ActivityIndicator, Dimensions, Platform, StyleSheet, TouchableOpacity } from "react-native";
-import { adoptanteByUsuarioId, updateAdoptante } from "../services/fetchAdoptante";
+import { adoptanteByUsuarioId, updateAdoptante } from "../../services/fetchAdoptante";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useTheme } from "../theme/ThemeContext";
-import { Edad, EspeciePreferida, Sexo, Vivienda } from "../types/enums";
+import { useTheme } from "../../theme/ThemeContext";
+import { Edad, EspeciePreferida, Sexo, Vivienda } from "../../types/enums";
 import { Picker } from '@react-native-picker/picker';
 
 type FormularioAdoptanteProps = {

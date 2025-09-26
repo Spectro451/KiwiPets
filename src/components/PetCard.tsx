@@ -58,7 +58,7 @@ export default function PetCardWithButtons({ pet }: PetCardProps) {
       <View style={[styles.card, { backgroundColor: theme.colors.backgroundSecondary }]}>
         <View style={styles.imageContainer}>
           {/* foto */}
-          <Image source={{ uri: pet.foto }} style={styles.image} resizeMode="cover" />
+          <Image source={{ uri: pet.foto }} style={styles.image} resizeMode="contain" />
           {/* overlay */}
           <View style={[styles.Overlay, { backgroundColor: theme.colors.overlayBackground }]}>
             <Text
@@ -244,7 +244,6 @@ const styles = StyleSheet.create({
   image: {
     width: "100%",
     height: "100%",
-    resizeMode: "cover",
   },
   Overlay: {
     position: "absolute",

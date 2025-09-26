@@ -33,7 +33,9 @@ export const updateAdopcion = async (id: number, data: Partial<Adopcion>) => {
 
 export const deleteAdopcion = async (id:number) => {
   try {
-    const response = await api.delete(`/adopcion/${id}`)
+    console.log("==== ENVIANDO DELETE ====", id);
+    const response = await api.delete(`/adopcion/${id}`);
+    console.log("Respuesta backend:", response.data);
     return response.data;
   } catch (error) {
     console.error("Error al borrar adopcion:", error);

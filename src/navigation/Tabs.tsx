@@ -1,9 +1,10 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import HomeScreen from '../screens/Home';
-import FavScreen from '../screens/Favoritos';
+import HomeScreen from '../screens/Adoptante/Home';
+import FavScreen from '../screens/Adoptante/Favoritos';
 import NotificationScreen from '../screens/Notificaciones';
 import ProfileScreen from '../screens/Profile';
 import { useTheme } from '../theme/ThemeContext';
+import AdopcionesScreen from '../screens/Adoptante/Adopciones';
 
 const Tab = createBottomTabNavigator();
 
@@ -27,6 +28,7 @@ export default function BottomTabs({ user }: BottomTabsProps) {
         <>
           <Tab.Screen name="Home" component={HomeScreen} />
           <Tab.Screen name="Favoritos" component={FavScreen} />
+          <Tab.Screen name="Adopciones" component={AdopcionesScreen} />
           <Tab.Screen name="Notificaciones" component={NotificationScreen} />
           <Tab.Screen name="Perfil" component={ProfileScreen} />
         </>
