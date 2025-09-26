@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {jwtDecode} from "jwt-decode"
+import { AppState, Platform } from "react-native";
 
 export const useAuth = () => {
   const [token, setToken] = useState<string | null>(null);
@@ -41,18 +42,25 @@ export const useAuth = () => {
     };
 
     loadToken();
-  }, []);
 
-  useEffect(() => {
-    const logoutListener = () => {
-      setToken(null);
-      setUser(null);
-    };
+    if (Platform.OS === "web") {
+      const handleFocus = () => loadToken();
+      window.addEventListener('focus', handleFocus);
+      document.addEventListener('visibilitychange', handleFocus);
 
-    window.addEventListener("logout", logoutListener);
-    return () => {
-      window.removeEventListener("logout", logoutListener);
-    };
+      return () => {
+        window.removeEventListener('focus', handleFocus);
+        document.removeEventListener('visibilitychange', handleFocus);
+      };
+    } else {
+      const subscription = AppState.addEventListener("change", (state) => {
+        if (state === "active") {
+          loadToken();
+        }
+      });
+
+      return () => subscription.remove();
+    }
   }, []);
 
   return { token, user, loading, setToken, setUser };
