@@ -40,3 +40,16 @@ export const deleteFavorito = async (id: number) => {
     return [];
   }
 };
+
+export const createFavorito = async (mascotaId: number) => {
+  const payload = { mascota: { id_mascota: mascotaId } };
+  console.log("Payload que se enviará al backend (favorito):", payload);
+
+  try {
+    const response = await api.post("/favoritos", payload);
+    return response.data;
+  } catch (error) {
+    console.error("Error al crear favorito:", error);
+    return null;
+  }
+};

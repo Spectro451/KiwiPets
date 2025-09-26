@@ -7,10 +7,11 @@ const { width } = Dimensions.get("window");
 
 type SwipeCardsProps = {
   pets: Mascota[];
+  onSwipeEnd?: (dir: "left" | "right", petId: number) => void;
 };
 
 // Usamos forwardRef para exponer la función
-const PetSwipe = forwardRef(({ pets }: SwipeCardsProps, ref) => {
+const PetSwipe = forwardRef(({ pets, onSwipeEnd }: SwipeCardsProps, ref) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const position = new Animated.ValueXY();
 
@@ -18,6 +19,7 @@ const PetSwipe = forwardRef(({ pets }: SwipeCardsProps, ref) => {
     if (!pets.length) return;
 
     const targetX = dir === "right" ? width : -width;
+    const currentPetIndex = currentIndex;
 
     Animated.timing(position, {
       toValue: { x: targetX, y: 0 },
@@ -26,13 +28,14 @@ const PetSwipe = forwardRef(({ pets }: SwipeCardsProps, ref) => {
     }).start(() => {
       position.setValue({ x: 0, y: 0 });
       setCurrentIndex(prev => (prev + 1 < pets.length ? prev + 1 : 0));
-      console.log(`Swipe ${dir.toUpperCase()} → acción aquí`);
+      onSwipeEnd?.(dir, pets[currentPetIndex].id_mascota);
     });
   };
 
   // Exponemos la función al ref
   useImperativeHandle(ref, () => ({
-    triggerSwipe
+    triggerSwipe,
+    getCurrentIndex: () => currentIndex,
   }));
 
   const panResponder = PanResponder.create({

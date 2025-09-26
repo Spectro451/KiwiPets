@@ -5,27 +5,52 @@ import { useCallback, useState, useRef } from "react";
 import { getMascotas } from "../services/fetchMascotas";
 import PetSwipe from "../components/petSwipe";
 import SkeletonCard from "../components/skeletonCard";
+import { createAdopcion } from "../services/fetchAdopcion";
+import { createFavorito, deleteFavorito, getFavorito } from "../services/fetchFavoritos";
+import { Mascota } from "../types/mascota";
+import { Favoritos } from "../types/favoritos";
 
 export default function HomeScreen() {
   const { theme } = useTheme();
-  const [pets, setPets] = useState([]);
-  const swipeRef = useRef<{ triggerSwipe: (dir: "left" | "right") => void }>(null);
+  const [pets, setPets] = useState<Mascota[]>([]);
+  const swipeRef = useRef<{ triggerSwipe: (dir: "left" | "right") => void; getCurrentIndex: ()=>number; }>(null);
   const [loading, setLoading] = useState(true);
+  const [favoritos, setFavoritos] = useState<Favoritos[]>([]);
   const [isButtonDisabled, setIsButtonDisabled] = useState(false);
 
-const handleSwipe = (dir: "left" | "right") => {
-  if (isButtonDisabled) return;
 
-  setIsButtonDisabled(true);
+  const handleSwipe = (dir: "left" | "right") => {
+    if (isButtonDisabled) return;
+    setIsButtonDisabled(true);
 
-  requestAnimationFrame(() => {
-    swipeRef.current?.triggerSwipe(dir);
+    requestAnimationFrame(() => {
+      swipeRef.current?.triggerSwipe(dir);
+      setTimeout(() => {
+        setIsButtonDisabled(false);
+      }, 400);
+    });
+  };
+
+  const handleFavorito = async (mascotaId: number) => {
+    if (isButtonDisabled) return;
+    setIsButtonDisabled(true);
+
+    const favExist = favoritos.find(f => f.mascota.id_mascota === mascotaId);
+
+    if (favExist) {
+      // borra si hay favorito
+      await deleteFavorito(favExist.id);
+      setFavoritos(prev => prev.filter(f => f.mascota.id_mascota !== mascotaId));
+    } else {
+      // Si no está, agregar
+      const nuevo = await createFavorito(mascotaId);
+      if (nuevo) setFavoritos(prev => [nuevo, ...prev]);
+    }
 
     setTimeout(() => {
       setIsButtonDisabled(false);
     }, 400);
-  });
-};
+  };
 
   useFocusEffect(
     useCallback(() => {
@@ -33,7 +58,10 @@ const handleSwipe = (dir: "left" | "right") => {
         setLoading(true)
         try {
           const data = await getMascotas();
-          setPets(data);
+          const disponibles = data.filter((pet: any) => pet.estado_adopcion !== "Adoptado");
+          setPets(disponibles);
+          const favoritosData = await getFavorito();
+          setFavoritos(favoritosData);
         } catch (error) {
           console.error("Error al obtener mascotas:", error);
         } finally{
@@ -65,10 +93,21 @@ const handleSwipe = (dir: "left" | "right") => {
     );
   }
   if (!pets.length) return <Text>No hay mascotas disponibles.</Text>;
-
+  
 return (
     <View style={{ flex: 1, backgroundColor: theme.colors.background }}>
-      <PetSwipe ref={swipeRef} pets={pets} />
+      <PetSwipe 
+        ref={swipeRef} 
+        pets={pets} 
+        onSwipeEnd={async(dir, petId)=> {
+          if(dir=="right"){
+            const res = await createAdopcion(petId);
+            if (res){
+              console.log("adopcion creada", res);
+            }
+          }
+        }}
+      />
 
       <View style={styles.buttonsContainer}>
         <TouchableOpacity
@@ -87,10 +126,16 @@ return (
             styles.button,
             { backgroundColor: isButtonDisabled ? theme.colors.backgroundSecondary : theme.colors.backgroundTertiary },
           ]}
-          onPress={() => console.log("Favorito")}
+          onPress={() => {
+            const index = swipeRef.current?.getCurrentIndex() ?? 0;
+            const petId = pets[index].id_mascota;
+            handleFavorito(petId);
+          }}
           disabled={isButtonDisabled}
         >
-          <Text style={{ color: theme.colors.secondary, fontWeight: "bold" }}>Favorito</Text>
+          <Text style={{ color: theme.colors.secondary, fontWeight: "bold" }}>
+            {favoritos.some(f => f.mascota.id_mascota === pets[swipeRef.current?.getCurrentIndex() ?? 0].id_mascota) ? "❤️" : "favorito"}
+          </Text>
         </TouchableOpacity>
 
         <TouchableOpacity
