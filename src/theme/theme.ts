@@ -13,6 +13,7 @@ export const lightTheme = {
     overlayText: "#ffffffff",
     overlayTextShadow: "rgba(0,0,0,0.1)",
     error: "#ff0000ff",
+    errorDeshabilitado: "#ff000080"
   },
 };
 export type Theme = typeof lightTheme | typeof darkTheme;
@@ -32,5 +33,6 @@ export const darkTheme = {
     overlayText: "#7FFF00",
     overlayTextShadow: "#6F2DA8",
     error: "#ff0000ff",
+    errorDeshabilitado: "#ff000080"
   },
 };

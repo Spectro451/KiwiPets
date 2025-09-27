@@ -11,6 +11,7 @@ export default function AdopcionesScreen() {
   const [adopciones, setAdopciones] = useState<Adopcion[]>([]);
   const [seleccionadas, setSeleccionadas] = useState<number[]>([]);
   const [loading, setLoading] = useState(false);
+  const [botonBloqueado, setBotonBloqueado] = useState(false);
 
   const fetchAdopciones = async () => {
     setLoading(true);
@@ -41,6 +42,8 @@ export default function AdopcionesScreen() {
       Alert.alert("Debe seleccionar almenos una");
       return;
     }
+    if(botonBloqueado) return;
+    setBotonBloqueado(true);
     try{
     await Promise.all(
       seleccionadas.map(id => {
@@ -52,6 +55,8 @@ export default function AdopcionesScreen() {
       setSeleccionadas([]);
     }catch (err){
       console.error(err);
+    }finally {
+      setTimeout(() => setBotonBloqueado(false), 1500);
     }
   };
 
@@ -68,12 +73,18 @@ export default function AdopcionesScreen() {
         <Text style={[styles.fecha, { color: theme.colors.secondary }]}>
           {new Date(item.fecha_solicitud).toLocaleDateString()}
         </Text>
+        <Text style={[styles.fecha, { color: theme.colors.text }]}>
+          {item.estado}
+        </Text>
       </View>
     </View>
   );
 
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
+      <Text style={[styles.titulo, { color: theme.colors.text }]}>
+        Mis solicitudes
+      </Text>
       <FlatList
         data={adopciones}
         keyExtractor={item => item.id.toString()}
@@ -81,7 +92,17 @@ export default function AdopcionesScreen() {
         refreshing={loading}
         onRefresh={fetchAdopciones}
       />
-      <TouchableOpacity style={[styles.botonEliminar, { backgroundColor: theme.colors.error }]} onPress={eliminarSeleccionadas}>
+      <TouchableOpacity
+        style={[
+          styles.botonEliminar,
+          { 
+            backgroundColor: seleccionadas.length > 0 ? theme.colors.error : theme.colors.errorDeshabilitado,
+            opacity: seleccionadas.length > 0 ? 1 : 0.6
+          }
+        ]}
+        onPress={eliminarSeleccionadas} 
+        disabled={seleccionadas.length === 0 || botonBloqueado}
+       >
         <Text style={styles.botonTexto}>Eliminar seleccionadas</Text>
       </TouchableOpacity>
     </View>
@@ -101,5 +122,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginVertical: 10
   },
-  botonTexto: { color: "#fff", fontWeight: "bold" }
+  botonTexto: { color: "#fff", fontWeight: "bold" },
+  titulo: {
+    fontSize: 24,
+    fontWeight: "bold",
+    textAlign:"center"
+  }
 });
