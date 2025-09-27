@@ -15,7 +15,8 @@ const isWeb = Platform.OS === "web";
 const FORM_CARD_WIDTH = isWeb ? Math.min(width * 0.6, 480) : Math.min(width * 0.94, 400);
 
 export default function FormularioAdoptante({ setRedirect }: FormularioAdoptanteProps) {
-  const [adoptanteRut, setAdoptanteRut] = useState<string | null>(null); // reemplaza adoptanteId
+  const [rutActual, setRutActual] = useState<string | null>(null); // el del url
+  const [adoptanteRut, setAdoptanteRut] = useState<string | null>(null); // el pa editar
   const [nombre, setNombre] = useState("");
   const [direccion, setDireccion] = useState("");
   const [telefono, setTelefono] = useState("");
@@ -39,7 +40,7 @@ export default function FormularioAdoptante({ setRedirect }: FormularioAdoptante
         //se busca el adoptante en base a la id del tokenssss
         const data = await adoptanteByUsuarioId();
         if (!data) throw new Error("No se encontró adoptante");
-        setAdoptanteRut(data.rut);
+        setRutActual(data.rut);
       } catch (err: any) {
         setError(err.message || "Error al cargar datos del adoptante");
       } finally {
@@ -72,7 +73,8 @@ export default function FormularioAdoptante({ setRedirect }: FormularioAdoptante
     setSaving(true);
     setError(null);
     try {
-      await updateAdoptante(adoptanteRut!, {
+      await updateAdoptante(rutActual!, {
+        rut:adoptanteRut,
         nombre,
         edad,
         telefono,
@@ -109,6 +111,9 @@ export default function FormularioAdoptante({ setRedirect }: FormularioAdoptante
         borderWidth: 2,
         borderColor: theme.colors.accent,
       }}>
+        <Text style={[styles.label, { color: theme.colors.secondary }]}>Rut:</Text>
+        <TextInput value={adoptanteRut ?? ""} onChangeText={setAdoptanteRut} placeholder="rut sin punto ni guion" style={[styles.input, { color: theme.colors.text }]} placeholderTextColor={theme.colors.text} />
+
         <Text style={[styles.label, { color: theme.colors.secondary }]}>Nombre:</Text>
         <TextInput value={nombre} onChangeText={setNombre} placeholder="Nombre del adoptante" style={[styles.input, { color: theme.colors.text }]} placeholderTextColor={theme.colors.text} />
 

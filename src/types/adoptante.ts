@@ -4,6 +4,7 @@ import { Favoritos } from "./favoritos";
 import { Usuario } from "./usuario";
 
 export type Adoptante ={
+  id:number;
   rut:string;
   nombre:string;
   edad:number;
