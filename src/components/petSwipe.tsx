@@ -1,4 +1,4 @@
-import { useState, useImperativeHandle, forwardRef } from "react";
+import { useState, useImperativeHandle, forwardRef, useRef } from "react";
 import { View, StyleSheet, Dimensions, Text, PanResponder, Animated } from "react-native";
 import PetCard from "./PetCard";
 import { Mascota } from "../types/mascota";
@@ -13,7 +13,7 @@ type SwipeCardsProps = {
 // Usamos forwardRef para exponer la función
 const PetSwipe = forwardRef(({ pets, onSwipeEnd }: SwipeCardsProps, ref) => {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const position = new Animated.ValueXY();
+  const position = useRef(new Animated.ValueXY()).current;
 
   const triggerSwipe = (dir: "left" | "right") => {
     if (!pets.length) return;
@@ -23,7 +23,7 @@ const PetSwipe = forwardRef(({ pets, onSwipeEnd }: SwipeCardsProps, ref) => {
 
     Animated.timing(position, {
       toValue: { x: targetX, y: 0 },
-      duration: 200,
+      duration: 350,
       useNativeDriver: false,
     }).start(() => {
       position.setValue({ x: 0, y: 0 });

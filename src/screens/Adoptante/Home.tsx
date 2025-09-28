@@ -29,7 +29,7 @@ export default function HomeScreen() {
       swipeRef.current?.triggerSwipe(dir);
       setTimeout(() => {
         setIsButtonDisabled(false);
-      }, 400);
+      }, 450);
     });
   };
 
@@ -51,7 +51,7 @@ export default function HomeScreen() {
 
     setTimeout(() => {
       setIsButtonDisabled(false);
-    }, 400);
+    }, 450);
   };
 
   useFocusEffect(
