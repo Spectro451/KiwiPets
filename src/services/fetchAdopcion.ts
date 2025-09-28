@@ -21,9 +21,9 @@ export const getAdopcionId = async (id:number) => {
   }
 };
 
-export const updateAdopcion = async (id: number, data: Partial<Adopcion>) => {
+export const updateAdopcion = async (id: number, body:{data: Partial<Adopcion>; motivo?:string}) => {
   try {
-    const response = await api.put(`/adopcion/${id}`, data);
+    const response = await api.put(`/adopcion/${id}`, body);
     return response.data;
   } catch (error) {
     console.error("Error al modificar adopcion:", error);
