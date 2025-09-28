@@ -3,8 +3,10 @@ import Checkbox from "expo-checkbox";
 import { useTheme } from "../../theme/ThemeContext";
 import { Favoritos } from "../../types/favoritos";
 import { deleteFavorito, getFavorito } from "../../services/fetchFavoritos";
-import { Alert, View, Image, StyleSheet, FlatList, TouchableOpacity, Text } from "react-native";
+import { Alert, View, Image, StyleSheet, FlatList, TouchableOpacity, Text, Dimensions, Platform } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
+const { width } = Dimensions.get("window");
+const isWeb = Platform.OS === "web";
 
 export default function FavoritosScreen() {
   const { theme } = useTheme();
@@ -12,6 +14,8 @@ export default function FavoritosScreen() {
   const [seleccionadas, setSeleccionadas] = useState<number[]>([]);
   const [loading, setLoading] = useState(false);
   const [botonBloqueado, setBotonBloqueado] = useState(false);
+
+
 
   const fetchFavoritos = async () => {
     setLoading(true);
@@ -61,11 +65,14 @@ export default function FavoritosScreen() {
   };
 
   const renderItem = ({item}: {item:Favoritos}) =>(
-    <View style={[styles.itemContainer, {borderColor:theme.colors.backgroundTertiary, backgroundColor:theme.colors.backgroundSecondary}]}>
+    <TouchableOpacity
+      onPress={() => toggleSelection(item.id)}
+      style={[styles.itemContainer, {borderColor: theme.colors.backgroundTertiary, backgroundColor: theme.colors.backgroundSecondary}]}
+    >
       <Checkbox
         value={seleccionadas.includes(item.id)}
-        onValueChange={()=>toggleSelection(item.id)}
-        color={seleccionadas.includes(item.id) ? theme.colors.accent: undefined}
+        color={seleccionadas.includes(item.id) ? theme.colors.accent : undefined}
+        onValueChange={() => {}} // dejamos vacío, solo se marca con el TouchableOpacity
       />
       <Image source={{uri:item.mascota.foto}} style={styles.foto}/>
       <View style={styles.info}>
@@ -75,18 +82,8 @@ export default function FavoritosScreen() {
         </View>
 
         <View style={styles.subSeccion}>
-          <Text style={[styles.nombre, {color: theme.colors.text}]}>{item.mascota.especie}</Text>
-          <Text style={[styles.subtitulo, {color: theme.colors.textSecondary}]}>Especie</Text>
-        </View>
-
-        <View style={styles.subSeccion}>
           <Text style={[styles.nombre, {color: theme.colors.text}]}>{item.mascota.tamaño}</Text>
           <Text style={[styles.subtitulo, {color: theme.colors.textSecondary}]}>Tamaño</Text>
-        </View>
-
-        <View style={styles.subSeccion}>
-          <Text style={[styles.nombre, {color: theme.colors.text}]}>{item.mascota.genero}</Text>
-          <Text style={[styles.subtitulo, {color: theme.colors.textSecondary}]}>Género</Text>
         </View>
 
         <View style={styles.subSeccion}>
@@ -101,7 +98,7 @@ export default function FavoritosScreen() {
 
         <View style={styles.subSeccion}>
           <Text style={[styles.nombre, {color: theme.colors.text}]}>{item.mascota.edad}</Text>
-          <Text style={[styles.subtitulo, {color: theme.colors.textSecondary}]}>Edad</Text>
+          <Text style={[styles.subtitulo, {color: theme.colors.textSecondary}]}>Años</Text>
         </View>
 
         <View style={styles.subSeccion}>
@@ -109,8 +106,7 @@ export default function FavoritosScreen() {
           <Text style={[styles.subtitulo, {color: theme.colors.textSecondary}]}>Estado adopción</Text>
         </View>
       </View>
-
-    </View>
+    </TouchableOpacity>
   );
 
   return (
@@ -142,13 +138,23 @@ export default function FavoritosScreen() {
   );
 }
 
+const CARD_WIDTH = isWeb ? width * 0.95 : Math.min(width * 0.95, 480);
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 10 },
-  itemContainer: { flexDirection: "row", alignItems: "center", marginVertical: 8, borderWidth: 1, borderRadius: 10, padding: 10 },
+  itemContainer: { 
+    flexDirection: "row", 
+    alignItems: "center", 
+    marginVertical: 8, 
+    borderWidth: 1, 
+    borderRadius: 10, 
+    padding: 10, 
+    width: CARD_WIDTH,
+    alignSelf: "center",
+  },
   foto: { width: 60, height: 60, borderRadius: 30, marginHorizontal: 10, resizeMode: "contain"  },
   info: { flex: 1, flexDirection:"row", justifyContent:"space-around" },
   subSeccion: { flex: 1, flexDirection:"column", justifyContent:"space-around" },
-  nombre: { fontSize: 16, fontWeight: "bold",textAlign:"center" },
+  nombre: { fontSize: isWeb ? 18 : 11, fontWeight: "bold",textAlign:"center" },
   fecha: { fontSize: 12 },
   botonEliminar: {
     padding: 15,
@@ -163,7 +169,7 @@ const styles = StyleSheet.create({
     textAlign:"center"
   },
   subtitulo: {
-    fontSize: 12,
+    fontSize: isWeb ? 12 : 8,
     textAlign:"center"
   }
 });

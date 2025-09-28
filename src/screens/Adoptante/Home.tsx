@@ -9,6 +9,7 @@ import { createAdopcion } from "../../services/fetchAdopcion";
 import { createFavorito, deleteFavorito, getFavorito } from "../../services/fetchFavoritos";
 import { Mascota } from "../../types/mascota";
 import { Favoritos } from "../../types/favoritos";
+import { useAuth } from "../../hooks/useAuth";
 
 export default function HomeScreen() {
   const { theme } = useTheme();
@@ -17,6 +18,7 @@ export default function HomeScreen() {
   const [loading, setLoading] = useState(true);
   const [favoritos, setFavoritos] = useState<Favoritos[]>([]);
   const [isButtonDisabled, setIsButtonDisabled] = useState(false);
+  const currentUser = useAuth().user;
 
 
   const handleSwipe = (dir: "left" | "right") => {
@@ -61,7 +63,8 @@ export default function HomeScreen() {
           const disponibles = data.filter((pet: any) => pet.estado_adopcion !== "Adoptado");
           setPets(disponibles);
           const favoritosData = await getFavorito();
-          setFavoritos(favoritosData);
+          const misFavoritos = favoritosData.filter((f: Favoritos) => f.adoptante?.usuario.id === currentUser?.id);
+          setFavoritos(currentUser ? misFavoritos : []);
         } catch (error) {
           console.error("Error al obtener mascotas:", error);
         } finally{
@@ -69,7 +72,7 @@ export default function HomeScreen() {
         }
       };
       fetchPets();
-    }, [])
+    }, [currentUser])
   );
 
   if (loading) {
@@ -106,6 +109,7 @@ return (
               console.log("adopcion creada", res);
             }
           }
+          setFavoritos(prev => [...prev]);
         }}
       />
 

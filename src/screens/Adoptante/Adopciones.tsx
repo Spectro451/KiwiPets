@@ -3,8 +3,10 @@ import Checkbox from "expo-checkbox";
 import { useTheme } from "../../theme/ThemeContext";
 import { Adopcion } from "../../types/adopcion";
 import { deleteAdopcion, getAdopcion } from "../../services/fetchAdopcion";
-import { Alert, View, Image, StyleSheet, FlatList, TouchableOpacity, Text } from "react-native";
+import { Alert, View, Image, StyleSheet, FlatList, TouchableOpacity, Text, Dimensions, Platform } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
+const { width } = Dimensions.get("window");
+const isWeb = Platform.OS === "web";
 
 export default function AdopcionesScreen() {
   const { theme } = useTheme();
@@ -61,23 +63,26 @@ export default function AdopcionesScreen() {
   };
 
   const renderItem = ({item}: {item:Adopcion}) =>(
-    <View style={[styles.itemContainer, {borderColor:theme.colors.backgroundTertiary, backgroundColor:theme.colors.backgroundSecondary}]}>
-      <Checkbox
-        value={seleccionadas.includes(item.id)}
-        onValueChange={()=>toggleSelection(item.id)}
-        color={seleccionadas.includes(item.id) ? theme.colors.accent: undefined}
-      />
-      <Image source={{uri:item.mascota.foto}} style={styles.foto}/>
-      <View style={styles.info}>
-        <Text style={[styles.nombre, {color:theme.colors.text}]}>{item.mascota.nombre}</Text>
-        <Text style={[styles.fecha, { color: theme.colors.secondary }]}>
-          {new Date(item.fecha_solicitud).toLocaleDateString()}
-        </Text>
-        <Text style={[styles.fecha, { color: theme.colors.text }]}>
-          {item.estado}
-        </Text>
-      </View>
-    </View>
+    <TouchableOpacity
+      onPress={() => toggleSelection(item.id)}
+      style={[styles.itemContainer, {borderColor: theme.colors.backgroundTertiary, backgroundColor: theme.colors.backgroundSecondary}]}
+    >
+        <Checkbox
+          value={seleccionadas.includes(item.id)}
+          onValueChange={()=>toggleSelection(item.id)}
+          color={seleccionadas.includes(item.id) ? theme.colors.accent: undefined}
+        />
+        <Image source={{uri:item.mascota.foto}} style={styles.foto}/>
+        <View style={styles.info}>
+          <Text style={[styles.nombre, {color:theme.colors.text}]}>{item.mascota.nombre}</Text>
+          <Text style={[styles.fecha, { color: theme.colors.secondary }]}>
+            {new Date(item.fecha_solicitud).toLocaleDateString()}
+          </Text>
+          <Text style={[styles.fecha, { color: theme.colors.text }]}>
+            {item.estado}
+          </Text>
+        </View>
+    </TouchableOpacity>
   );
 
   return (
@@ -109,9 +114,19 @@ export default function AdopcionesScreen() {
   );
 }
 
+const CARD_WIDTH = isWeb ? width * 0.95 : Math.min(width * 0.95, 480);
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 10 },
-  itemContainer: { flexDirection: "row", alignItems: "center", marginVertical: 8, borderWidth: 1, borderRadius: 10, padding: 10 },
+  itemContainer: { 
+    flexDirection: "row", 
+    alignItems: "center", 
+    marginVertical: 8, 
+    borderWidth: 1, 
+    borderRadius: 10, 
+    padding: 10, 
+    width: CARD_WIDTH,
+    alignSelf: "center",
+  },
   foto: { width: 60, height: 60, borderRadius: 30, marginHorizontal: 10, resizeMode: "contain"  },
   info: { flex: 1 },
   nombre: { fontSize: 16, fontWeight: "bold" },

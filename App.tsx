@@ -10,8 +10,10 @@ import FormularioAdoptante from "./src/screens/Adoptante/FormularioAdoptante";
 import { useEffect, useState } from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
+import DetalleAdopcion from "./src/screens/Refugio/Detalles";
 
 const TempStack = createNativeStackNavigator();
+const RootStack = createNativeStackNavigator();
 
 export default function App() {
   const auth = useAuth();
@@ -58,7 +60,19 @@ export default function App() {
                   )}
                 </TempStack.Navigator>
               ) : (
-                <BottomTabs user={auth.user} />
+                <RootStack.Navigator screenOptions={{ headerShown: false }}>
+                  <RootStack.Screen name="MainTabs">
+                    {props => <BottomTabs {...props} user={auth.user!} />}
+                  </RootStack.Screen>
+                  <RootStack.Screen
+                    name="DetalleAdopcion"
+                    component={DetalleAdopcion}
+                    options={{
+                      headerShown: true,
+                      title: "Detalle de Adopción",
+                    }}
+                  /> 
+                </RootStack.Navigator>
               )
             ) : (
               <AuthStack setToken={auth.setToken} setUser={auth.setUser} />

@@ -5,6 +5,7 @@ import NotificationScreen from '../screens/Notificaciones';
 import ProfileScreen from '../screens/Profile';
 import { useTheme } from '../theme/ThemeContext';
 import AdopcionesScreen from '../screens/Adoptante/Adopciones';
+import Solicitudes from '../screens/Refugio/Solicitudes';
 
 const Tab = createBottomTabNavigator();
 
@@ -34,6 +35,7 @@ export default function BottomTabs({ user }: BottomTabsProps) {
         </>
       ) : (
         <>
+          <Tab.Screen name="Solicitudes" component={Solicitudes} />
           <Tab.Screen name="Notificaciones" component={NotificationScreen} />
         </>
       )}

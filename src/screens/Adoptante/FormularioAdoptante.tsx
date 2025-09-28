@@ -188,7 +188,7 @@ export default function FormularioAdoptante({ setRedirect }: FormularioAdoptante
 
         <Text style={[styles.label, { color: theme.colors.secondary }]}>Edad buscada:</Text>
         <Picker selectedValue={edadBuscada} onValueChange={(v) => setEdadBuscada(v)} style={[styles.input, { color: theme.colors.primary }]}>
-          {Object.values(Edad).map(e => <Picker.Item key={e} label={e} value={e} color={theme.colors.text} />)}
+          {Object.values(Edad).map(e => <Picker.Item key={e} label={e} value={e} />)}
         </Picker>
 
         <Text style={[styles.label, { color: theme.colors.secondary }]}>Motivo de adopción:</Text>
