@@ -6,4 +6,5 @@ export type Notificaciones = {
   mensaje:string;
   leido:boolean;
   fecha:Date;
+  adopcionId?:number;
 }

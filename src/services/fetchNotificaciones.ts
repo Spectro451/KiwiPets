@@ -1,12 +1,12 @@
 import { Notificaciones } from "../types/notificaciones";
 import { api } from "./api";
 
-export const getNotificaciones = async () => {
+export const getNotificaciones = async (offset = 0, limit = 20) => {
   try {
-    const response = await api.get("/notificaciones")
+    const response = await api.get(`/notificaciones?offset=${offset}&limit=${limit}`);
     return response.data;
   } catch (error) {
-    console.error("Error al obtener notificacioneses:", error);
+    console.error("Error al obtener notificaciones:", error);
     return [];
   }
 };
@@ -38,5 +38,15 @@ export const deleteNotificaciones = async (id:number) => {
   } catch (error) {
     console.error("Error al borrar notificaciones:", error);
     return [];
+  }
+};
+
+export const marcarLeida = async (id: number) => {
+  try {
+    const response = await api.put(`/notificaciones/${id}/leida`);
+    return response.data;
+  } catch (error) {
+    console.error("Error al marcar como leída:", error);
+    return null;
   }
 };
