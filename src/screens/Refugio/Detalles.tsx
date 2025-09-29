@@ -110,7 +110,7 @@ export default function DetalleAdopcion() {
         style={styles.backButtonContainer} 
         onPress={() => navigation.goBack()}
       >
-        <Text style={{ fontSize: 24, color: theme.colors.text, fontWeight: "bold" }}>
+        <Text style={{ fontSize: 30, color: theme.colors.text, fontWeight: "bold" }}>
           ←
         </Text>
       </TouchableOpacity>
@@ -188,7 +188,7 @@ const styles = StyleSheet.create({
     flexDirection: isWeb ? "row" : "column",
     justifyContent: isWeb ? "center": "space-around",
     gap: 25,
-    padding: 18,
+    padding: 10,
     flexWrap: "wrap",
     alignContent:"center"
   },
@@ -251,7 +251,7 @@ const styles = StyleSheet.create({
   },
   backButtonContainer: {
     width: "100%", 
-    flexDirection: "row",
     justifyContent: "flex-start",
+    padding:0
   },
 });
