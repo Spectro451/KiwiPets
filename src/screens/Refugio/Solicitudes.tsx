@@ -20,7 +20,7 @@ const Solicitudes = ({navigation}:any)=>{
     useCallback(()=>{
       const fetchAdopciones = async ()=>{
         const adopciones: Adopcion[]=await getAdopcion();
-        const filtradas = adopciones.filter(a=>a.estado !== "Aceptada");
+        const filtradas = adopciones.filter(a=>a.estado === "En proceso");
         const grouped:{[key:number]: MascotaSolicitudes}={};
         filtradas.forEach(adopcion =>{
           const idMascota = adopcion.mascota.id_mascota;

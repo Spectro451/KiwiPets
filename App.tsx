@@ -44,7 +44,7 @@ export default function App() {
     <SafeAreaProvider>
       <ThemeProvider>
         <NavigationContainer>
-          <StatusBar translucent={true} />
+          <StatusBar translucent={false} />
           <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.background }} edges={['top']}>
             {auth.token && auth.user ? (
               redirect ? (
@@ -60,7 +60,7 @@ export default function App() {
                   )}
                 </TempStack.Navigator>
               ) : (
-                <RootStack.Navigator screenOptions={{ headerShown: false }}>
+                <RootStack.Navigator screenOptions={{ headerShown: false, contentStyle:{backgroundColor:theme.colors.background}}}>
                   <RootStack.Screen name="MainTabs">
                     {props => <BottomTabs {...props} user={auth.user!} />}
                   </RootStack.Screen>
@@ -68,8 +68,10 @@ export default function App() {
                     name="DetalleAdopcion"
                     component={DetalleAdopcion}
                     options={{
-                      headerShown: true,
+                      headerShown: false,
                       title: "Detalle de Adopción",
+                      animation:'slide_from_right',
+                      contentStyle:{backgroundColor:theme.colors.background}
                     }}
                   /> 
                 </RootStack.Navigator>
