@@ -2,8 +2,8 @@ import { ThemeProvider, useTheme } from "./src/theme/ThemeContext";
 import BottomTabs from "./src/navigation/Tabs";
 import AuthStack from "./src/navigation/AuthStack";
 import { useAuth } from './src/hooks/useAuth';
-import { NavigationContainer } from '@react-navigation/native';
-import { ActivityIndicator, Platform, View } from "react-native";
+import {NavigationContainer } from '@react-navigation/native';
+import { ActivityIndicator, View } from "react-native";
 import { StatusBar } from 'expo-status-bar';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import FormularioRefugio from "./src/screens/Refugio/FormularioRefugio";
@@ -12,6 +12,7 @@ import { useEffect, useState } from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import DetalleAdopcion from "./src/screens/Refugio/Detalles";
+import { darkTheme } from "./src/theme/theme";
 
 const TempStack = createNativeStackNavigator();
 const RootStack = createNativeStackNavigator();
@@ -45,10 +46,12 @@ export default function App() {
     <SafeAreaProvider>
       <ThemeProvider>
         <NavigationContainer>
-          <StatusBar
-            translucent={false}
-            style="auto"
-          />
+        <StatusBar
+          style={theme === darkTheme ? 'light' : 'dark'}
+          backgroundColor={theme.colors.background}
+          translucent={false}
+          hidden={false}
+        />
           <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.background }} edges={['top']}>
             {auth.token && auth.user ? (
               redirect ? (

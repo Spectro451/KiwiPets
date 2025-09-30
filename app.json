@@ -10,7 +10,7 @@
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#FFF8E7"
+      "backgroundColor": "#181818"
     },
     "ios": {
       "supportsTablet": true
@@ -18,16 +18,11 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#FFF8E7"
+        "backgroundColor": "#181818"
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
       "package": "com.spectro451.KiwiPets"
-    },
-    "androidStatusBar": {
-      "backgroundColor": "#FFF8E7",
-      "barStyle": "dark-content",
-      "translucent": false
     },
     "web": {
       "favicon": "./assets/favicon.png"
