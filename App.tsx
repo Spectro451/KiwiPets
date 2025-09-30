@@ -3,7 +3,8 @@ import BottomTabs from "./src/navigation/Tabs";
 import AuthStack from "./src/navigation/AuthStack";
 import { useAuth } from './src/hooks/useAuth';
 import { NavigationContainer } from '@react-navigation/native';
-import { ActivityIndicator, Platform, StatusBar, View } from "react-native";
+import { ActivityIndicator, Platform, View } from "react-native";
+import { StatusBar } from 'expo-status-bar';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import FormularioRefugio from "./src/screens/Refugio/FormularioRefugio";
 import FormularioAdoptante from "./src/screens/Adoptante/FormularioAdoptante";
@@ -44,7 +45,10 @@ export default function App() {
     <SafeAreaProvider>
       <ThemeProvider>
         <NavigationContainer>
-          <StatusBar translucent={false} />
+          <StatusBar
+            translucent={false}
+            style="auto"
+          />
           <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.background }} edges={['top']}>
             {auth.token && auth.user ? (
               redirect ? (
