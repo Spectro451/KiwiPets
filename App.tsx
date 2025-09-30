@@ -43,16 +43,8 @@ export default function App() {
   }
 
   return (
-    <SafeAreaProvider>
       <ThemeProvider>
         <NavigationContainer>
-        <StatusBar
-          style={theme === darkTheme ? 'light' : 'dark'}
-          backgroundColor={theme.colors.background}
-          translucent={false}
-          hidden={false}
-        />
-          <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.background }} edges={['top']}>
             {auth.token && auth.user ? (
               redirect ? (
                 <TempStack.Navigator screenOptions={{ headerShown: false }}>
@@ -86,9 +78,7 @@ export default function App() {
             ) : (
               <AuthStack setToken={auth.setToken} setUser={auth.setUser} />
             )}
-          </SafeAreaView>
         </NavigationContainer>
       </ThemeProvider>
-    </SafeAreaProvider>
   );
 }

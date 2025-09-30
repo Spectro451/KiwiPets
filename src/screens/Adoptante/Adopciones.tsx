@@ -6,6 +6,7 @@ import { deleteAdopcion, getAdopcion } from "../../services/fetchAdopcion";
 import { Alert, View, Image, StyleSheet, FlatList, TouchableOpacity, Text, Dimensions, Platform } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 const { width } = Dimensions.get("window");
+import { SafeAreaView } from "react-native-safe-area-context";
 const isWeb = Platform.OS === "web";
 
 export default function AdopcionesScreen() {
@@ -86,7 +87,7 @@ export default function AdopcionesScreen() {
   );
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
+    <SafeAreaView edges={['top']} style={{ flex: 1, backgroundColor: theme.colors.background }}>
       <Text style={[styles.titulo, { color: theme.colors.text }]}>
         Mis solicitudes
       </Text>
@@ -107,10 +108,10 @@ export default function AdopcionesScreen() {
         ]}
         onPress={eliminarSeleccionadas} 
         disabled={seleccionadas.length === 0 || botonBloqueado}
-       >
+      >
         <Text style={styles.botonTexto}>Eliminar seleccionadas</Text>
       </TouchableOpacity>
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -135,7 +136,7 @@ const styles = StyleSheet.create({
     padding: 15,
     borderRadius: 10,
     alignItems: "center",
-    marginVertical: 10
+    marginVertical: 15,
   },
   botonTexto: { color: "#fff", fontWeight: "bold" },
   titulo: {

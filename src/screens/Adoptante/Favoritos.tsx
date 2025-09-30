@@ -5,6 +5,7 @@ import { Favoritos } from "../../types/favoritos";
 import { deleteFavorito, getFavorito } from "../../services/fetchFavoritos";
 import { Alert, View, Image, StyleSheet, FlatList, TouchableOpacity, Text, Dimensions, Platform } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
+import { SafeAreaView } from "react-native-safe-area-context";
 const { width } = Dimensions.get("window");
 const isWeb = Platform.OS === "web";
 
@@ -109,38 +110,38 @@ export default function FavoritosScreen() {
     </TouchableOpacity>
   );
 
-  return (
-    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
-      <Text style={[styles.titulo, { color: theme.colors.text }]}>
-        Mis favoritos
-      </Text>
-      <FlatList
-        data={favoritos}
-        keyExtractor={item => item.id.toString()}
-        renderItem={renderItem}
-        refreshing={loading}
-        onRefresh={fetchFavoritos}
-      />
-      <TouchableOpacity
-        style={[
-          styles.botonEliminar,
-          { 
-            backgroundColor: seleccionadas.length > 0 ? theme.colors.error : theme.colors.errorDeshabilitado,
-            opacity: seleccionadas.length > 0 ? 1 : 0.6
-          }
-        ]}
-        onPress={eliminarSeleccionadas} 
-        disabled={seleccionadas.length === 0 || botonBloqueado}
-       >
-        <Text style={styles.botonTexto}>Eliminar seleccionadas</Text>
-      </TouchableOpacity>
-    </View>
-  );
+return (
+  <SafeAreaView edges={['top']} style={{ flex: 1, backgroundColor: theme.colors.background }}>
+    <Text style={[styles.titulo, { color: theme.colors.text }]}>
+      Mis favoritos
+    </Text>
+    <FlatList
+      data={favoritos}
+      keyExtractor={item => item.id.toString()}
+      renderItem={renderItem}
+      refreshing={loading}
+      onRefresh={fetchFavoritos}
+    />
+    <TouchableOpacity
+      style={[
+        styles.botonEliminar,
+        { 
+          backgroundColor: seleccionadas.length > 0 ? theme.colors.error : theme.colors.errorDeshabilitado,
+          opacity: seleccionadas.length > 0 ? 1 : 0.6
+        }
+      ]}
+      onPress={eliminarSeleccionadas} 
+      disabled={seleccionadas.length === 0 || botonBloqueado}
+     >
+      <Text style={styles.botonTexto}>Eliminar seleccionadas</Text>
+    </TouchableOpacity>
+  </SafeAreaView>
+);
 }
 
 const CARD_WIDTH = isWeb ? width * 0.95 : Math.min(width * 0.95, 480);
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 10 },
+  container: { flex: 1},
   itemContainer: { 
     flexDirection: "row", 
     alignItems: "center", 
@@ -160,7 +161,7 @@ const styles = StyleSheet.create({
     padding: 15,
     borderRadius: 10,
     alignItems: "center",
-    marginVertical: 10
+    marginVertical: 15,
   },
   botonTexto: { color: "#fff", fontWeight: "bold" },
   titulo: {

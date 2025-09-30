@@ -6,6 +6,7 @@ import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { Notificaciones } from "../types/notificaciones";
 import { deleteNotificaciones, getNotificaciones, marcarLeida } from "../services/fetchNotificaciones";
 import { useAuth } from "../hooks/useAuth";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const { width } = Dimensions.get("window");
 const isWeb = Platform.OS === "web";
@@ -129,7 +130,7 @@ export default function NotificacionesScreen({ navigation }: any) {
   );
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
+    <SafeAreaView edges={['top']} style={{ flex: 1, backgroundColor: theme.colors.background }}>
       <Text style={[styles.titulo, { color: theme.colors.text }]}>
         Mis notificaciones
       </Text>
@@ -183,7 +184,7 @@ export default function NotificacionesScreen({ navigation }: any) {
           </View>
         </View>
       </Modal>
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -207,7 +208,7 @@ const styles = StyleSheet.create({
     padding: 15,
     borderRadius: 10,
     alignItems: "center",
-    marginVertical: 10
+    marginVertical: 15,
   },
   botonTexto: { color: "#fff", fontWeight: "bold" },
   titulo: {
