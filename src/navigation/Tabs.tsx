@@ -37,6 +37,7 @@ export default function BottomTabs({ user }: BottomTabsProps) {
         <>
           <Tab.Screen name="Solicitudes" component={Solicitudes} />
           <Tab.Screen name="Notificaciones" component={NotificationScreen} />
+          <Tab.Screen name="Perfil" component={ProfileScreen} />
         </>
       )}
     </Tab.Navigator>

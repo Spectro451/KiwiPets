@@ -4,15 +4,12 @@ import AuthStack from "./src/navigation/AuthStack";
 import { useAuth } from './src/hooks/useAuth';
 import {NavigationContainer } from '@react-navigation/native';
 import { ActivityIndicator, View } from "react-native";
-import { StatusBar } from 'expo-status-bar';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import FormularioRefugio from "./src/screens/Refugio/FormularioRefugio";
 import FormularioAdoptante from "./src/screens/Adoptante/FormularioAdoptante";
 import { useEffect, useState } from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import DetalleAdopcion from "./src/screens/Refugio/Detalles";
-import { darkTheme } from "./src/theme/theme";
 
 const TempStack = createNativeStackNavigator();
 const RootStack = createNativeStackNavigator();
