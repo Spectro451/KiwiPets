@@ -11,9 +11,12 @@ const Tab = createBottomTabNavigator();
 
 interface BottomTabsProps {
   user: { id: number; tipo: string; admin: boolean };
+  onLogout?: () => Promise<void>;
 }
 
-export default function BottomTabs({ user }: BottomTabsProps) {
+
+
+export default function BottomTabs({ user, onLogout }: BottomTabsProps) {
   const { theme } = useTheme();
 
   return (
@@ -31,13 +34,19 @@ export default function BottomTabs({ user }: BottomTabsProps) {
           <Tab.Screen name="Favoritos" component={FavScreen} />
           <Tab.Screen name="Adopciones" component={AdopcionesScreen} />
           <Tab.Screen name="Notificaciones" component={NotificationScreen} />
-          <Tab.Screen name="Perfil" component={ProfileScreen} />
+          <Tab.Screen
+            name="Perfil"
+            children={(props) => <ProfileScreen {...props} route={{ params: { onLogout } }} />}
+          />
         </>
       ) : (
         <>
           <Tab.Screen name="Solicitudes" component={Solicitudes} />
           <Tab.Screen name="Notificaciones" component={NotificationScreen} />
-          <Tab.Screen name="Perfil" component={ProfileScreen} />
+          <Tab.Screen
+            name="Perfil"
+            children={(props) => <ProfileScreen {...props} route={{ params: { onLogout } }} />}
+          /> 
         </>
       )}
     </Tab.Navigator>

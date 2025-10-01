@@ -18,6 +18,14 @@ export default function App() {
   const auth = useAuth();
   const [redirect, setRedirect] = useState<string | null>(null);
   const {theme} = useTheme(); 
+  const [navKey, setNavKey] = useState(0);
+
+  const handleLogout = async () => {
+    await AsyncStorage.clear(); // elimina token y user
+    auth.setToken(null);
+    auth.setUser(null);
+    setNavKey(k => k + 1); // fuerza que NavigationContainer se vuelva a montar
+  };
 
   // Revisar si hay que ir al formulario post-register
   useEffect(() => {
@@ -40,42 +48,42 @@ export default function App() {
   }
 
   return (
-      <ThemeProvider>
-        <NavigationContainer>
-            {auth.token && auth.user ? (
-              redirect ? (
-                <TempStack.Navigator screenOptions={{ headerShown: false }}>
-                  {redirect === "Adoptante" ? (
-                    <TempStack.Screen name="FormularioAdoptante">
-                      {props => <FormularioAdoptante {...props} setRedirect={setRedirect} />}
-                    </TempStack.Screen>
-                  ) : (
-                    <TempStack.Screen name="FormularioRefugio">
-                      {props => <FormularioRefugio {...props} setRedirect={setRedirect} />}
-                    </TempStack.Screen>
-                  )}
-                </TempStack.Navigator>
+    <ThemeProvider>
+      <NavigationContainer key={navKey}>
+        {auth.token && auth.user ? (
+          redirect ? (
+            <TempStack.Navigator screenOptions={{ headerShown: false }}>
+              {redirect === "Adoptante" ? (
+                <TempStack.Screen name="FormularioAdoptante">
+                  {props => <FormularioAdoptante {...props} setRedirect={setRedirect} />}
+                </TempStack.Screen>
               ) : (
-                <RootStack.Navigator screenOptions={{ headerShown: false, contentStyle:{backgroundColor:theme.colors.background}}}>
-                  <RootStack.Screen name="MainTabs">
-                    {props => <BottomTabs {...props} user={auth.user!} />}
-                  </RootStack.Screen>
-                  <RootStack.Screen
-                    name="DetalleAdopcion"
-                    component={DetalleAdopcion}
-                    options={{
-                      headerShown: false,
-                      title: "Detalle de Adopción",
-                      animation:'slide_from_right',
-                      contentStyle:{backgroundColor:theme.colors.background}
-                    }}
-                  /> 
-                </RootStack.Navigator>
-              )
-            ) : (
-              <AuthStack setToken={auth.setToken} setUser={auth.setUser} />
-            )}
-        </NavigationContainer>
-      </ThemeProvider>
+                <TempStack.Screen name="FormularioRefugio">
+                  {props => <FormularioRefugio {...props} setRedirect={setRedirect} />}
+                </TempStack.Screen>
+              )}
+            </TempStack.Navigator>
+          ) : (
+            <RootStack.Navigator screenOptions={{ headerShown: false, contentStyle: { backgroundColor: theme.colors.background } }}>
+              <RootStack.Screen name="MainTabs">
+                {props => <BottomTabs {...props} user={auth.user!} onLogout={handleLogout} />}
+              </RootStack.Screen>
+              <RootStack.Screen
+                name="DetalleAdopcion"
+                component={DetalleAdopcion}
+                options={{
+                  headerShown: false,
+                  title: "Detalle de Adopción",
+                  animation: 'slide_from_right',
+                  contentStyle: { backgroundColor: theme.colors.background }
+                }}
+              />
+            </RootStack.Navigator>
+          )
+        ) : (
+          <AuthStack setToken={auth.setToken} setUser={auth.setUser} />
+        )}
+      </NavigationContainer>
+    </ThemeProvider>
   );
 }

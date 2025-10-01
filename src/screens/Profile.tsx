@@ -4,13 +4,16 @@ import { useCallback, useState } from "react";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { adoptanteByUsuarioId } from "../services/fetchAdoptante";
 import { refugioByUsuarioId } from "../services/fetchRefugio";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 
-export default function ProfileScreen() {
-  const {user, setToken, setUser} = useAuth();
+interface ProfileScreenProps {
+  route: { params: { onLogout?: () => Promise<void> } };
+}
+
+export default function ProfileScreen({ route }: ProfileScreenProps) {
+  const {user} = useAuth();
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const navigation = useNavigation();
+  const onLogout = route.params?.onLogout;
 
   useFocusEffect(
     useCallback(()=>{
@@ -33,26 +36,6 @@ export default function ProfileScreen() {
     }, [user])
   );
 
-const handleLogout = async () => {
-  await AsyncStorage.removeItem("token");
-  await AsyncStorage.removeItem("user");
-  setToken(null);
-  setUser(null);
-
-  if (Platform.OS === 'web') {
-    // Web
-    window.location.reload();
-  } else if (__DEV__) {
-    // Expo Go / desarrollo
-    DevSettings.reload();
-  } else {
-    // APK / producción móvil
-    navigation.reset({
-      index: 0,
-      routes: [{ name: "Login" as never }],
-    });
-  }
-};
 
 
   if (loading) {
@@ -82,7 +65,7 @@ const handleLogout = async () => {
       </Text>
 
       <TouchableOpacity
-        onPress={handleLogout}
+        onPress={onLogout}
         style={{
           marginTop: 30,
           backgroundColor: "#FF3B30",
