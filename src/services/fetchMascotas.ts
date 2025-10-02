@@ -40,3 +40,14 @@ export const deleteMascotas = async (id: number) => {
     return [];
   }
 };
+
+export const createMascota = async (data: Partial<Mascota>) => {
+  try {
+    const response = await api.post("/mascota", data);
+    return response.data;
+  } catch (error: any) {
+    console.error("Error al crear mascota:", error.response?.data || error.message);
+    throw error;
+  }
+};
+

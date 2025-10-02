@@ -6,13 +6,15 @@ import { Mascota } from "../../types/mascota";
 import { Vacunas } from "../../types/vacunas";
 import { Historial } from "../../types/historial";
 import { Especie, Genero, Tamaño, Estado } from "../../types/enums";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { createMascota } from "../../services/fetchMascotas";
 
 const { width } = Dimensions.get("window");
 const isWeb = Platform.OS === "web";
 const FORM_CARD_WIDTH = isWeb ? Math.min(width * 0.6, 480) : Math.min(width * 0.94, 400);
 
 
-export default function FormCrearMascota({ navigation }: any) {
+export default function AgregarMascotaScreen({ navigation }: any) {
   const { theme } = useTheme();
 
   // Campos de Mascota
@@ -32,21 +34,36 @@ export default function FormCrearMascota({ navigation }: any) {
   const [foto, setFoto] = useState<string | undefined>();
   const [requisito_adopcion, setRequisitoAdopcion] = useState("");
   const [estado_adopcion, setEstadoAdopcion] = useState<Estado>(Estado.DISPONIBLE);
+  const [editingIndex, setEditingIndex] = useState<number | null>(null);
+  const [showDatePicker, setShowDatePicker] = useState<"fecha" | "proxima" | null>(null);
 
   // Arrays de vacunas e historial
-  const [vacunas, setVacunas] = useState<Vacunas[]>([]);
-  const [historialClinico, setHistorial] = useState<Historial[]>([]);
+  const [vacunas, setVacunas] = useState<Omit<Vacunas, "id" | "mascota">[]>([]);
+  const [historialClinico, setHistorial] = useState<Omit<Historial, "id" | "mascota">[]>([]);
 
   // Modales
   const [modalVacunaVisible, setModalVacunaVisible] = useState(false);
   const [modalHistorialVisible, setModalHistorialVisible] = useState(false);
 
   // Campos temporales para modal
-  const [vacunaTemp, setVacunaTemp] = useState<Omit<Vacunas, "id" | "mascota">>({ nombre: "", fecha_aplicacion: new Date(), proxima_dosis: undefined, observaciones: "" });
-  const [historialTemp, setHistorialTemp] = useState<Omit<Historial, "id" | "mascota">>({ descripcion: "", fecha: new Date(), veterinario: "", tratamiento: "" });
+  const [editingVacunaIndex, setEditingVacunaIndex] = useState<number | null>(null);
+  const [vacunaTemp, setVacunaTemp] = useState<Omit<Vacunas, "id" | "mascota">>({
+    nombre: "",
+    fecha_aplicacion: new Date(),
+    proxima_dosis: undefined,
+    observaciones: ""
+  });
+
+  const [editingHistorialIndex, setEditingHistorialIndex] = useState<number | null>(null);
+  const [historialTemp, setHistorialTemp] = useState<Omit<Historial, "id" | "mascota">>({
+    descripcion: "",
+    fecha: new Date(),
+    veterinario: "",
+    tratamiento: ""
+  });
 
   // Guardar mascota
-  const handleSave = () => {
+  const handleSave = async () => {
     const nuevaMascota: Partial<Mascota> = {
       nombre,
       raza,
@@ -64,13 +81,22 @@ export default function FormCrearMascota({ navigation }: any) {
       foto,
       requisito_adopcion,
       estado_adopcion,
-      vacunas,
-      historialClinico,
-      vacunado: vacunas.length > 0, // calculado automáticamente
+      vacunas: vacunas as any,
+      historialClinico: historialClinico as any,
+      vacunado: vacunas.length > 0,
     };
+
+    try {
+      await createMascota(nuevaMascota);
+      alert("Mascota creada con éxito!");
+      navigation.goBack();
+    } catch (error: any) {
+      alert("Error al crear mascota: " + (error.response?.data?.message || error.message));
+    }
   };
 
   return (
+    <SafeAreaView edges={['top','bottom']} style={{ flex: 1, backgroundColor: theme.colors.background }}>
     <KeyboardAvoidingView
       style={{ flex: 1, backgroundColor: theme.colors.background }}
       behavior={Platform.OS === "ios" ? "padding" : undefined}
@@ -138,16 +164,33 @@ export default function FormCrearMascota({ navigation }: any) {
           <Text style={[styles.label, { color: theme.colors.secondary }]}>Requisito de adopción:</Text>
           <TextInput value={requisito_adopcion} onChangeText={setRequisitoAdopcion} multiline style={[styles.input, { color: theme.colors.text }]} placeholderTextColor={theme.colors.text} />
 
-          {/* Estado adopción */}
-          <Text style={[styles.label, { color: theme.colors.secondary }]}>Estado de adopción:</Text>
-          <Picker selectedValue={estado_adopcion} onValueChange={setEstadoAdopcion} style={[styles.input, { color: theme.colors.primary }]}>
-            {Object.values(Estado).map(e => <Picker.Item key={e} label={e} value={e} />)}
-          </Picker>
-
           {/* Botones modales para Vacunas e Historial */}
-          <TouchableOpacity style={styles.button} onPress={() => setModalVacunaVisible(true)}>
-            <Text style={{ color: theme.colors.secondary }}>Agregar / Editar Vacunas ({vacunas.length})</Text>
-          </TouchableOpacity>
+            <Text style={[styles.label, { color: theme.colors.secondary }]}>Vacunas:</Text>
+            {vacunas.length === 0 && <Text style={{ color: theme.colors.text, marginBottom: 10 }}>No hay vacunas agregadas</Text>}
+            {vacunas.map((v, i) => (
+              <View key={i} style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 5, padding:5, borderWidth:1, borderColor:theme.colors.backgroundTertiary, borderRadius:5 }}>
+                <Text style={{ color: theme.colors.text }}>{v.nombre} - {v.fecha_aplicacion.toLocaleDateString()}</Text>
+                <View style={{ flexDirection: 'row' }}>
+                  <TouchableOpacity onPress={() => {
+                    setVacunaTemp({ nombre: v.nombre, fecha_aplicacion: v.fecha_aplicacion, proxima_dosis: v.proxima_dosis, observaciones: v.observaciones });
+                    setEditingIndex(i);
+                    setModalVacunaVisible(true);
+                  }}>
+                    <Text style={{ color:'orange', marginRight: 10 }}>Editar</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity onPress={() => setVacunas(prev => prev.filter((_, idx) => idx !== i))}>
+                    <Text style={{ color:'red' }}>Borrar</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            ))}
+            <TouchableOpacity style={styles.button} onPress={() => {
+              setVacunaTemp({ nombre: "", fecha_aplicacion: new Date(), proxima_dosis: undefined, observaciones: "" });
+              setEditingIndex(null);
+              setModalVacunaVisible(true);
+            }}>
+              <Text style={{ color: theme.colors.secondary }}>Agregar Vacuna</Text>
+            </TouchableOpacity>
 
           <TouchableOpacity style={styles.button} onPress={() => setModalHistorialVisible(true)}>
             <Text style={{ color: theme.colors.secondary }}>Agregar / Editar Historial ({historialClinico.length})</Text>
@@ -158,18 +201,16 @@ export default function FormCrearMascota({ navigation }: any) {
             <TouchableOpacity style={[styles.button, { flex: 1, marginRight: 5 }]} onPress={handleSave}>
               <Text style={{ color: theme.colors.secondary, fontWeight: "bold" }}>Guardar</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={[styles.button, { flex: 1, marginLeft: 5 }]} onPress={navigation.goBack()}>
+            <TouchableOpacity style={[styles.button, { flex: 1, marginLeft: 5 }]} onPress={() => navigation.goBack()}>
               <Text style={{ color: theme.colors.secondary, fontWeight: "bold" }}>Cancelar</Text>
             </TouchableOpacity>
           </View>
 
         </View>
       </ScrollView>
-
-      {/* Aquí van los modales de Vacunas e Historial */}
       {/* Modal Vacuna */}
       <Modal visible={modalVacunaVisible} transparent animationType="slide">
-        {/* Implementar contenido para agregar / editar vacunas */}
+
       </Modal>
 
       {/* Modal Historial */}
@@ -178,6 +219,7 @@ export default function FormCrearMascota({ navigation }: any) {
       </Modal>
 
     </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }
 
