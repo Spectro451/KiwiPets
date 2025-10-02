@@ -3,16 +3,18 @@ import { View, Text, TextInput, ActivityIndicator, Dimensions, Platform, StyleSh
 import { refugioByUsuarioId, updateRefugio } from "../../services/fetchRefugio";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useTheme } from "../../theme/ThemeContext";
+import { deleteUsuario } from "../../services/fetchUsuario";
 
 type FormularioRefugioProps = {
   setRedirect: (val: string | null) => void;
+  onCancel: () => void;
 };
 
 const { width } = Dimensions.get("window");
 const isWeb = Platform.OS === "web";
 const FORM_CARD_WIDTH = isWeb ? Math.min(width * 0.6, 480) : Math.min(width * 0.94, 400);
 
-export default function FormularioRefugio({ setRedirect }: FormularioRefugioProps) {
+export default function FormularioRefugio({ setRedirect, onCancel }: FormularioRefugioProps) {
   const [refugioId, setRefugioId] = useState<number | null>(null);
   const [nombre, setNombre] = useState("");
   const [direccion, setDireccion] = useState("");
@@ -67,6 +69,29 @@ export default function FormularioRefugio({ setRedirect }: FormularioRefugioProp
     }
   };
 
+  const handleCancel = async () => {
+    try {
+      const userStr = await AsyncStorage.getItem("user");
+      if (!userStr) return;
+
+      const user = JSON.parse(userStr);
+
+      // Borra usuario en backend
+      await deleteUsuario(user.id);
+
+      // Limpieza local
+      await AsyncStorage.removeItem("user");
+      await AsyncStorage.removeItem("token");
+      await AsyncStorage.removeItem("goToFormulario");
+
+      // pal loby
+      onCancel();
+
+    } catch (err) {
+      console.error("Error al cancelar el formulario:", err);
+    }
+  };
+
   if (loading) return <ActivityIndicator size="large" color={theme.colors.secondary} style={{ flex: 1, backgroundColor:theme.colors.background }} />;
 
   return (
@@ -87,17 +112,24 @@ export default function FormularioRefugio({ setRedirect }: FormularioRefugioProp
         <TextInput value={telefono} onChangeText={setTelefono} placeholder="+56912345678" keyboardType="phone-pad" style={[styles.input, {color:theme.colors.text}]} placeholderTextColor={theme.colors.text} />
         {error && <Text style={[styles.error, {color:theme.colors.error}]}>{error}</Text>}
 
-        <TouchableOpacity
-          style={[styles.button,{
-            backgroundColor: theme.colors.backgroundTertiary,
-          }]}
-          onPress={handleSave}
-          disabled={saving}
-        >
-          <Text style={{ color: theme.colors.secondary, fontWeight: "bold" }}>
-            {saving ? "Guardando..." : "Guardar"}
-          </Text>
-        </TouchableOpacity>
+        <View style={{ flexDirection: "row", justifyContent: "space-between", marginTop: 10 }}>
+          <TouchableOpacity
+            style={[styles.button, { flex: 1, backgroundColor: theme.colors.backgroundTertiary, marginRight: 5 }]}
+            onPress={handleSave}
+            disabled={saving}
+          >
+            <Text style={{ color: theme.colors.secondary, fontWeight: "bold" }}>
+              {saving ? "Guardando..." : "Guardar"}
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.button, { flex: 1, backgroundColor: theme.colors.error, marginLeft: 5 }]}
+            onPress={handleCancel}
+          >
+            <Text style={{ color: theme.colors.secondary, fontWeight: "bold" }}>Cancelar</Text>
+          </TouchableOpacity>
+        </View>
       </View>
     </View>
   );

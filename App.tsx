@@ -10,6 +10,7 @@ import FormularioAdoptante from "./src/screens/Adoptante/FormularioAdoptante";
 import { useEffect, useState } from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import DetalleAdopcion from "./src/screens/Refugio/Detalles";
+import EditarAdoptante from "./src/screens/Adoptante/EditarAdoptante";
 
 const TempStack = createNativeStackNavigator();
 const RootStack = createNativeStackNavigator();
@@ -21,10 +22,11 @@ export default function App() {
   const [navKey, setNavKey] = useState(0);
 
   const handleLogout = async () => {
-    await AsyncStorage.clear(); // elimina token y user
+    await AsyncStorage.clear(); 
     auth.setToken(null);
     auth.setUser(null);
-    setNavKey(k => k + 1); // fuerza que NavigationContainer se vuelva a montar
+    setRedirect(null);
+    setNavKey(k => k + 1); 
   };
 
   // Revisar si hay que ir al formulario post-register
@@ -33,6 +35,7 @@ export default function App() {
       if (!auth.user) return;
       const flag = await AsyncStorage.getItem("goToFormulario");
       if (flag === "true") {
+        await AsyncStorage.removeItem("goToFormulario");
         setRedirect(auth.user.tipo);
       }
     };
@@ -55,11 +58,11 @@ export default function App() {
             <TempStack.Navigator screenOptions={{ headerShown: false }}>
               {redirect === "Adoptante" ? (
                 <TempStack.Screen name="FormularioAdoptante">
-                  {props => <FormularioAdoptante {...props} setRedirect={setRedirect} />}
+                  {props => <FormularioAdoptante {...props} setRedirect={setRedirect} onCancel={handleLogout} />}
                 </TempStack.Screen>
               ) : (
                 <TempStack.Screen name="FormularioRefugio">
-                  {props => <FormularioRefugio {...props} setRedirect={setRedirect} />}
+                  {props => <FormularioRefugio {...props} setRedirect={setRedirect} onCancel={handleLogout} />}
                 </TempStack.Screen>
               )}
             </TempStack.Navigator>
@@ -75,6 +78,16 @@ export default function App() {
                   headerShown: false,
                   title: "Detalle de Adopción",
                   animation: 'slide_from_right',
+                  contentStyle: { backgroundColor: theme.colors.background }
+                }}
+              />
+              <RootStack.Screen
+                name="EditarPerfilAdoptante"
+                component={EditarAdoptante}
+                options={{
+                  headerShown: false,
+                  title: "Editar Perfil",
+                  animation: "slide_from_right",
                   contentStyle: { backgroundColor: theme.colors.background }
                 }}
               />

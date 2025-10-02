@@ -1,42 +1,56 @@
-import { View, Text, ActivityIndicator, TouchableOpacity, Platform, DevSettings } from "react-native";
+import { View, Text, TouchableOpacity, ActivityIndicator, StyleSheet } from "react-native";
 import { useAuth } from "../hooks/useAuth";
 import { useCallback, useState } from "react";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { adoptanteByUsuarioId } from "../services/fetchAdoptante";
-import { refugioByUsuarioId } from "../services/fetchRefugio";
+import { getAdopcion } from "../services/fetchAdopcion";
+import { getFavorito } from "../services/fetchFavoritos";
+import { getNotificaciones } from "../services/fetchNotificaciones";
+import { MaterialIcons } from "@expo/vector-icons";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { useTheme } from "../theme/ThemeContext";
 
 interface ProfileScreenProps {
   route: { params: { onLogout?: () => Promise<void> } };
 }
 
 export default function ProfileScreen({ route }: ProfileScreenProps) {
-  const {user} = useAuth();
+  const { user } = useAuth();
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const navigation: any = useNavigation();
   const onLogout = route.params?.onLogout;
+  const [adopcionesCount, setAdopcionesCount] = useState(0);
+  const [favoritosCount, setFavoritosCount] = useState(0);
+  const [notificacionesCount, setNotificacionesCount] = useState(0);
+  const {theme} = useTheme();
 
   useFocusEffect(
-    useCallback(()=>{
-      const fetchProfile = async () =>{
-        if(!user) return;
+    useCallback(() => {
+      const fetchProfile = async () => {
+        if (!user) return;
         setLoading(true);
         try {
-          const profileData =
-            user?.tipo === "Adoptante"
-              ? await adoptanteByUsuarioId()
-              : await refugioByUsuarioId();
-          setData(profileData);
-        } catch(error){
+          if (user.tipo === "Adoptante") {
+            const profileData = await adoptanteByUsuarioId();
+            setData(profileData);
+
+            const adopciones = await getAdopcion();
+            setAdopcionesCount(adopciones.length);
+            const favoritos = await getFavorito();
+            setFavoritosCount(favoritos.length);
+            const notificaciones = await getNotificaciones();
+            setNotificacionesCount(notificaciones.length);
+          }
+        } catch (error) {
           console.error("Error al cargar el perfil: ", error);
-        } finally{
+        } finally {
           setLoading(false);
         }
       };
       fetchProfile();
     }, [user])
   );
-
-
 
   if (loading) {
     return (
@@ -55,27 +69,87 @@ export default function ProfileScreen({ route }: ProfileScreenProps) {
   }
 
   return (
-    <View style={{ flex: 1, padding: 20 }}>
-      <Text style={{ fontSize: 24, fontWeight: "bold" }}>{data.nombre}</Text>
-      <Text style={{ marginTop: 10 }}>
-        {user?.tipo === "Adoptante" ? `RUT: ${data.rut}` : `Teléfono: ${data.telefono}`}
-      </Text>
-      <Text>
-        {user?.tipo === "Adoptante" ? `Edad: ${data.edad}` : `Dirección: ${data.direccion}`}
-      </Text>
+    <SafeAreaView edges={['top']} style={{ flex: 1, backgroundColor: theme.colors.background, padding:15, gap:10, justifyContent:'space-between' }}>
+      <View>
+        <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+          <View>
+            <Text style={[styles.nombre, {color:theme.colors.text}]}>{data.nombre}</Text>
+            <Text style={[styles.subtitulo, {color:theme.colors.textSecondary}]}>Tipo: {user?.tipo} | RUT: {data.rut}</Text>
+          </View>
+          <TouchableOpacity
+            onPress={() => navigation.push("EditarPerfilAdoptante", { perfilData: data })}
+            style={{ padding: 8 }}
+          >
+            <MaterialIcons name="edit" size={24} color={theme.colors.accent} />
+          </TouchableOpacity>
+        </View>
+        <View style={{ marginTop: 30 }}>
+          <View style={[styles.seccion, {backgroundColor:theme.colors.backgroundSecondary}]}>
+            <Text style={[styles.seccionTitulo, {color:theme.colors.text}]}>Solicitudes</Text>
+            <Text style={[styles.seccionNumero, {color:theme.colors.textSecondary}]}>{adopcionesCount}</Text>
+          </View>
+          <View style={[styles.seccion, {backgroundColor:theme.colors.backgroundSecondary}]}>
+            <Text style={[styles.seccionTitulo, {color:theme.colors.text}]}>Favoritos</Text>
+            <Text style={[styles.seccionNumero, {color:theme.colors.textSecondary}]}>{favoritosCount}</Text>
+          </View>
+          <View style={[styles.seccion, {backgroundColor:theme.colors.backgroundSecondary}]}>
+            <Text style={[styles.seccionTitulo, {color:theme.colors.text}]}>Notificaciones</Text>
+            <Text style={[styles.seccionNumero, {color:theme.colors.textSecondary}]}>{notificacionesCount}</Text>
+          </View>
+        </View>
+        <TouchableOpacity
+          onPress={() => navigation.push("EditarUsuario")}
+          style={styles.botonEditarUsuario}
+        >
+          <Text style={{ color: "white", fontWeight: "bold" }}>Editar Usuario</Text>
+        </TouchableOpacity>
+      </View>
 
-      <TouchableOpacity
-        onPress={onLogout}
-        style={{
-          marginTop: 30,
-          backgroundColor: "#FF3B30",
-          paddingVertical: 12,
-          borderRadius: 8,
-          alignItems: "center",
-        }}
-      >
-        <Text style={{ color: "white", fontWeight: "bold" }}>Cerrar sesión</Text>
-      </TouchableOpacity>
-    </View>
+      <View style={{ alignItems: "flex-end" }}>
+        <TouchableOpacity
+          onPress={onLogout}
+          style={styles.botonCerrarSesion}
+        >
+          <Text style={{ color: "white", fontWeight: "bold" }}>Cerrar Sesión</Text>
+        </TouchableOpacity>
+      </View>
+    </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  nombre: {
+    fontSize: 28,
+    fontWeight: "bold",
+  },
+  subtitulo: {
+    fontSize: 16,
+    marginTop: 4,
+  },
+  seccion: {
+    marginBottom: 20,
+    padding: 15,
+    borderRadius: 10,
+  },
+  seccionTitulo: {
+    fontSize: 16,
+  },
+  seccionNumero: {
+    fontSize: 20,
+    fontWeight: "bold",
+    marginTop: 4,
+  },
+  botonEditarUsuario: {
+    marginTop: 20,
+    paddingVertical: 12,
+    borderRadius: 8,
+    backgroundColor: "#007AFF",
+    alignItems: "center",
+  },
+  botonCerrarSesion: {
+    backgroundColor: "#FF3B30",
+    paddingVertical: 12,
+    borderRadius: 8,
+    paddingHorizontal: 16,
+  },
+});

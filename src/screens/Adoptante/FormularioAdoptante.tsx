@@ -1,20 +1,23 @@
 import { useEffect, useState } from "react";
-import { View, Text, TextInput, ActivityIndicator, Dimensions, Platform, StyleSheet, TouchableOpacity } from "react-native";
+import { View, Text, TextInput, ActivityIndicator, Dimensions, Platform, StyleSheet, TouchableOpacity, KeyboardAvoidingView, ScrollView } from "react-native";
 import { adoptanteByUsuarioId, updateAdoptante } from "../../services/fetchAdoptante";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useTheme } from "../../theme/ThemeContext";
 import { Edad, EspeciePreferida, Sexo, Vivienda } from "../../types/enums";
 import { Picker } from '@react-native-picker/picker';
+import { deleteUsuario } from "../../services/fetchUsuario";
+import { useAuth } from "../../hooks/useAuth";
 
 type FormularioAdoptanteProps = {
   setRedirect: (val: string | null) => void;
+  onCancel: () => void;
 };
 
 const { width } = Dimensions.get("window");
 const isWeb = Platform.OS === "web";
 const FORM_CARD_WIDTH = isWeb ? Math.min(width * 0.6, 480) : Math.min(width * 0.94, 400);
 
-export default function FormularioAdoptante({ setRedirect }: FormularioAdoptanteProps) {
+export default function FormularioAdoptante({ setRedirect, onCancel }: FormularioAdoptanteProps) {
   const [rutActual, setRutActual] = useState<string | null>(null); // el del url
   const [adoptanteRut, setAdoptanteRut] = useState<string | null>(null); // el pa editar
   const [nombre, setNombre] = useState("");
@@ -99,9 +102,40 @@ export default function FormularioAdoptante({ setRedirect }: FormularioAdoptante
     }
   };
 
+const handleCancel = async () => {
+  try {
+    const userStr = await AsyncStorage.getItem("user");
+    if (!userStr) return;
+
+    const user = JSON.parse(userStr);
+
+    // Borra usuario en backend
+    await deleteUsuario(user.id);
+
+    // Limpieza local
+    await AsyncStorage.removeItem("user");
+    await AsyncStorage.removeItem("token");
+    await AsyncStorage.removeItem("goToFormulario");
+
+    // pal loby
+    onCancel();
+
+  } catch (err) {
+    console.error("Error al cancelar el formulario:", err);
+  }
+};
+
   if (loading) return <ActivityIndicator size="large" color={theme.colors.secondary} style={{ flex: 1, backgroundColor:theme.colors.background }} />;
 
   return (
+    <KeyboardAvoidingView
+      style={{ flex: 1, backgroundColor: theme.colors.background }}
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
+    >
+      <ScrollView
+        contentContainerStyle={{ alignItems: "center", padding: 20 }}
+        keyboardShouldPersistTaps="handled"
+      >
     <View style={{ flex: 1, padding: 20, backgroundColor: theme.colors.background, justifyContent: "center", alignItems: "center" }}>
       <View style={{
         width: FORM_CARD_WIDTH,
@@ -196,11 +230,28 @@ export default function FormularioAdoptante({ setRedirect }: FormularioAdoptante
 
         {error && <Text style={[styles.error, { color: theme.colors.error }]}>{error}</Text>}
 
-        <TouchableOpacity style={[styles.button, { backgroundColor: theme.colors.backgroundTertiary }]} onPress={handleSave} disabled={saving}>
-          <Text style={{ color: theme.colors.secondary, fontWeight: "bold" }}>{saving ? "Guardando..." : "Guardar"}</Text>
-        </TouchableOpacity>
+        <View style={{ flexDirection: "row", justifyContent: "space-between", marginTop: 10 }}>
+          <TouchableOpacity
+            style={[styles.button, { flex: 1, backgroundColor: theme.colors.backgroundTertiary, marginRight: 5 }]}
+            onPress={handleSave}
+            disabled={saving}
+          >
+            <Text style={{ color: theme.colors.secondary, fontWeight: "bold" }}>
+              {saving ? "Guardando..." : "Guardar"}
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.button, { flex: 1, backgroundColor: theme.colors.error, marginLeft: 5 }]}
+            onPress={handleCancel}
+          >
+            <Text style={{ color: theme.colors.secondary, fontWeight: "bold" }}>Cancelar</Text>
+          </TouchableOpacity>
+        </View>
       </View>
     </View>
+    </ScrollView>
+  </KeyboardAvoidingView>
   );
 }
 
