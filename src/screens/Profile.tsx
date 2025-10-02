@@ -9,6 +9,8 @@ import { getNotificaciones } from "../services/fetchNotificaciones";
 import { MaterialIcons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useTheme } from "../theme/ThemeContext";
+import { refugioByUsuarioId } from "../services/fetchRefugio";
+import { getMascotas } from "../services/fetchMascotas";
 
 interface ProfileScreenProps {
   route: { params: { onLogout?: () => Promise<void> } };
@@ -23,6 +25,7 @@ export default function ProfileScreen({ route }: ProfileScreenProps) {
   const [adopcionesCount, setAdopcionesCount] = useState(0);
   const [favoritosCount, setFavoritosCount] = useState(0);
   const [notificacionesCount, setNotificacionesCount] = useState(0);
+  const [mascotasCount, setMascotasCount] = useState(0);
   const {theme} = useTheme();
 
   useFocusEffect(
@@ -41,6 +44,16 @@ export default function ProfileScreen({ route }: ProfileScreenProps) {
             setFavoritosCount(favoritos.length);
             const notificaciones = await getNotificaciones();
             setNotificacionesCount(notificaciones.length);
+          } else if (user.tipo === "Refugio"){
+            const profileData = await refugioByUsuarioId();
+            setData(profileData);
+
+            const notificaciones = await getNotificaciones();
+            setNotificacionesCount(notificaciones.length);
+            const mascotas = await getMascotas();
+            setMascotasCount(mascotas.length || 0);
+            const adopciones = await getAdopcion();
+            setAdopcionesCount(adopciones.length);
           }
         } catch (error) {
           console.error("Error al cargar el perfil: ", error);
@@ -54,7 +67,7 @@ export default function ProfileScreen({ route }: ProfileScreenProps) {
 
   if (loading) {
     return (
-      <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
+      <View style={{ flex: 1, alignItems: "center", justifyContent: "center", backgroundColor:theme.colors.background }}>
         <ActivityIndicator size="large" />
       </View>
     );
@@ -74,24 +87,44 @@ export default function ProfileScreen({ route }: ProfileScreenProps) {
         <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
           <View>
             <Text style={[styles.nombre, {color:theme.colors.text}]}>{data.nombre}</Text>
-            <Text style={[styles.subtitulo, {color:theme.colors.textSecondary}]}>Tipo: {user?.tipo} | RUT: {data.rut}</Text>
+            {user?.tipo === "Adoptante" ? (
+              <Text style={[styles.subtitulo, {color:theme.colors.textSecondary}]}>Tipo: {user?.tipo} | RUT: {data.rut}</Text>
+            ): (
+              <Text style={[styles.subtitulo, {color:theme.colors.textSecondary}]}>Dirección: {data.direccion} | Validado: {data.validado ? "si" : "no"}</Text>
+            )} 
           </View>
           <TouchableOpacity
-            onPress={() => navigation.push("EditarPerfilAdoptante", { perfilData: data })}
+            onPress={() => navigation.push(user?.tipo === "Adoptante" ? "EditarPerfilAdoptante" : "EditarPerfilRefugio", { perfilData: data })}
             style={{ padding: 8 }}
           >
             <MaterialIcons name="edit" size={24} color={theme.colors.accent} />
           </TouchableOpacity>
         </View>
         <View style={{ marginTop: 30 }}>
-          <View style={[styles.seccion, {backgroundColor:theme.colors.backgroundSecondary}]}>
-            <Text style={[styles.seccionTitulo, {color:theme.colors.text}]}>Solicitudes</Text>
-            <Text style={[styles.seccionNumero, {color:theme.colors.textSecondary}]}>{adopcionesCount}</Text>
-          </View>
-          <View style={[styles.seccion, {backgroundColor:theme.colors.backgroundSecondary}]}>
-            <Text style={[styles.seccionTitulo, {color:theme.colors.text}]}>Favoritos</Text>
-            <Text style={[styles.seccionNumero, {color:theme.colors.textSecondary}]}>{favoritosCount}</Text>
-          </View>
+          {user?.tipo === "Adoptante" && (
+            <>
+              <View style={[styles.seccion, {backgroundColor:theme.colors.backgroundSecondary}]}>
+                <Text style={[styles.seccionTitulo, {color:theme.colors.text}]}>Solicitudes</Text>
+                <Text style={[styles.seccionNumero, {color:theme.colors.textSecondary}]}>{adopcionesCount}</Text>
+              </View>
+              <View style={[styles.seccion, {backgroundColor:theme.colors.backgroundSecondary}]}>
+                <Text style={[styles.seccionTitulo, {color:theme.colors.text}]}>Favoritos</Text>
+                <Text style={[styles.seccionNumero, {color:theme.colors.textSecondary}]}>{favoritosCount}</Text>
+              </View>
+            </>
+          )}
+          {user?.tipo === "Refugio" && (
+            <>
+              <View style={[styles.seccion, {backgroundColor:theme.colors.backgroundSecondary}]}>
+                <Text style={[styles.seccionTitulo, {color:theme.colors.text}]}>Mascotas</Text>
+                <Text style={[styles.seccionNumero, {color:theme.colors.textSecondary}]}>{mascotasCount}</Text>
+              </View>
+              <View style={[styles.seccion, {backgroundColor:theme.colors.backgroundSecondary}]}>
+                <Text style={[styles.seccionTitulo, {color:theme.colors.text}]}>Solicitudes</Text>
+                <Text style={[styles.seccionNumero, {color:theme.colors.textSecondary}]}>{adopcionesCount}</Text>
+              </View>
+            </>
+          )}
           <View style={[styles.seccion, {backgroundColor:theme.colors.backgroundSecondary}]}>
             <Text style={[styles.seccionTitulo, {color:theme.colors.text}]}>Notificaciones</Text>
             <Text style={[styles.seccionNumero, {color:theme.colors.textSecondary}]}>{notificacionesCount}</Text>

@@ -108,6 +108,7 @@ export default function RegisterScreen({ setToken, setUser}: RegisterProps) {
           onChangeText={setContraseña}
           placeholder="Contraseña"
           secureTextEntry
+          autoCapitalize="none"
           style={[styles.input, { color: theme.colors.text }, error?.includes("contraseña") && { borderColor: theme.colors.error }]}
           placeholderTextColor={theme.colors.text}
         />

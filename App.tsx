@@ -11,6 +11,8 @@ import { useEffect, useState } from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import DetalleAdopcion from "./src/screens/Refugio/Detalles";
 import EditarAdoptante from "./src/screens/Adoptante/EditarAdoptante";
+import EditarRefugio from "./src/screens/Refugio/EditarRefugio";
+import EditarUsuario from "./src/screens/EditarUsuario";
 
 const TempStack = createNativeStackNavigator();
 const RootStack = createNativeStackNavigator();
@@ -84,6 +86,26 @@ export default function App() {
               <RootStack.Screen
                 name="EditarPerfilAdoptante"
                 component={EditarAdoptante}
+                options={{
+                  headerShown: false,
+                  title: "Editar Perfil",
+                  animation: "slide_from_right",
+                  contentStyle: { backgroundColor: theme.colors.background }
+                }}
+              />
+              <RootStack.Screen
+                name="EditarPerfilRefugio"
+                component={EditarRefugio}
+                options={{
+                  headerShown: false,
+                  title: "Editar Perfil",
+                  animation: "slide_from_right",
+                  contentStyle: { backgroundColor: theme.colors.background }
+                }}
+              />
+              <RootStack.Screen
+                name="EditarUsuario"
+                component={EditarUsuario}
                 options={{
                   headerShown: false,
                   title: "Editar Perfil",
