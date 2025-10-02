@@ -13,6 +13,10 @@ import DetalleAdopcion from "./src/screens/Refugio/Detalles";
 import EditarAdoptante from "./src/screens/Adoptante/EditarAdoptante";
 import EditarRefugio from "./src/screens/Refugio/EditarRefugio";
 import EditarUsuario from "./src/screens/EditarUsuario";
+import MisMascotasScreen from "./src/screens/Refugio/MisMascotas";
+import AgregarMascotaScreen from "./src/screens/Refugio/AgregarMascota";
+import EditarMascotaScreen from "./src/screens/Refugio/EditarMascota";
+import BorrarMascotaScreen from "./src/screens/Refugio/BorrarMascota";
 
 const TempStack = createNativeStackNavigator();
 const RootStack = createNativeStackNavigator();
@@ -78,7 +82,6 @@ export default function App() {
                 component={DetalleAdopcion}
                 options={{
                   headerShown: false,
-                  title: "Detalle de Adopción",
                   animation: 'slide_from_right',
                   contentStyle: { backgroundColor: theme.colors.background }
                 }}
@@ -88,7 +91,6 @@ export default function App() {
                 component={EditarAdoptante}
                 options={{
                   headerShown: false,
-                  title: "Editar Perfil",
                   animation: "slide_from_right",
                   contentStyle: { backgroundColor: theme.colors.background }
                 }}
@@ -98,7 +100,6 @@ export default function App() {
                 component={EditarRefugio}
                 options={{
                   headerShown: false,
-                  title: "Editar Perfil",
                   animation: "slide_from_right",
                   contentStyle: { backgroundColor: theme.colors.background }
                 }}
@@ -108,7 +109,42 @@ export default function App() {
                 component={EditarUsuario}
                 options={{
                   headerShown: false,
-                  title: "Editar Perfil",
+                  animation: "slide_from_right",
+                  contentStyle: { backgroundColor: theme.colors.background }
+                }}
+              />
+              <RootStack.Screen
+                name="MisMascotas"
+                component={MisMascotasScreen}
+                options={{
+                  headerShown: false,
+                  animation: "slide_from_right",
+                  contentStyle: { backgroundColor: theme.colors.background }
+                }}
+              />
+              <RootStack.Screen
+                name="AgregarMascota"
+                component={AgregarMascotaScreen}
+                options={{
+                  headerShown: false,
+                  animation: "slide_from_right",
+                  contentStyle: { backgroundColor: theme.colors.background }
+                }}
+              />
+              <RootStack.Screen
+                name="EditarMascota"
+                component={EditarMascotaScreen}
+                options={{
+                  headerShown: false,
+                  animation: "slide_from_right",
+                  contentStyle: { backgroundColor: theme.colors.background }
+                }}
+              />
+              <RootStack.Screen
+                name="BorrarMascota"
+                component={BorrarMascotaScreen}
+                options={{
+                  headerShown: false,
                   animation: "slide_from_right",
                   contentStyle: { backgroundColor: theme.colors.background }
                 }}
