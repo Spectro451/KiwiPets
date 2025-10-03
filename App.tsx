@@ -17,6 +17,7 @@ import MisMascotasScreen from "./src/screens/Refugio/MisMascotas";
 import AgregarMascotaScreen from "./src/screens/Refugio/AgregarMascota";
 import EditarMascotaScreen from "./src/screens/Refugio/EditarMascota";
 import BorrarMascotaScreen from "./src/screens/Refugio/BorrarMascota";
+import FormularioEditarMascotaScreen from "./src/screens/Refugio/FormularioEditarMascota";
 
 const TempStack = createNativeStackNavigator();
 const RootStack = createNativeStackNavigator();
@@ -143,6 +144,15 @@ export default function App() {
               <RootStack.Screen
                 name="BorrarMascota"
                 component={BorrarMascotaScreen}
+                options={{
+                  headerShown: false,
+                  animation: "slide_from_right",
+                  contentStyle: { backgroundColor: theme.colors.background }
+                }}
+              />
+              <RootStack.Screen
+                name="FormularioEditarMascota"
+                component={FormularioEditarMascotaScreen}
                 options={{
                   headerShown: false,
                   animation: "slide_from_right",

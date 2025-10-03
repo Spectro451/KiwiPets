@@ -6,6 +6,8 @@ import { getAdopcionId, updateAdopcion } from "../../services/fetchAdopcion";
 import { EstadoAdopcion } from "../../types/enums";
 import { useTheme } from "../../theme/ThemeContext";
 
+
+
 type RouteParams = {
   DetalleAdopcion: { id: number };
 };

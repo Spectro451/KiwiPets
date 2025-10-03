@@ -26,7 +26,7 @@ export default function EditarMascotasScreen({ navigation }: any) {
   );
 
   const handleEdit = (id_mascota: number) => {
-    // Aquí navegamos a la pantalla de editar, pasando el id
+    console.log("Editando mascota con id:", id_mascota);
     navigation.navigate("FormularioEditarMascota", { id_mascota });
   };
 
