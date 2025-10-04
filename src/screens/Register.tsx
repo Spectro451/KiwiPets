@@ -16,7 +16,7 @@ const { width } = Dimensions.get("window");
 const isWeb = Platform.OS === "web";
 const FORM_CARD_WIDTH = isWeb ? Math.min(width * 0.6, 480) : Math.min(width * 0.94, 400);
 
-export default function RegisterScreen({ setToken, setUser}: RegisterProps) {
+export default function RegisterScreen({ setToken, setUser, navigation}: RegisterProps) {
   const [correo, setCorreo] = useState("");
   const [contraseña, setContraseña] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -146,15 +146,26 @@ export default function RegisterScreen({ setToken, setUser}: RegisterProps) {
 
         {error && <Text style={[styles.error, { color: theme.colors.error }]}>{error}</Text>}
 
-        <TouchableOpacity
-          style={[styles.button, { backgroundColor: theme.colors.backgroundTertiary }]}
-          onPress={handleRegister}
-          disabled={loading}
-        >
-          <Text style={{ color: theme.colors.secondary, fontWeight: "bold" }}>
-            {loading ? "Registrando..." : "Registrarse"}
-          </Text>
-        </TouchableOpacity>
+        <View style={{ flexDirection: "row", justifyContent: "space-between", marginTop: 10 }}>
+          <TouchableOpacity
+            style={[styles.button, { backgroundColor: theme.colors.backgroundTertiary, flex: 1, marginRight: 5 }]}
+            onPress={handleRegister}
+            disabled={loading}
+          >
+            <Text style={{ color: theme.colors.secondary, fontWeight: "bold" }}>
+              {loading ? "Registrando..." : "Registrarse"}
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.button, { backgroundColor: theme.colors.error, flex: 1, marginLeft: 5 }]}
+            onPress={() => navigation.goBack()}
+          >
+            <Text style={{ color: theme.colors.secondary, fontWeight: "bold" }}>
+              Cancelar
+            </Text>
+          </TouchableOpacity>
+        </View>
       </View>
     </View>
   );

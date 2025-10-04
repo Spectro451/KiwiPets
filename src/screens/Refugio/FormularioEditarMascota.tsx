@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, Modal, Dimensions, Platform, KeyboardAvoidingView } from "react-native";
+import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, Modal, Dimensions, Platform, KeyboardAvoidingView, ActivityIndicator } from "react-native";
 import { Picker } from '@react-native-picker/picker';
 import { useTheme } from "../../theme/ThemeContext";
 import { Mascota } from "../../types/mascota";
@@ -41,6 +41,8 @@ export default function FormularioEditarMascotaScreen({ navigation, route }: any
   const [showVacunaForm, setShowVacunaForm] = useState(false);
   const [showHistForm, setShowHistForm] = useState(false);
   const [showImageOptions, setShowImageOptions] = useState(false);
+  const [fotoOriginal, setFotoOriginal] = useState<string | undefined>();
+
 
   const [vacunas, setVacunas] = useState<Omit<Vacunas, "id" | "mascota">[]>([]);
   const [vacunaNombre, setVacunaNombre] = useState("");
@@ -61,7 +63,7 @@ export default function FormularioEditarMascotaScreen({ navigation, route }: any
 
   const [loading, setLoading] = useState(true);
 
-  // Helpers seguros para fechas (aceptan Date | string | null | undefined)
+  // tontera enorme que arregla las fechas patrocinado por gpt
   const toDate = (d: any): Date | null => {
     if (!d && d !== 0) return null;
     if (d instanceof Date) {
@@ -134,6 +136,7 @@ export default function FormularioEditarMascotaScreen({ navigation, route }: any
         setDescripcion(data.descripcion ?? "");
         setPersonalidad(data.personalidad ?? "");
         setFoto(data.foto ?? undefined);
+        setFotoOriginal(data.foto ?? undefined);
         setRequisitoAdopcion(data.requisito_adopcion ?? "");
         setEstadoAdopcion(data.estado_adopcion ?? Estado.DISPONIBLE);
         setVacunas(vacunasParseadas);
@@ -156,10 +159,9 @@ export default function FormularioEditarMascotaScreen({ navigation, route }: any
     if (!descripcion.trim()) return alert("La descripción es obligatoria");
     if (!personalidad.trim()) return alert("La personalidad es obligatoria");
     if (!requisito_adopcion.trim()) return alert("El requisito de adopción es obligatorio");
-
     let uploadedUrl = foto;
 
-    if (foto && !foto.startsWith("http")) {
+    if (foto && foto !== fotoOriginal && !foto.startsWith("http")) {
       try {
         let fileToUpload;
         if (Platform.OS === "web") {
@@ -167,8 +169,13 @@ export default function FormularioEditarMascotaScreen({ navigation, route }: any
           const blob = await response.blob();
           fileToUpload = new File([blob], "photo.jpg", { type: blob.type });
         } else {
-          fileToUpload = { uri: foto, name: foto.split("/").pop() || "photo.jpg", type: "image/jpeg" };
+          fileToUpload = {
+            uri: foto,
+            name: foto.split("/").pop() || "photo.jpg",
+            type: "image/jpeg",
+          };
         }
+
         uploadedUrl = await uploadToCloudinary(fileToUpload);
       } catch (error) {
         console.error(error);
@@ -213,6 +220,7 @@ export default function FormularioEditarMascotaScreen({ navigation, route }: any
 
     try {
       await updateMascotas(id_mascota, mascotaActualizada);
+      setFotoOriginal(uploadedUrl);
       alert("Mascota actualizada con éxito!");
       navigation.goBack();
     } catch (error: any) {
@@ -294,8 +302,8 @@ export default function FormularioEditarMascotaScreen({ navigation, route }: any
 
   if (loading) {
     return (
-      <SafeAreaView style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <Text>Cargando...</Text>
+      <SafeAreaView style={{ flex: 1, justifyContent: "center", alignItems: "center", backgroundColor:theme.colors.background }}>
+        <ActivityIndicator size="large" color={theme.colors.accent} />
       </SafeAreaView>
     );
   }
@@ -505,6 +513,8 @@ export default function FormularioEditarMascotaScreen({ navigation, route }: any
                 {Platform.OS === 'web' ? (
                   <input
                     type="date"
+                    min="1900-01-01"
+                    max="2100-12-31"
                     value={vacunaFecha}
                     onChange={e => setVacunaFecha(e.target.value)}
                     style={{  padding: 8, marginBottom: 10 }}
@@ -519,6 +529,8 @@ export default function FormularioEditarMascotaScreen({ navigation, route }: any
                         value={vacunaFecha ? parseFechaLocal(vacunaFecha) : new Date()}
                         mode="date"
                         display="default"
+                        minimumDate={new Date(1900, 0, 1)}
+                        maximumDate={new Date(2100, 11, 31)}
                         onChange={(_, selectedDate) => {
                           setShowPickerAplicacion(false);
                           if (selectedDate) {
@@ -538,6 +550,8 @@ export default function FormularioEditarMascotaScreen({ navigation, route }: any
                 {Platform.OS === 'web' ? (
                   <input
                     type="date"
+                    min="1900-01-01"
+                    max="2100-12-31"
                     value={vacunaProxima}
                     onChange={e => setVacunaProxima(e.target.value)}
                     style={{  padding: 8, marginBottom: 10 }}
@@ -552,6 +566,8 @@ export default function FormularioEditarMascotaScreen({ navigation, route }: any
                         value={vacunaProxima ? parseFechaLocal(vacunaProxima) : new Date()}
                         mode="date"
                         display="default"
+                        minimumDate={new Date(1900, 0, 1)}
+                        maximumDate={new Date(2100, 11, 31)}
                         onChange={(_, selectedDate) => {
                           setShowPickerProxima(false);
                           if (selectedDate) {
@@ -655,6 +671,8 @@ export default function FormularioEditarMascotaScreen({ navigation, route }: any
                 {Platform.OS === 'web' ? (
                   <input
                     type="date"
+                    min="1900-01-01"
+                    max="2100-12-31"
                     value={histFecha}
                     onChange={e => setHistFecha(e.target.value)}
                     style={{ padding: 8, marginBottom: 10 }}
@@ -669,6 +687,8 @@ export default function FormularioEditarMascotaScreen({ navigation, route }: any
                         value={histFecha ? parseFechaLocal(histFecha) : new Date()}
                         mode="date"
                         display="default"
+                        minimumDate={new Date(1900, 0, 1)}
+                        maximumDate={new Date(2100, 11, 31)}
                         onChange={(_, selectedDate) => {
                           setShowPickerHistorial(false);
                           if (selectedDate) {

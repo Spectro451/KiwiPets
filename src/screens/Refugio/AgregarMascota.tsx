@@ -81,9 +81,7 @@ export default function AgregarMascotaScreen({ navigation }: any) {
     if (foto) {
       try {
         let fileToUpload;
-
         if (Platform.OS === "web") {
-          // fetch convierte la URL del navegador en blob
           const response = await fetch(foto);
           const blob = await response.blob();
           fileToUpload = new File([blob], "photo.jpg", { type: blob.type });
@@ -97,9 +95,9 @@ export default function AgregarMascotaScreen({ navigation }: any) {
 
         uploadedUrl = await uploadToCloudinary(fileToUpload);
       } catch (error) {
-        console.error(error);
-        alert("Error subiendo la foto");
-        return;
+        console.error("Error subiendo la foto:", error);
+        const continuar = confirm("Error subiendo la foto. ¿Deseas continuar sin foto?");
+        if (!continuar) return; // cancela el guardado
       }
     }
 
@@ -436,6 +434,8 @@ export default function AgregarMascotaScreen({ navigation }: any) {
                   <input
                     type="date"
                     value={vacunaFecha}
+                    min="1900-01-01"
+                    max="2100-12-31"
                     onChange={e => setVacunaFecha(e.target.value)}
                     style={{  padding: 8, marginBottom: 10 }}
                   />
@@ -449,6 +449,8 @@ export default function AgregarMascotaScreen({ navigation }: any) {
                         value={vacunaFecha ? parseFechaLocal(vacunaFecha) : new Date()}
                         mode="date"
                         display="default"
+                        minimumDate={new Date(1900, 0, 1)}
+                        maximumDate={new Date(2100, 11, 31)}
                         onChange={(_, selectedDate) => {
                           setShowPickerAplicacion(false);
                           if (selectedDate) {
@@ -469,6 +471,8 @@ export default function AgregarMascotaScreen({ navigation }: any) {
                   <input
                     type="date"
                     value={vacunaProxima}
+                    min="1900-01-01"
+                    max="2100-12-31"
                     onChange={e => setVacunaProxima(e.target.value)}
                     style={{  padding: 8, marginBottom: 10 }}
                   />
@@ -481,6 +485,8 @@ export default function AgregarMascotaScreen({ navigation }: any) {
                       <DateTimePicker
                         value={vacunaProxima ? parseFechaLocal(vacunaProxima) : new Date()}
                         mode="date"
+                        minimumDate={new Date(1900, 0, 1)}
+                        maximumDate={new Date(2100, 11, 31)}
                         display="default"
                         onChange={(_, selectedDate) => {
                           setShowPickerProxima(false);
@@ -586,6 +592,8 @@ export default function AgregarMascotaScreen({ navigation }: any) {
                   <input
                     type="date"
                     value={histFecha}
+                    min="1900-01-01"
+                    max="2100-12-31"
                     onChange={e => setHistFecha(e.target.value)}
                     style={{ padding: 8, marginBottom: 10 }}
                   />
@@ -599,6 +607,8 @@ export default function AgregarMascotaScreen({ navigation }: any) {
                         value={histFecha ? parseFechaLocal(histFecha) : new Date()}
                         mode="date"
                         display="default"
+                        minimumDate={new Date(1900, 0, 1)}
+                        maximumDate={new Date(2100, 11, 31)}
                         onChange={(_, selectedDate) => {
                           setShowPickerHistorial(false);
                           if (selectedDate) {

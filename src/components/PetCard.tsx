@@ -81,9 +81,11 @@ export default function PetCardWithButtons({ pet }: PetCardProps) {
         </View>
         {/* stats */}        
         <View style={[styles.statsContainer, { backgroundColor: theme.colors.backgroundTertiary }]}>
-          {pet.edad && (
+          {pet.edad !== undefined && pet.edad !== null && (
             <View style={[styles.stats, { backgroundColor: theme.colors.backgroundTertiary }]}>
-              <Text style={[styles.statText, { color: theme.colors.primary}]}>{pet.edad} años</Text>
+              <Text style={[styles.statText, { color: theme.colors.primary }]}>
+                {pet.edad === 0 ? "<1 año" : `${pet.edad} año${pet.edad > 1 ? "s" : ""}`}
+              </Text>
             </View>
           )}
           {pet.tamaño && (
