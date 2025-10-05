@@ -8,7 +8,7 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/splash-icon.png",
+      "image": "./assets/splash-icon.jpg",
       "resizeMode": "contain",
       "backgroundColor": "#181818"
     },
@@ -17,7 +17,8 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
+        "foregroundImage": "./assets/adaptive-icon.jpg",
+        "resizeMode": "cover",
         "backgroundColor": "#181818"
       },
       "edgeToEdgeEnabled": true,
@@ -25,7 +26,7 @@
       "package": "com.spectro451.KiwiPets"
     },
     "web": {
-      "favicon": "./assets/favicon.png"
+      "favicon": "./assets/Paw.png"
     },
     "extra": {
       "eas": {

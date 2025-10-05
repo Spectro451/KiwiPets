@@ -42,6 +42,7 @@ export default function FormularioEditarMascotaScreen({ navigation, route }: any
   const [showHistForm, setShowHistForm] = useState(false);
   const [showImageOptions, setShowImageOptions] = useState(false);
   const [fotoOriginal, setFotoOriginal] = useState<string | undefined>();
+  const [modalExito, setModalExito] = useState(false);
 
 
   const [vacunas, setVacunas] = useState<Omit<Vacunas, "id" | "mascota">[]>([]);
@@ -221,8 +222,7 @@ export default function FormularioEditarMascotaScreen({ navigation, route }: any
     try {
       await updateMascotas(id_mascota, mascotaActualizada);
       setFotoOriginal(uploadedUrl);
-      alert("Mascota actualizada con éxito!");
-      navigation.goBack();
+      setModalExito(true);
     } catch (error: any) {
       console.error("Error actualizando mascota:", error);
       alert("Error al actualizar mascota: " + (error.response?.data?.message || error.message));
@@ -333,7 +333,7 @@ export default function FormularioEditarMascotaScreen({ navigation, route }: any
               {foto ? (
                 <Image
                   source={{ uri: foto }}
-                  style={{ width: '100%', height: '100%', resizeMode: 'cover' }}
+                  style={{ width: '100%', height: '100%', resizeMode: 'contain' }}
                 />
               ) : (
                 <Text style={{ color: theme.colors.text, textAlign: 'center' }}>sube o toma tu foto</Text>
@@ -469,7 +469,14 @@ export default function FormularioEditarMascotaScreen({ navigation, route }: any
                   borderRadius: 5,
                 }}
               >
-                <Text style={{ color: theme.colors.text }}>
+                <Text
+                  style={{
+                    color: theme.colors.text,
+                    flexShrink: 1,
+                    flexWrap: "wrap",
+                  }}
+                  numberOfLines={0}
+                >
                   {v.nombre} - {formatDate(v.fecha_aplicacion)} - {v.proxima_dosis ? formatDate(v.proxima_dosis) : "Sin próxima dosis"}
                 </Text>
 
@@ -625,7 +632,14 @@ export default function FormularioEditarMascotaScreen({ navigation, route }: any
                   borderRadius: 5,
                 }}
               >
-                <Text style={{ color: theme.colors.text }}>
+                <Text
+                  style={{
+                    color: theme.colors.text,
+                    flexShrink: 1,
+                    flexWrap: "wrap",
+                  }}
+                  numberOfLines={0}
+                >
                   {formatDate(h.fecha)} - {h.veterinario}
                 </Text>
 
@@ -759,6 +773,39 @@ export default function FormularioEditarMascotaScreen({ navigation, route }: any
             </View>
 
           </View>
+          <Modal visible={modalExito} transparent animationType="slide">
+            <View style={styles.modalBackground}>
+              <View
+                style={[
+                  styles.modalContent,
+                  {
+                    backgroundColor: theme.colors.background,
+                    borderWidth: 2,
+                    borderColor: theme.colors.backgroundTertiary,
+                  },
+                ]}
+              >
+                <Text
+                  style={{
+                    marginBottom: 20,
+                    textAlign: "center",
+                    color: theme.colors.text,
+                  }}
+                >
+                  ¡Mascota creada con éxito!
+                </Text>
+                <TouchableOpacity
+                  style={[styles.buttonModal, { backgroundColor: "#4CAF50" }]}
+                  onPress={() => {
+                    setModalExito(false);
+                    navigation.goBack();
+                  }}
+                >
+                  <Text style={styles.buttonText}>Aceptar</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </Modal>
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -770,4 +817,26 @@ const styles = StyleSheet.create({
   label: { marginBottom: 6, fontSize: 15, fontWeight: "bold" },
   input: { borderWidth: 1, borderColor: "gray", padding: 8, borderRadius: 4, marginBottom: 10 },
   button: { width: "100%", height: 48, borderRadius: 10, backgroundColor: "#444", alignItems: "center", justifyContent: "center", marginBottom: 10 },
+    modalBackground: {
+    flex: 1,
+    justifyContent: "center",
+    backgroundColor: "rgba(0,0,0,0.4)",
+    alignItems: "center",
+  },
+  modalContent: {
+    width: Platform.OS === "web" ? 500 : 350,
+    padding: 20,
+    borderRadius: 8,
+    alignItems: "center",
+  },
+  buttonModal: {
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 6,
+    alignItems: "center",
+  },
+  buttonText: {
+    color: "#fff",
+    fontWeight: "bold",
+  },
 });

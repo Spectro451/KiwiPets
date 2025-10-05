@@ -3,6 +3,7 @@ import { Adopcion } from "../../types/adopcion";
 import { getAdopcion } from "../../services/fetchAdopcion";
 import { FlatList, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useTheme } from "../../theme/ThemeContext";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useFocusEffect } from "@react-navigation/native";
 
 interface MascotaSolicitudes{
@@ -64,19 +65,21 @@ const Solicitudes = ({navigation}:any)=>{
   };
 
   return (
-    <View style={[styles.container, {backgroundColor:theme.colors.background}]}>
-      {mascotas.length === 0 ? (
-        <View style={[styles.emptyContainer]}>
-          <Text style={styles.emptyText}>No hay solicitudes para tus mascotas aún.</Text>
-        </View>
-      ) : (
-        <FlatList
-          data={mascotas}
-          keyExtractor={item => item.id.toString()}
-          renderItem={renderMascota}
-        />
-      )}
-    </View>
+    <SafeAreaView edges={['top', 'bottom']} style={{ flex: 1, backgroundColor: theme.colors.background }}>
+      <View style={[styles.container, {backgroundColor:theme.colors.background}]}>
+        {mascotas.length === 0 ? (
+          <View style={[styles.emptyContainer]}>
+            <Text style={styles.emptyText}>No hay solicitudes para tus mascotas aún.</Text>
+          </View>
+        ) : (
+          <FlatList
+            data={mascotas}
+            keyExtractor={item => item.id.toString()}
+            renderItem={renderMascota}
+          />
+        )}
+      </View>
+    </SafeAreaView>
   );
 };
 

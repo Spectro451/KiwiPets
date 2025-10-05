@@ -5,6 +5,9 @@ import { Adopcion } from "../../types/adopcion";
 import { getAdopcionId, updateAdopcion } from "../../services/fetchAdopcion";
 import { EstadoAdopcion } from "../../types/enums";
 import { useTheme } from "../../theme/ThemeContext";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { Linking } from "react-native";
+
 
 
 
@@ -79,7 +82,15 @@ export default function DetalleAdopcion() {
       <Text style={{color:theme.colors.text}}><Text style={{ fontWeight: "bold", color:theme.colors.textSecondary }}>RUT:</Text> {adopcion.adoptante.rut}</Text>
       <Text style={{color:theme.colors.text}}><Text style={{ fontWeight: "bold", color:theme.colors.textSecondary }}>Nombre:</Text> {adopcion.adoptante.nombre}</Text>
       <Text style={{color:theme.colors.text}}><Text style={{ fontWeight: "bold", color:theme.colors.textSecondary }}>Edad:</Text> {adopcion.adoptante.edad} años</Text>
-      <Text style={{color:theme.colors.text}}><Text style={{ fontWeight: "bold", color:theme.colors.textSecondary }}>Teléfono:</Text> {adopcion.adoptante.telefono}</Text>
+      <Text style={{color:theme.colors.text}}>
+        <Text style={{ fontWeight: "bold", color:theme.colors.textSecondary }}>Teléfono:</Text>{" "}
+        <Text
+          style={{ color: "#2196F3", textDecorationLine: "underline" }}
+          onPress={() => Linking.openURL(`tel:${adopcion.adoptante.telefono}`)}
+        >
+          {adopcion.adoptante.telefono}
+        </Text>
+      </Text>
       <Text style={{color:theme.colors.text}}><Text style={{ fontWeight: "bold", color:theme.colors.textSecondary }}>Dirección:</Text> {adopcion.adoptante.direccion}</Text>
       <Text style={{color:theme.colors.text}}><Text style={{ fontWeight: "bold", color:theme.colors.textSecondary }}>Experiencia con mascotas:</Text> {adopcion.adoptante.experiencia_mascotas ? "Sí" : "No"}</Text>
       <Text style={{color:theme.colors.text}}><Text style={{ fontWeight: "bold", color:theme.colors.textSecondary }}>Cantidad de mascotas:</Text> {adopcion.adoptante.cantidad_mascotas}</Text>
@@ -107,79 +118,81 @@ export default function DetalleAdopcion() {
   );
 
   return (
-    <View style={[styles.container, {backgroundColor:theme.colors.background}]}>
-      <TouchableOpacity 
-        style={styles.backButtonContainer} 
-        onPress={() => navigation.goBack()}
-      >
-        <Text style={{ fontSize: 30, color: theme.colors.text, fontWeight: "bold" }}>
-          ←
-        </Text>
-      </TouchableOpacity>
-
-      <AdoptanteInfo adopcion={adopcion}/>
-      <MascotaInfo adopcion={adopcion}/>
-
-      <View style={styles.buttonsContainer}>
-        <TouchableOpacity style={[styles.button, styles.aceptar]} onPress={handleAceptar}>
-          <Text style={styles.buttonText}>Aceptar</Text>
+    <SafeAreaView edges={['top', 'bottom']} style={{ flex: 1, backgroundColor: theme.colors.background }}>
+      <View style={[styles.container, {backgroundColor:theme.colors.background}]}>
+        <TouchableOpacity 
+          style={styles.backButtonContainer} 
+          onPress={() => navigation.goBack()}
+        >
+          <Text style={{ fontSize: 30, color: theme.colors.text, fontWeight: "bold" }}>
+            ←
+          </Text>
         </TouchableOpacity>
-        <TouchableOpacity style={[styles.button, styles.rechazar]} onPress={()=>setModalRechazo(true)}>
-          <Text style={styles.buttonText}>Rechazar</Text>
-        </TouchableOpacity>
-      </View>
 
-      <Modal visible={modalRechazo} transparent animationType="slide">
-        <View style={styles.modalBackground}>
-          <View style={[styles.modalContent, {backgroundColor:theme.colors.background, borderWidth:2, borderColor:theme.colors.backgroundTertiary}]}>
-            <Text style={{color:theme.colors.text, marginBottom:10, fontWeight:"bold", fontSize:16}}>
-              Ingrese el motivo del rechazo
-            </Text>
-            <TextInput
-              style={[styles.input,{
-                borderColor:theme.colors.backgroundTertiary,
-                color:theme.colors.text,
-              }]}
-              placeholder="Escriba aquí..."
-              placeholderTextColor={theme.colors.textSecondary}
-              value={motivo}
-              onChangeText={setMotivo}
-              multiline
-            />
-            <View style={{flexDirection:"row", gap:10}}>
+        <AdoptanteInfo adopcion={adopcion}/>
+        <MascotaInfo adopcion={adopcion}/>
+
+        <View style={styles.buttonsContainer}>
+          <TouchableOpacity style={[styles.button, styles.aceptar]} onPress={handleAceptar}>
+            <Text style={styles.buttonText}>Aceptar</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={[styles.button, styles.rechazar]} onPress={()=>setModalRechazo(true)}>
+            <Text style={styles.buttonText}>Rechazar</Text>
+          </TouchableOpacity>
+        </View>
+
+        <Modal visible={modalRechazo} transparent animationType="slide">
+          <View style={styles.modalBackground}>
+            <View style={[styles.modalContent, {backgroundColor:theme.colors.background, borderWidth:2, borderColor:theme.colors.backgroundTertiary}]}>
+              <Text style={{color:theme.colors.text, marginBottom:10, fontWeight:"bold", fontSize:16}}>
+                Ingrese el motivo del rechazo
+              </Text>
+              <TextInput
+                style={[styles.input,{
+                  borderColor:theme.colors.backgroundTertiary,
+                  color:theme.colors.text,
+                }]}
+                placeholder="Escriba aquí..."
+                placeholderTextColor={theme.colors.textSecondary}
+                value={motivo}
+                onChangeText={setMotivo}
+                multiline
+              />
+              <View style={{flexDirection:"row", gap:10}}>
+                <TouchableOpacity
+                  style={[styles.button, styles.rechazar]}
+                  onPress={handleRechazar}
+                >
+                  <Text style={styles.buttonText}>Rechazar</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.button, {backgroundColor: theme.colors.backgroundTertiary}]}
+                  onPress={() => setModalRechazo(false)}
+                >
+                  <Text style={{color:theme.colors.text, fontWeight:"bold"}}>Cancelar</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </Modal>
+        <Modal visible={modalExito} transparent animationType="slide">
+          <View style={styles.modalBackground}>
+            <View style={[styles.modalContent, {backgroundColor:theme.colors.background, borderWidth:2, borderColor:theme.colors.backgroundTertiary}]}>
+              <Text style={{ marginBottom: 20, textAlign: "center", color:theme.colors.text }}>¡Adopción realizada!</Text>
               <TouchableOpacity
-                style={[styles.button, styles.rechazar]}
-                onPress={handleRechazar}
+                style={[styles.button, { backgroundColor: "#4CAF50" }]}
+                onPress={() => {
+                  setModalExito(false);
+                  navigation.goBack();
+                }}
               >
-                <Text style={styles.buttonText}>Rechazar</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.button, {backgroundColor: theme.colors.backgroundTertiary}]}
-                onPress={() => setModalRechazo(false)}
-              >
-                <Text style={{color:theme.colors.text, fontWeight:"bold"}}>Cancelar</Text>
+                <Text style={styles.buttonText}>Aceptar</Text>
               </TouchableOpacity>
             </View>
           </View>
-        </View>
-      </Modal>
-      <Modal visible={modalExito} transparent animationType="slide">
-        <View style={styles.modalBackground}>
-          <View style={[styles.modalContent, {backgroundColor:theme.colors.background, borderWidth:2, borderColor:theme.colors.backgroundTertiary}]}>
-            <Text style={{ marginBottom: 20, textAlign: "center", color:theme.colors.text }}>¡Adopción realizada!</Text>
-            <TouchableOpacity
-              style={[styles.button, { backgroundColor: "#4CAF50" }]}
-              onPress={() => {
-                setModalExito(false);
-                navigation.goBack();
-              }}
-            >
-              <Text style={styles.buttonText}>Aceptar</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
-    </View>
+        </Modal>
+      </View>
+    </SafeAreaView>
   );
 }
 
