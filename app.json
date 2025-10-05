@@ -18,7 +18,6 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.jpg",
-        "resizeMode": "cover",
         "backgroundColor": "#181818"
       },
       "edgeToEdgeEnabled": true,
@@ -32,6 +31,9 @@
       "eas": {
         "projectId": "5e35e121-c518-497a-a85c-b8febff5ad6f"
       }
-    }
+    },
+    "plugins": [
+      "expo-font"
+    ]
   }
 }
