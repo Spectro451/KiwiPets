@@ -18,6 +18,9 @@ import AgregarMascotaScreen from "./src/screens/Refugio/AgregarMascota";
 import EditarMascotaScreen from "./src/screens/Refugio/EditarMascota";
 import BorrarMascotaScreen from "./src/screens/Refugio/BorrarMascota";
 import FormularioEditarMascotaScreen from "./src/screens/Refugio/FormularioEditarMascota";
+import { transferirMascotas } from "./src/services/fetchMascotas";
+import TransferirMascotas from "./src/screens/Refugio/Transferir";
+import SeleccionarRefugioScreen from "./src/screens/Refugio/SeleccionRefugios";
 
 const TempStack = createNativeStackNavigator();
 const RootStack = createNativeStackNavigator();
@@ -159,6 +162,24 @@ export default function App() {
                   contentStyle: { backgroundColor: theme.colors.background }
                 }}
               />
+              <RootStack.Screen
+                name="TransferirMascotas"
+                component={TransferirMascotas}
+                options={{
+                  headerShown: false,
+                  animation: "slide_from_right",
+                  contentStyle: { backgroundColor: theme.colors.background }
+                }}
+              />
+              <RootStack.Screen
+                name="SeleccionarRefugio"
+                component={SeleccionarRefugioScreen}
+                options={{
+                  headerShown: false,
+                  animation: "slide_from_right",
+                  contentStyle: { backgroundColor: theme.colors.background }
+                }}
+              />              
             </RootStack.Navigator>
           )
         ) : (

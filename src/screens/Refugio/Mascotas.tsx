@@ -35,6 +35,12 @@ export default function MascotasScreen({ navigation }: any) {
       >
         <Text style={[styles.buttonText, {color:theme.colors.textSecondary}]}>Editar Mascota</Text>
       </TouchableOpacity>
+            <TouchableOpacity
+        style={[styles.button, { backgroundColor: theme.colors.backgroundSecondary }]}
+        onPress={() => navigation.navigate("TransferirMascotas")}
+      >
+        <Text style={[styles.buttonText, {color:theme.colors.textSecondary}]}>Transferir Mascotas</Text>
+      </TouchableOpacity>
     </View>
   );
 }

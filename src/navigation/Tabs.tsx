@@ -7,6 +7,7 @@ import { useTheme } from '../theme/ThemeContext';
 import AdopcionesScreen from '../screens/Adoptante/Adopciones';
 import Solicitudes from '../screens/Refugio/Solicitudes';
 import MascotasScreen from '../screens/Refugio/Mascotas';
+import ValidarRefugioScreen from '../screens/ValidarRefugio';
 
 const Tab = createBottomTabNavigator();
 
@@ -35,6 +36,12 @@ export default function BottomTabs({ user, onLogout }: BottomTabsProps) {
           <Tab.Screen name="Favoritos" component={FavScreen} />
           <Tab.Screen name="Adopciones" component={AdopcionesScreen} />
           <Tab.Screen name="Notificaciones" component={NotificationScreen} />
+          {user.admin && (
+            <Tab.Screen
+              name="Validar"
+              children={(props) => <ValidarRefugioScreen {...props} user={user} />}
+            />
+          )}
           <Tab.Screen
             name="Perfil"
             children={(props) => <ProfileScreen {...props} route={{ params: { onLogout } }} />}
@@ -45,6 +52,12 @@ export default function BottomTabs({ user, onLogout }: BottomTabsProps) {
           <Tab.Screen name="Mascotas" component={MascotasScreen} />
           <Tab.Screen name="Solicitudes" component={Solicitudes} />
           <Tab.Screen name="Notificaciones" component={NotificationScreen} />
+          {user.admin && (
+            <Tab.Screen
+              name="Validar"
+              children={(props) => <ValidarRefugioScreen {...props} user={user} />}
+            />
+          )}
           <Tab.Screen
             name="Perfil"
             children={(props) => <ProfileScreen {...props} route={{ params: { onLogout } }} />}

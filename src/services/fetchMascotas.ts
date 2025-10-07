@@ -51,3 +51,16 @@ export const createMascota = async (data: Partial<Mascota>) => {
   }
 };
 
+export const transferirMascotas = async (mascotasIds: number[], refugioDestinoId: number) => {
+  try {
+    const response = await api.post("/mascota/transferir", {
+      mascotasIds,
+      refugioDestinoId,
+    });
+    return response.data;
+  } catch (error: any) {
+    console.error("Error al transferir mascotas:", error.response?.data || error.message);
+    throw error;
+  }
+};
+
