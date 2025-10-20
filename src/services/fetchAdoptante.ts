@@ -27,7 +27,7 @@ export const updateAdoptante = async (rut: string, data: Partial<Adoptante>) => 
     return response.data;
   } catch (error) {
     console.error("Error al modificar adoptante:", error);
-    return null;
+    throw error;
   }
 };
 

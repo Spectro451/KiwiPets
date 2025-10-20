@@ -1,4 +1,4 @@
-import { Dispatch, SetStateAction, useState } from 'react';
+import { Dispatch, SetStateAction, useRef, useState } from 'react';
 import { View, TextInput, Alert, StyleSheet, TouchableOpacity, Text, Dimensions, Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { loginUsuario } from '../services/fetchUsuario';
@@ -19,14 +19,28 @@ export default function LoginScreen  ({ setToken, setUser, navigation }: LoginPr
   const [contraseña, setContraseña] = useState('');
   const [loadingLogin, setLoadingLogin] = useState(false);
   const { theme } = useTheme();
+    const correoRef = useRef<TextInput>(null);
+    const contraseñaRef = useRef<TextInput>(null);
+  const [error, setError] = useState<string>("");
+
 
   const handleLogin = async () => {
     if (loadingLogin) return;
+    if (!email.trim()) {
+      setError("Debe ingresar un correo");
+      correoRef.current?.focus();
+      return;
+    }
+
+    if (!contraseña.trim()) {
+      setError("Debe ingresar una contraseña");
+      return;
+    }
     setLoadingLogin(true);
     try {
       const data = await loginUsuario(email, contraseña);
       if (!data?.token) {
-        Alert.alert('Login fallido', data?.message || 'Correo o contraseña incorrectos');
+        setError(data?.message || "Correo o contraseña incorrectos");
         return;
       }
 
@@ -40,8 +54,7 @@ export default function LoginScreen  ({ setToken, setUser, navigation }: LoginPr
       setToken(data.token);
       setUser({ id: data.id, tipo: data.tipo, admin: data.admin });
     } catch (err: any) {
-      console.error('login error', err);
-      Alert.alert('Error', err.response?.data?.message || 'Error de conexión');
+        setError(err.response?.data?.message || "Error de conexión");
     } finally {
       setLoadingLogin(false);
     }
@@ -60,9 +73,10 @@ export default function LoginScreen  ({ setToken, setUser, navigation }: LoginPr
         <Text style={[styles.label, { color: theme.colors.secondary }]}>Correo:</Text>
         <TextInput
           value={email}
+          ref={correoRef}
           onChangeText={setEmail}
           placeholder="Correo"
-          style={[styles.input, { color: theme.colors.text }]}
+          style={[styles.input, { color: theme.colors.text }, error?.includes("ingresar un correo") && { borderColor: theme.colors.error }]}
           placeholderTextColor={theme.colors.text}
           autoCapitalize="none"
           keyboardType="email-address"
@@ -71,14 +85,17 @@ export default function LoginScreen  ({ setToken, setUser, navigation }: LoginPr
         <Text style={[styles.label, { color: theme.colors.secondary }]}>Contraseña:</Text>
         <TextInput
           value={contraseña}
+          ref={contraseñaRef}
           onChangeText={setContraseña}
           placeholder="Contraseña"
-          style={[styles.input, { color: theme.colors.text }]}
+          style={[styles.input, { color: theme.colors.text }, error?.includes("ingresar una contraseña") && { borderColor: theme.colors.error }]}
           placeholderTextColor={theme.colors.text}
           secureTextEntry
           autoCapitalize="none"
           onSubmitEditing={handleLogin}
         />
+        {error && <Text style={[styles.error, { color: theme.colors.error }]}>{error}</Text>}
+
         <TouchableOpacity
           style={[styles.button, { backgroundColor: theme.colors.backgroundTertiary }]}
           onPress={handleLogin}
@@ -117,5 +134,9 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     alignItems: "center",
     justifyContent: "center",
+  },
+  error: {
+    textAlign: "center",
+    marginBottom: 10,
   },
 });

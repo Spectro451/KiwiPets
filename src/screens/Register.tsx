@@ -30,8 +30,9 @@ export default function RegisterScreen({ setToken, setUser, navigation}: Registe
     setError(null);
 
     // Validaciones
-    if (!correo.includes("@")) {
-      setError("Correo inválido");
+    const emailRegex = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
+    if (!emailRegex.test(correo)) {
+      setError("Debe ingresar un correo valido");
       correoRef.current?.focus();
       return;
     }

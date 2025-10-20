@@ -46,12 +46,17 @@ export default function EditarAdoptante() {
       setError("Todos los campos son obligatorios");
       return;
     }
+    const rutRegex = /^\d{7,8}[0-9kK]$/;
+    if (!rutRegex.test(rut)) {
+      setError("Rut invalido");
+      return;
+    }
     const telefonoRegex = /^\+\d{7,15}$/;
     if (!telefonoRegex.test(telefono)) {
       setError("Debes incluir prefijo nacional y sin espacios");
       return;
     }
-    if (edad < 18) {
+    if (edad < 18 || edad > 100) {
       setError("Debes ser mayor de 18");
       return;
     }
@@ -101,8 +106,16 @@ export default function EditarAdoptante() {
           borderColor: theme.colors.accent,
         }}>
           <Text style={[styles.label, { color: theme.colors.secondary }]}>Rut:</Text>
-          <TextInput value={rut} onChangeText={setRut} placeholder="rut sin punto ni guion" style={[styles.input, { color: theme.colors.text }]} placeholderTextColor={theme.colors.text} />
-
+          <TextInput
+            value={rut ?? ""} 
+            onChangeText={t => {
+            const soloNumeros = t.replace(/[^0-9kK]/g, '');
+            setRut(soloNumeros);
+            }}
+            placeholder="rut sin punto ni guion" 
+            style={[styles.input, { color: theme.colors.text }]} 
+            placeholderTextColor={theme.colors.text} 
+          />
           <Text style={[styles.label, { color: theme.colors.secondary }]}>Nombre:</Text>
           <TextInput value={nombre} onChangeText={setNombre} placeholder="Nombre del adoptante" style={[styles.input, { color: theme.colors.text }]} placeholderTextColor={theme.colors.text} />
 
@@ -110,10 +123,30 @@ export default function EditarAdoptante() {
           <TextInput value={direccion} onChangeText={setDireccion} placeholder="Dirección" style={[styles.input, { color: theme.colors.text }]} placeholderTextColor={theme.colors.text} />
 
           <Text style={[styles.label, { color: theme.colors.secondary }]}>Teléfono:</Text>
-          <TextInput value={telefono} onChangeText={setTelefono} placeholder="+56912345678" keyboardType="phone-pad" style={[styles.input, { color: theme.colors.text }]} placeholderTextColor={theme.colors.text} />
+          <TextInput 
+            value={telefono} 
+            onChangeText={t => {
+              let filtrado = t.replace(/[^0-9+]/g, '');
+              setTelefono(filtrado);
+            }}
+            placeholder="+56912345678" 
+            keyboardType="phone-pad" 
+            style={[styles.input, { color: theme.colors.text }]} 
+            placeholderTextColor={theme.colors.text} 
+          />
 
           <Text style={[styles.label, { color: theme.colors.secondary }]}>Edad:</Text>
-          <TextInput value={edad.toString()} onChangeText={t => setEdad(Number(t))} placeholder="Edad" keyboardType="number-pad" style={[styles.input, { color: theme.colors.text }]} placeholderTextColor={theme.colors.text} />
+          <TextInput 
+            value={edad.toString()} 
+            onChangeText={t => {
+              const soloNumeros = t.replace(/[^0-9]/g, ""); // elimina letras
+              setEdad(soloNumeros ? Number(soloNumeros) : 0);
+            }}
+            placeholder="Edad" 
+            keyboardType="number-pad" 
+            style={[styles.input, { color: theme.colors.text }]} 
+            placeholderTextColor={theme.colors.text} 
+          />
 
           <Text style={[styles.label, { color: theme.colors.secondary }]}>¿Tienes experiencia con mascotas?</Text>
           <View style={{ flexDirection: "row", marginBottom: 10 }}>
@@ -151,7 +184,10 @@ export default function EditarAdoptante() {
               <Text style={[styles.label, { color: theme.colors.secondary }]}>Cuántas mascotas tiene:</Text>
               <TextInput
                 value={cantidadMascotas.toString()}
-                onChangeText={t => setCantidadMascotas(Number(t))}
+                onChangeText={t => {
+                  const soloNumeros = t.replace(/[^0-9]/g, ""); // elimina letras
+                  setCantidadMascotas(soloNumeros ? Number(soloNumeros) : 0);
+                }}
                 placeholder="Cantidad"
                 keyboardType="number-pad"
                 style={[styles.input, { color: theme.colors.text }]}
