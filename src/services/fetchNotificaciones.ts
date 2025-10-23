@@ -1,9 +1,9 @@
 import { Notificaciones } from "../types/notificaciones";
 import { api } from "./api";
 
-export const getNotificaciones = async (offset = 0, limit = 20) => {
+export const getNotificaciones = async () => {
   try {
-    const response = await api.get(`/notificaciones?offset=${offset}&limit=${limit}`);
+    const response = await api.get("/notificaciones");
     return response.data;
   } catch (error) {
     console.error("Error al obtener notificaciones:", error);

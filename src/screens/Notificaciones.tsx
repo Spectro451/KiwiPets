@@ -25,6 +25,7 @@ export default function NotificacionesScreen({ navigation }: any) {
     setLoading(true);
     try {
       const data = await getNotificaciones();
+      console.log("Total notif:", data.length);
       setNotificaciones(data);
     } catch (err) {
       console.error(err);
@@ -45,25 +46,47 @@ export default function NotificacionesScreen({ navigation }: any) {
     );
   };
 
-  const eliminarSeleccionadas = async () => {
-    if (seleccionadas.length === 0) {
-      Alert.alert("Debe seleccionar al menos una");
-      return;
-    }
-    if (botonBloqueado) return;
-    setBotonBloqueado(true);
-    try {
-      await Promise.all(
-        seleccionadas.map(id => deleteNotificaciones(id))
-      );
-      setNotificaciones(prev => prev.filter(n => !seleccionadas.includes(n.id)));
-      setSeleccionadas([]);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setTimeout(() => setBotonBloqueado(false), 1500);
-    }
-  };
+const eliminarSeleccionadas = async () => {
+  if (seleccionadas.length === 0) {
+    Alert.alert("Debe seleccionar al menos una");
+    return;
+  }
+  if (botonBloqueado) return;
+
+  setBotonBloqueado(true);
+
+  // Aqui separa leido de no leida
+  const seleccionadasLeidas = notificaciones
+    .filter(n => seleccionadas.includes(n.id) && n.leido);
+
+  const noLeidas = notificaciones
+    .filter(n => seleccionadas.includes(n.id) && !n.leido);
+
+  // Mostrar modal para no leida
+  if (noLeidas.length > 0) {
+    setMensajeSeleccionado(`Debe marcar como leido antes de borrar la notificacion`);
+    setModalVisible(true);
+  }
+
+  if (seleccionadasLeidas.length === 0) {
+    setBotonBloqueado(false);
+    return;
+  }
+
+  try {
+    // Solo eliminar las leídas
+    await Promise.all(seleccionadasLeidas.map(n => deleteNotificaciones(n.id)));
+
+    // Actualizar la lista de notificaciones y las seleccionadas
+    const idsEliminadas = seleccionadasLeidas.map(n => n.id);
+    setNotificaciones(prev => prev.filter(n => !idsEliminadas.includes(n.id)));
+    setSeleccionadas(prev => prev.filter(id => !idsEliminadas.includes(id)));
+  } catch (err) {
+    console.error("Error al borrar notificaciones:", err);
+  } finally {
+    setBotonBloqueado(false);
+  }
+};
 
   const handlePress = async (item: Notificaciones) => {
     if (user?.tipo === "Refugio" && item.adopcionId) {
@@ -150,13 +173,15 @@ export default function NotificacionesScreen({ navigation }: any) {
           {seleccionadas.length === notificaciones.length ? "Deseleccionar todo" : "Seleccionar todo"}
         </Text>
       </TouchableOpacity>
-      <FlatList
-        data={notificaciones}
-        keyExtractor={item => item.id.toString()}
-        renderItem={renderItem}
-        refreshing={loading}
-        onRefresh={fetchNotificaciones}
-      />
+<FlatList
+  data={notificaciones}
+  keyExtractor={item => item.id.toString()}
+  renderItem={renderItem}
+  refreshing={loading}
+  onRefresh={fetchNotificaciones}
+  style={{ flex: 1 }}
+  initialNumToRender={notificaciones.length} // fuerza renderizado de todos
+/>
       <TouchableOpacity
         style={[
           styles.botonEliminar,
