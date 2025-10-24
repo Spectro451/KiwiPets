@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { FlatList, StyleSheet, Text, TouchableOpacity, View, Modal } from "react-native";
+import { FlatList, StyleSheet, Text, TouchableOpacity, View, Modal, ActivityIndicator } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useTheme } from "../../theme/ThemeContext";
 import { getRefugio, refugioByUsuarioId } from "../../services/fetchRefugio";
@@ -20,25 +20,29 @@ export default function SeleccionarRefugioScreen() {
   const [resultModalVisible, setResultModalVisible] = useState(false);
   const [refugioSeleccionado, setRefugioSeleccionado] = useState<any>(null);
   const [resultMessage, setResultMessage] = useState<string>("");
+  const [loading, setLoading] = useState(true);
 
-useEffect(() => {
-  const fetchRefugios = async () => {
-    try {
-      if (!user) return;
-      const miRefugio = await refugioByUsuarioId();
-      const todos = await getRefugio();
+  useEffect(() => {
+    const fetchRefugios = async () => {
+      setLoading(true);
+      try {
+        if (!user) return;
+        const miRefugio = await refugioByUsuarioId();
+        const todos = await getRefugio();
 
-      const filtrados = todos.filter(
-        (r: Refugio) => r.validado && r.id !== miRefugio?.id
-      );
-      setRefugios(filtrados);
-    } catch (err) {
-      console.error("Error al cargar refugios:", err);
-    }
-  };
+        const filtrados = todos.filter(
+          (r: Refugio) => r.validado && r.id !== miRefugio?.id
+        );
+        setRefugios(filtrados);
+      } catch (err) {
+        console.error("Error al cargar refugios:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  fetchRefugios();
-}, [user]);
+    fetchRefugios();
+  }, [user]);
 
   const openConfirmModal = (refugio: any) => {
     setRefugioSeleccionado(refugio);
@@ -89,12 +93,24 @@ useEffect(() => {
           <Text style={{ color: theme.colors.text, fontSize: 20 }}>← Volver</Text>
         </TouchableOpacity>
       </View>
-      <FlatList
-        data={refugios}
-        keyExtractor={(item) => item.id.toString()}
-        renderItem={renderRefugio}
-        contentContainerStyle={{ padding: 16 }}
-      />
+      {loading ? (
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 16 }}>
+          <ActivityIndicator size="large" color={theme.colors.secondary} />
+        </View>
+      ) : refugios.length === 0 ? (
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 16 }}>
+          <Text style={{ color: theme.colors.text, fontSize: 16, textAlign: 'center' }}>
+            No hay refugios disponibles para transferir.
+          </Text>
+        </View>
+      ) : (
+        <FlatList
+          data={refugios}
+          keyExtractor={(item) => item.id.toString()}
+          renderItem={renderRefugio}
+          contentContainerStyle={{ padding: 16 }}
+        />
+      )}
 
       {/* Modal de confirmación */}
       <Modal transparent visible={confirmModalVisible} animationType="fade">

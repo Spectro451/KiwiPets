@@ -173,15 +173,15 @@ export default function NotificacionesScreen({ navigation }: any) {
           {seleccionadas.length === notificaciones.length ? "Deseleccionar todo" : "Seleccionar todo"}
         </Text>
       </TouchableOpacity>
-<FlatList
-  data={notificaciones}
-  keyExtractor={item => item.id.toString()}
-  renderItem={renderItem}
-  refreshing={loading}
-  onRefresh={fetchNotificaciones}
-  style={{ flex: 1 }}
-  initialNumToRender={notificaciones.length} // fuerza renderizado de todos
-/>
+      <FlatList
+        data={notificaciones}
+        keyExtractor={item => item.id.toString()}
+        renderItem={renderItem}
+        refreshing={loading}
+        onRefresh={fetchNotificaciones}
+        style={{ flex: 1 }}
+        initialNumToRender={notificaciones.length} // fuerza renderizado de todos
+      />
       <TouchableOpacity
         style={[
           styles.botonEliminar,
@@ -233,7 +233,7 @@ const styles = StyleSheet.create({
     padding: 15,
     borderRadius: 10,
     alignItems: "center",
-    marginVertical: 15,
+    margin: 15,
   },
   botonTexto: { color: "#fff", fontWeight: "bold" },
   titulo: {

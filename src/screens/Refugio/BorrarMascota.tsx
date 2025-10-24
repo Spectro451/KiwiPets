@@ -6,14 +6,13 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useFocusEffect } from "@react-navigation/native";
 import Checkbox from "expo-checkbox";
 
-const ITEM_WIDTH = Dimensions.get("window").width / 3 - 15; // 3 columnas
-
 export default function BorrarMascotasScreen({ navigation }: any) {
   const { theme } = useTheme();
   const [mascotas, setMascotas] = useState<any[]>([]);
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
   const [selectAll, setSelectAll] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
+  const [itemWidth, setItemWidth] = useState(150); // valor default
 
   useFocusEffect(
     useCallback(() => {
@@ -60,6 +59,20 @@ export default function BorrarMascotasScreen({ navigation }: any) {
     }
   };
 
+  const onGridLayout = (event: any) => {
+    const { width } = event.nativeEvent.layout;
+    const minWidth = 150;
+    let cols = Math.floor(width / minWidth);
+
+    // limite de columna
+    if (cols > 5) cols = 5;
+    if (cols < 1) cols = 1;
+
+    const space = 10;
+    const calculatedWidth = (width - space * (cols - 1)) / cols;
+    setItemWidth(calculatedWidth);
+  };
+
   return (
     <SafeAreaView edges={['top','bottom']} style={{ flex: 1, backgroundColor: theme.colors.background }}>
       <ScrollView style={[styles.container, { backgroundColor: theme.colors.background }]}>
@@ -81,11 +94,11 @@ export default function BorrarMascotasScreen({ navigation }: any) {
           </TouchableOpacity>
         </View>
 
-        <View style={styles.grid}>
+        <View style={styles.grid} onLayout={onGridLayout}>
           {mascotas.map(item => (
             <TouchableOpacity
               key={item.id_mascota}
-              style={[styles.itemContainer, {backgroundColor: theme.colors.backgroundSecondary, borderColor:theme.colors.backgroundTertiary}]}
+              style={[styles.itemContainer, {width: itemWidth, backgroundColor: theme.colors.backgroundSecondary, borderColor:theme.colors.backgroundTertiary}]}
               onPress={() => toggleSelect(item.id_mascota)}
               activeOpacity={0.7}
             >
@@ -98,7 +111,7 @@ export default function BorrarMascotasScreen({ navigation }: any) {
               </View>
               <Image
                 source={item.foto ? { uri: item.foto } : undefined}
-                style={styles.image}
+                style={[styles.image, { height: itemWidth }]}
               />
               <Text style={[styles.name, { color: theme.colors.text }]} numberOfLines={1}>
                 {item.nombre}
@@ -107,7 +120,6 @@ export default function BorrarMascotasScreen({ navigation }: any) {
           ))}
         </View>
       </ScrollView>
-
       <Modal
         transparent
         visible={modalVisible}
@@ -117,15 +129,25 @@ export default function BorrarMascotasScreen({ navigation }: any) {
         <View style={[styles.modalBackground]}>
           <View style={[styles.modalContainer, { backgroundColor: theme.colors.background }]}>
             <Text style={[styles.modalText, { color: theme.colors.text }]}>
-              ¿Borrar {selectedIds.length} mascota(s)?
+              {selectedIds.length === 0 
+                ? "Debe seleccionar al menos una mascota"
+                : `¿Borrar ${selectedIds.length} mascota(s)?`}
             </Text>
             <View style={styles.modalButtons}>
-              <TouchableOpacity onPress={() => setModalVisible(false)} style={styles.modalButton}>
+              <TouchableOpacity 
+                onPress={() => setModalVisible(false)} 
+                style={[styles.modalButton, { justifyContent: 'center', alignItems: 'center' }]}
+              >
                 <Text style={{ color: theme.colors.text }}>Cancelar</Text>
               </TouchableOpacity>
-              <TouchableOpacity onPress={handleDelete} style={styles.modalButton}>
-                <Text style={{ color: "red" }}>Borrar</Text>
-              </TouchableOpacity>
+              {selectedIds.length > 0 && (
+                <TouchableOpacity 
+                  onPress={handleDelete} 
+                  style={[styles.modalButton, { justifyContent: 'center', alignItems: 'center' }]}
+                >
+                  <Text style={{ color: "red" }}>Borrar</Text>
+                </TouchableOpacity>
+              )}
             </View>
           </View>
         </View>
@@ -140,9 +162,9 @@ const styles = StyleSheet.create({
   actions: { flexDirection: "row", justifyContent: "space-between", marginBottom: 15 },
   actionButton: { padding: 10 },
   grid: { flexDirection: "row", flexWrap: "wrap", justifyContent: "space-between", marginBottom: 20 },
-  itemContainer: { width: ITEM_WIDTH, marginBottom: 10, alignItems: "flex-start", padding:5, borderWidth:2, borderRadius:10 },
+  itemContainer: {marginBottom: 10, alignItems: "flex-start", padding:5, borderWidth:2, borderRadius:10 },
   checkboxContainer: { marginBottom: 5 },
-  image: { width: '100%', height: ITEM_WIDTH, borderRadius: 10, marginBottom: 5, resizeMode:"stretch" },
+  image: { width: '100%', borderRadius: 10, marginBottom: 5, resizeMode:"stretch" },
   name: { fontSize: 14, fontWeight: "bold", textAlign: "center", width: "100%" },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   modalBackground: { flex:1, backgroundColor:'rgba(0,0,0,0.6)', justifyContent:'center', alignItems:'center' },

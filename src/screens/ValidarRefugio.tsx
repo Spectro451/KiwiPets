@@ -66,12 +66,15 @@ export default function ValidarRefugioScreen({ user }: Props) {
 
   return (
     <SafeAreaView edges={['top']} style={{ flex: 1, backgroundColor: theme.colors.background }}>
+      <Text style={[styles.titulo, { color: theme.colors.text }]}>
+        Validar Refugios
+      </Text>
       <View style={{ flex: 1 }}>
         <FlatList
           data={refugios}
           keyExtractor={(item) => item.id.toString()}
           renderItem={renderItem}
-          contentContainerStyle={{ padding: 16, paddingBottom: 15 }} // padding extra para el borde inferior
+          contentContainerStyle={{ padding: 16, paddingBottom: 15 }}
         />
       </View>
 
@@ -121,4 +124,9 @@ const styles = StyleSheet.create({
   modalText: { fontSize: 16, fontWeight:'bold', textAlign:'center', marginBottom: 15 },
   modalButtons: { flexDirection:'row', justifyContent:'space-between' },
   modalButton: { padding:10 },
+  titulo: {
+    fontSize: 24,
+    fontWeight: "bold",
+    textAlign: "center"
+  },
 });

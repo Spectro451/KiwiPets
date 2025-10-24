@@ -66,6 +66,9 @@ const Solicitudes = ({navigation}:any)=>{
 
   return (
     <SafeAreaView edges={['top', 'bottom']} style={{ flex: 1, backgroundColor: theme.colors.background }}>
+            <Text style={[styles.titulo, { color: theme.colors.text }]}>
+              Mis Solicitudes
+            </Text>
       <View style={[styles.container, {backgroundColor:theme.colors.background}]}>
         {mascotas.length === 0 ? (
           <View style={[styles.emptyContainer]}>
@@ -92,4 +95,9 @@ const styles = StyleSheet.create({
   solicitudContainer: { padding: 8, marginLeft: 16, borderWidth: 2, borderColor: "#eee", borderRadius: 6, marginTop: 4 },
   emptyContainer: { flex: 1, justifyContent: "center", alignItems: "center" },
   emptyText: { fontSize: 16, color: "#888" },
+  titulo: {
+    fontSize: 24,
+    fontWeight: "bold",
+    textAlign: "center"
+  },
 });
