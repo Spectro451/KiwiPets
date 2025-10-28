@@ -89,18 +89,19 @@ export default function NotificacionesScreen({ navigation }: any) {
   };
 
   const handlePress = async (item: Notificaciones) => {
-    if (user?.tipo === "Refugio" && item.adopcionId) {
+    if (!item.leido) {
       await marcarLeida(item.id);
+      setNotificaciones(prev =>
+        prev.map(n => n.id === item.id ? { ...n, leido: true } : n)
+      );
+    }
+
+    // Solo navegar si hay adopcionId
+    if (user?.tipo === "Refugio" && item.adopcionId) {
       navigation.push("DetalleAdopcion", { id: item.adopcionId });
     } else if (user?.tipo === "Adoptante") {
       setMensajeSeleccionado(item.mensaje);
       setModalVisible(true);
-      if (!item.leido) {
-        await marcarLeida(item.id);
-        setNotificaciones(prev =>
-          prev.map(n => n.id === item.id ? { ...n, leido: true } : n)
-        );
-      }
     }
   };
 
