@@ -19,6 +19,7 @@ export default function HomeScreen() {
   const [favoritos, setFavoritos] = useState<Favoritos[]>([]);
   const [isButtonDisabled, setIsButtonDisabled] = useState(false);
   const currentUser = useAuth().user;
+  const [currentIndex, setCurrentIndex] = useState(0);
 
 
   const handleSwipe = (dir: "left" | "right") => {
@@ -65,6 +66,7 @@ export default function HomeScreen() {
           const favoritosData = await getFavorito();
           const misFavoritos = favoritosData.filter((f: Favoritos) => f.adoptante?.usuario.id === currentUser?.id);
           setFavoritos(currentUser ? misFavoritos : []);
+          setCurrentIndex(0);
         } catch (error) {
           console.error("Error al obtener mascotas:", error);
         } finally{
@@ -111,6 +113,7 @@ return (
           }
           setFavoritos(prev => [...prev]);
         }}
+        onIndexChange={setCurrentIndex}
       />
 
       <View style={styles.buttonsContainer}>
@@ -138,7 +141,7 @@ return (
           disabled={isButtonDisabled}
         >
           <Text style={{ color: theme.colors.secondary, fontWeight: "bold" }}>
-            {favoritos.some(f => f.mascota.id_mascota === pets[swipeRef.current?.getCurrentIndex() ?? 0].id_mascota) ? "❤️" : "favorito"}
+            {favoritos.some(f => f.mascota.id_mascota === pets[currentIndex].id_mascota) ? "❤️" : "favorito"}
           </Text>
         </TouchableOpacity>
 

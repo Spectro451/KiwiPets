@@ -8,10 +8,11 @@ const { width } = Dimensions.get("window");
 type SwipeCardsProps = {
   pets: Mascota[];
   onSwipeEnd?: (dir: "left" | "right", petId: number) => void;
+  onIndexChange?: (index: number) => void;
 };
 
 // Usamos forwardRef para exponer la función
-const PetSwipe = forwardRef(({ pets, onSwipeEnd }: SwipeCardsProps, ref) => {
+const PetSwipe = forwardRef(({ pets, onSwipeEnd, onIndexChange }: SwipeCardsProps, ref) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const position = useRef(new Animated.ValueXY()).current;
 
@@ -27,7 +28,11 @@ const PetSwipe = forwardRef(({ pets, onSwipeEnd }: SwipeCardsProps, ref) => {
       useNativeDriver: false,
     }).start(() => {
       position.setValue({ x: 0, y: 0 });
-      setCurrentIndex(prev => (prev + 1 < pets.length ? prev + 1 : 0));
+      setCurrentIndex(prev => {
+        const next = prev + 1 < pets.length ? prev + 1 : 0;
+        onIndexChange?.(next);
+        return next;
+      });
       onSwipeEnd?.(dir, pets[currentPetIndex].id_mascota);
     });
   };
