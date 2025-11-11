@@ -80,7 +80,6 @@ export default function MisMascotasScreen({ navigation }: any) {
         </View>
       </ScrollView>
 
-      {/* tu modal intacto */}
       <Modal visible={modalVisible} transparent animationType="slide">
         <View style={[styles.modalBackground]}>
           <View style={[styles.modalContent, { backgroundColor: theme.colors.background, borderColor: theme.colors.backgroundTertiary }]}>
