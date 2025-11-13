@@ -5,6 +5,9 @@ export type Refugio ={
   id:number;
   nombre:string;
   direccion:string;
+  comuna?: string;
+  latitud?: number;
+  longitud?: number;
   telefono:string;
   validado:boolean;
   usuario:Usuario;

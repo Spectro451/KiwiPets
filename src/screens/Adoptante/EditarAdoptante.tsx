@@ -6,6 +6,7 @@ import { Edad, EspeciePreferida, Sexo, Vivienda } from "../../types/enums";
 import { Picker } from '@react-native-picker/picker';
 import { Adoptante } from "../../types/adoptante";
 import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
+import { buscarDirecciones, Direccion } from "../../services/mapBox";
 
 type RootStackParamList = {
   EditarAdoptante: { perfilData: Adoptante };
@@ -40,6 +41,13 @@ export default function EditarAdoptante() {
   const [motivoAdopcion, setMotivoAdopcion] = useState(perfilData.motivo_adopcion);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [comuna, setComuna] = useState(perfilData.comuna ?? "");
+  const [latitud, setLatitud] = useState<number | undefined>(perfilData.latitud);
+  const [longitud, setLongitud] = useState<number | undefined>(perfilData.longitud);
+  const [sugerenciasComuna, setSugerenciasComuna] = useState<Direccion[]>([]);
+  const [loadingComuna, setLoadingComuna] = useState(false);
+  const [comunaValida, setComunaValida] = useState<boolean>(!!perfilData.comuna);
+
 
   const handleSave = async () => {
     if (!nombre.trim() || !direccion.trim() || !telefono.trim()) {
@@ -64,6 +72,11 @@ export default function EditarAdoptante() {
       setError("Cantidad de mascotas debe estar entre 0 y 20");
       return;
     }
+    if (!comunaValida) {
+      setError("Debes seleccionar una comuna de la lista");
+      setSaving(false);
+      return;
+    }
 
     setSaving(true);
     setError(null);
@@ -75,6 +88,9 @@ export default function EditarAdoptante() {
         edad,
         telefono,
         direccion,
+        comuna,
+        latitud,
+        longitud,
         experiencia_mascotas: experienciaMascotas,
         cantidad_mascotas: experienciaMascotas === "Si" ? cantidadMascotas : 0,
         especie_preferida: especiePreferida,
@@ -89,6 +105,35 @@ export default function EditarAdoptante() {
     } finally {
       setSaving(false);
     }
+  };
+
+  const handleComunaChange = async (text: string) => {
+    setComuna(text);
+    setComunaValida(false);
+
+    if (text.trim().length < 3) {
+      setSugerenciasComuna([]);
+      return;
+    }
+
+    setLoadingComuna(true);
+    try {
+      const results = await buscarDirecciones(text);
+      setSugerenciasComuna(results);
+    } catch (err) {
+      console.error(err);
+      setSugerenciasComuna([]);
+    } finally {
+      setLoadingComuna(false);
+    }
+  };
+
+  const handleSelectComuna = (dir: Direccion) => {
+    setComuna(dir.comuna);
+    setLatitud(dir.latitud);
+    setLongitud(dir.longitud);
+    setSugerenciasComuna([]);
+    setComunaValida(true);
   };
 
   return (
@@ -121,6 +166,43 @@ export default function EditarAdoptante() {
 
           <Text style={[styles.label, { color: theme.colors.secondary }]}>Dirección:</Text>
           <TextInput value={direccion} onChangeText={setDireccion} placeholder="Dirección" style={[styles.input, { color: theme.colors.text }]} placeholderTextColor={theme.colors.text} />
+
+        <Text style={[styles.label, { color: theme.colors.secondary }]}>Comuna:</Text>
+        <TextInput
+          value={comuna}
+          onChangeText={handleComunaChange}
+          placeholder="Ingrese comuna"
+          style={[styles.input, { color: theme.colors.text }]}
+          placeholderTextColor={theme.colors.text}
+        />
+
+        {loadingComuna && <ActivityIndicator size="small" color={theme.colors.secondary} />}
+
+        {sugerenciasComuna.length > 0 && (
+          <View style={{
+            borderWidth: 1,
+            borderColor: theme.colors.accent,
+            borderRadius: 6,
+            maxHeight: 150,
+            marginBottom: 10,
+          }}>
+            {sugerenciasComuna.slice(0, 3).map((dir, index) => (
+              <TouchableOpacity
+                key={index}
+                onPress={() => handleSelectComuna(dir)}
+                style={{
+                  padding: 8,
+                  borderBottomWidth: index !== Math.min(sugerenciasComuna.length, 3) - 1 ? 1 : 0,
+                  borderColor: theme.colors.accent,
+                }}
+              >
+                <Text style={{ color: theme.colors.text }}>
+                  {dir.comuna}{dir.ciudad ? `, ${dir.ciudad}` : ""}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        )}
 
           <Text style={[styles.label, { color: theme.colors.secondary }]}>Teléfono:</Text>
           <TextInput 

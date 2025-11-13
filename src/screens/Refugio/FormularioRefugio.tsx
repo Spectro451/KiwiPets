@@ -4,6 +4,7 @@ import { refugioByUsuarioId, updateRefugio } from "../../services/fetchRefugio";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useTheme } from "../../theme/ThemeContext";
 import { deleteUsuario } from "../../services/fetchUsuario";
+import { buscarDirecciones, Direccion } from "../../services/mapBox";
 
 type FormularioRefugioProps = {
   setRedirect: (val: string | null) => void;
@@ -22,6 +23,11 @@ export default function FormularioRefugio({ setRedirect, onCancel }: FormularioR
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [comuna, setComuna] = useState("");
+  const [latitud, setLatitud] = useState<number | undefined>(undefined);
+  const [longitud, setLongitud] = useState<number | undefined>(undefined);
+  const [sugerenciasComuna, setSugerenciasComuna] = useState<Direccion[]>([]);
+  const [loadingComuna, setLoadingComuna] = useState(false);
   const { theme } = useTheme();
 
   useEffect(() => {
@@ -53,14 +59,29 @@ export default function FormularioRefugio({ setRedirect, onCancel }: FormularioR
       setError("Debes incluir prefijo nacional y sin espacios");
       return;
     }
+    if (!comuna.trim()) {
+      setError("Debes ingresar comuna");
+      return;
+    }
+    if (!sugerenciasComuna.some(dir => dir.comuna === comuna)) {
+      setError("Debes seleccionar una comuna de la lista");
+      return;
+    }
     setSaving(true);
     setError(null);
     try {
-      await updateRefugio(refugioId, { nombre, direccion, telefono });
-      //Borro el flag
+      await updateRefugio(refugioId, { 
+        nombre,
+        direccion,
+        telefono,
+        comuna,
+        latitud,
+        longitud,
+      });
+      // Borro el flag
       await AsyncStorage.removeItem("goToFormulario");
 
-      //ahora si pal home
+      // ahora sí pal home
       setRedirect(null);
     } catch {
       setError("Error al guardar cambios");
@@ -92,6 +113,32 @@ export default function FormularioRefugio({ setRedirect, onCancel }: FormularioR
     }
   };
 
+  const handleComunaChange = async (text: string) => {
+    setComuna(text);
+    if (text.trim().length < 3) {
+      setSugerenciasComuna([]);
+      return;
+    }
+
+    setLoadingComuna(true);
+    try {
+      const results = await buscarDirecciones(text);
+      setSugerenciasComuna(results);
+    } catch (err) {
+      console.error(err);
+      setSugerenciasComuna([]);
+    } finally {
+      setLoadingComuna(false);
+    }
+  };
+
+  const handleSelectComuna = (dir: Direccion) => {
+    setComuna(dir.comuna);
+    setLatitud(dir.latitud);
+    setLongitud(dir.longitud);
+    setSugerenciasComuna([]);
+  };
+
   if (loading) return <ActivityIndicator size="large" color={theme.colors.secondary} style={{ flex: 1, backgroundColor:theme.colors.background }} />;
 
   return (
@@ -108,6 +155,42 @@ export default function FormularioRefugio({ setRedirect, onCancel }: FormularioR
         <TextInput value={nombre} onChangeText={setNombre} placeholder="Nombre del refugio" style={[styles.input, {color:theme.colors.text}]} placeholderTextColor={theme.colors.text}/>
         <Text style={[styles.label, {color:theme.colors.secondary}]}>Dirección:</Text>
         <TextInput value={direccion} onChangeText={setDireccion} placeholder="Dirección" style={[styles.input, {color:theme.colors.text}]} placeholderTextColor={theme.colors.text} />
+        <Text style={[styles.label, { color: theme.colors.secondary }]}>Comuna:</Text>
+        <TextInput
+          value={comuna}
+          onChangeText={handleComunaChange}
+          placeholder="Ingrese comuna"
+          style={[styles.input, { color: theme.colors.text }]}
+          placeholderTextColor={theme.colors.text}
+        />
+
+        {loadingComuna && <ActivityIndicator size="small" color={theme.colors.secondary} />}
+
+        {sugerenciasComuna.length > 0 && (
+          <View style={{
+            borderWidth: 1,
+            borderColor: theme.colors.accent,
+            borderRadius: 6,
+            maxHeight: 150,
+            marginBottom: 10,
+          }}>
+            {sugerenciasComuna.slice(0, 3).map((dir, index) => (
+              <TouchableOpacity
+                key={index}
+                onPress={() => handleSelectComuna(dir)}
+                style={{
+                  padding: 8,
+                  borderBottomWidth: index !== Math.min(sugerenciasComuna.length, 3) - 1 ? 1 : 0,
+                  borderColor: theme.colors.accent,
+                }}
+              >
+                <Text style={{ color: theme.colors.text }}>
+                  {dir.comuna}{dir.ciudad ? `, ${dir.ciudad}` : ""}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        )}
         <Text style={[styles.label, {color:theme.colors.secondary}]}>Teléfono:</Text>
         <TextInput 
           value={telefono} 
