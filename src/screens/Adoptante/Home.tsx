@@ -23,7 +23,7 @@ export default function HomeScreen() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [radioLocal, setRadioLocal] = useState<number>(5);
   const [sinResultados, setSinResultados] = useState(false);
-
+  const [vistas, setVistas] = useState<number[]>([]);
 
   const handleSwipe = (dir: "left" | "right") => {
     if (isButtonDisabled) return;
@@ -58,14 +58,17 @@ export default function HomeScreen() {
     }, 450);
   };
 
-  const fetchMascotas = async (radio: number) => {
+  const fetchMascotas = async (radio: number, vistasActuales: number[] = vistas) => {
     setLoading(true);
     try {
       const data = await getMascotasCercanas(radio); 
       const disponibles = data.filter((pet: any) => pet.estado_adopcion !== "Adoptado");
-      setPets(disponibles);
 
-      if (disponibles.length === 0) setSinResultados(true);
+      const disponiblesFiltradas = disponibles.filter((p:any) => !vistasActuales.includes(p.id_mascota ?? p.id));
+
+      setPets(disponiblesFiltradas);
+
+      if (disponiblesFiltradas.length === 0) setSinResultados(true);
       else setSinResultados(false);
 
       const favoritosData = await getFavorito();
@@ -161,20 +164,25 @@ export default function HomeScreen() {
   
 return (
     <View style={{ flex: 1, backgroundColor: theme.colors.background }}>
-      <PetSwipe 
-        ref={swipeRef} 
-        pets={pets} 
-        onSwipeEnd={async(dir, petId)=> {
-          if(dir=="right"){
-            const res = await createAdopcion(petId);
-            if (res){
-              console.log("adopcion creada", res);
-            }
-          }
-          setFavoritos(prev => [...prev]);
-        }}
-        onIndexChange={setCurrentIndex}
-      />
+<PetSwipe 
+  ref={swipeRef} 
+  pets={pets} 
+  onSwipeEnd={async (dir, petId) => {
+    if (dir === "right") {
+      const res = await createAdopcion(petId);
+      if (res) console.log("adopcion creada", res);
+    }
+
+  setVistas(prev => {
+    const next = prev.includes(petId) ? prev : [...prev, petId];
+    fetchMascotas(radioLocal, next);
+    return next;
+  });
+
+    setFavoritos(prev => [...prev]);
+  }}
+  onIndexChange={setCurrentIndex}
+/>
 
       <View style={styles.buttonsContainer}>
         <TouchableOpacity
