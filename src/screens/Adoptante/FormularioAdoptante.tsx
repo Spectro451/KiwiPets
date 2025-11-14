@@ -7,6 +7,7 @@ import { Edad, EspeciePreferida, Sexo, Vivienda } from "../../types/enums";
 import { Picker } from '@react-native-picker/picker';
 import { deleteUsuario } from "../../services/fetchUsuario";
 import { useAuth } from "../../hooks/useAuth";
+import { buscarDirecciones, Direccion } from "../../services/mapBox";
 
 type FormularioAdoptanteProps = {
   setRedirect: (val: string | null) => void;
@@ -34,6 +35,12 @@ export default function FormularioAdoptante({ setRedirect, onCancel }: Formulari
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [comuna, setComuna] = useState("");
+  const [latitud, setLatitud] = useState<number | undefined>(undefined);
+  const [longitud, setLongitud] = useState<number | undefined>(undefined);
+  const [sugerenciasComuna, setSugerenciasComuna] = useState<Direccion[]>([]);
+  const [loadingComuna, setLoadingComuna] = useState(false);
+
   const { theme } = useTheme();
 
   useEffect(() => {
@@ -56,37 +63,67 @@ export default function FormularioAdoptante({ setRedirect, onCancel }: Formulari
 
   const handleSave = async () => {
     if (!adoptanteRut) return;
+
     const rutRegex = /^\d{7,8}[0-9kK]$/;
-      if (!rutRegex.test(adoptanteRut)) {
-        setError("Rut invalido");
-        return;
-      }
-    if (!nombre.trim() || !direccion.trim() || !telefono.trim() || !motivoAdopcion.trim()) {
-      setError("Todos los campos son obligatorios");
+    if (!rutRegex.test(adoptanteRut)) {
+      setError("Rut inválido");
       return;
     }
+
+    if (!nombre.trim()) {
+      setError("Debe ingresar nombre");
+      return;
+    }
+    if (!direccion.trim()) {
+      setError("Debe ingresar dirección");
+      return;
+    }
+    if (!comuna.trim()) {
+      setError("Debe ingresar comuna");
+      return;
+    }
+    if (!sugerenciasComuna.some(dir => dir.comuna === comuna)) {
+      setError("Debes seleccionar una comuna de la lista");
+      return;
+    }
+    if (!telefono.trim()) {
+      setError("Debe ingresar teléfono");
+      return;
+    }
+    if (!motivoAdopcion.trim()) {
+      setError("Debe ingresar motivo de adopción");
+      return;
+    }
+
     const telefonoRegex = /^\+\d{7,15}$/;
     if (!telefonoRegex.test(telefono)) {
       setError("Debes incluir prefijo nacional y sin espacios");
       return;
     }
-    if(edad < 18 || edad > 100){
+
+    if (edad < 18 || edad > 100) {
       setError("Debes ser mayor de 18");
       return;
     }
-    if (cantidadMascotas < 0 || cantidadMascotas > 20) {
+
+    if (experienciaMascotas === "Si" && (cantidadMascotas < 0 || cantidadMascotas > 20)) {
       setError("Cantidad de mascotas debe estar entre 0 y 20");
       return;
     }
+
     setSaving(true);
-    setError(null);
+    setError(null); // solo reseteamos aquí, justo antes de enviar al backend
+
     try {
       await updateAdoptante(rutActual!, {
-        rut:adoptanteRut.toLowerCase(),
+        rut: adoptanteRut.toLowerCase(),
         nombre,
         edad,
         telefono,
         direccion,
+        comuna,
+        latitud: latitud ?? undefined,
+        longitud: longitud ?? undefined,
         experiencia_mascotas: experienciaMascotas,
         cantidad_mascotas: experienciaMascotas === "Si" ? cantidadMascotas : 0,
         especie_preferida: especiePreferida,
@@ -95,20 +132,16 @@ export default function FormularioAdoptante({ setRedirect, onCancel }: Formulari
         edad_buscada: edadBuscada,
         motivo_adopcion: motivoAdopcion,
       });
-      
-      //Borro el flag
-      await AsyncStorage.removeItem("goToFormulario");
 
-      //ahora si pal home
+      await AsyncStorage.removeItem("goToFormulario");
       setRedirect(null);
-    } catch (err: any){
+    } catch (err: any) {
       console.error(err);
       if (err.response?.status === 500) {
         setError("RUT ya existente");
       } else {
         setError("Error al guardar cambios");
       }
-      return;
     } finally {
       setSaving(false);
     }
@@ -135,6 +168,35 @@ const handleCancel = async () => {
   } catch (err) {
     console.error("Error al cancelar el formulario:", err);
   }
+};
+
+const handleComunaChange = async (text: string) => {
+  setComuna(text);
+  if (text.trim().length < 3) {
+    setSugerenciasComuna([]);
+    return;
+  }
+
+  setLoadingComuna(true);
+  try {
+    const results = await buscarDirecciones(text);
+    setSugerenciasComuna(results);
+  } catch (err) {
+    console.error(err);
+    setSugerenciasComuna([]);
+  } finally {
+    setLoadingComuna(false);
+  }
+};
+
+const handleSelectComuna = (dir: Direccion) => {
+  setComuna(dir.comuna);
+  setLatitud(dir.latitud);
+  setLongitud(dir.longitud);
+  setSugerenciasComuna([]);
+
+  console.log("Comuna seleccionada:", dir.comuna);
+  console.log("Latitud:", dir.latitud, "Longitud:", dir.longitud);
 };
 
   if (loading) return <ActivityIndicator size="large" color={theme.colors.secondary} style={{ flex: 1, backgroundColor:theme.colors.background }} />;
@@ -174,6 +236,43 @@ const handleCancel = async () => {
 
         <Text style={[styles.label, { color: theme.colors.secondary }]}>Dirección:</Text>
         <TextInput value={direccion} onChangeText={setDireccion} placeholder="Dirección" style={[styles.input, { color: theme.colors.text }]} placeholderTextColor={theme.colors.text} />
+
+        <Text style={[styles.label, { color: theme.colors.secondary }]}>Comuna:</Text>
+        <TextInput
+          value={comuna}
+          onChangeText={handleComunaChange}
+          placeholder="Ingrese comuna"
+          style={[styles.input, { color: theme.colors.text }]}
+          placeholderTextColor={theme.colors.text}
+        />
+
+        {loadingComuna && <ActivityIndicator size="small" color={theme.colors.secondary} />}
+
+        {sugerenciasComuna.length > 0 && (
+          <View style={{
+            borderWidth: 1,
+            borderColor: theme.colors.accent,
+            borderRadius: 6,
+            maxHeight: 150,
+            marginBottom: 10,
+          }}>
+            {sugerenciasComuna.slice(0, 3).map((dir, index) => (
+              <TouchableOpacity
+                key={index}
+                onPress={() => handleSelectComuna(dir)}
+                style={{
+                  padding: 8,
+                  borderBottomWidth: index !== Math.min(sugerenciasComuna.length, 3) - 1 ? 1 : 0,
+                  borderColor: theme.colors.accent,
+                }}
+              >
+                <Text style={{ color: theme.colors.text }}>
+                  {dir.comuna}{dir.ciudad ? `, ${dir.ciudad}` : ""}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        )}
 
         <Text style={[styles.label, { color: theme.colors.secondary }]}>Teléfono:</Text>
         <TextInput 

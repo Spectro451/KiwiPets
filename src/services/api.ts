@@ -1,10 +1,9 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 
-
 export const api = axios.create({
   baseURL: "https://kiwipetsbackend.onrender.com",
-  timeout:10000,
+  timeout: 10000,
 });
 
 //envia el token al header de cada consulta

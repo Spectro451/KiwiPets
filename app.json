@@ -4,7 +4,7 @@
     "slug": "KiwiPets",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/icon.jpg",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "splash": {
@@ -21,7 +21,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptative-icon.png",
+        "foregroundImage": "./assets/adaptative-icon.jpg",
         "backgroundColor": "#181818"
       },
       "edgeToEdgeEnabled": true,

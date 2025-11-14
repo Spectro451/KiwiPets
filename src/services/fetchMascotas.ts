@@ -64,3 +64,15 @@ export const transferirMascotas = async (mascotasIds: number[], refugioDestinoId
   }
 };
 
+export const getMascotasCercanas = async (radio?: number) => {
+  try {
+    const response = await api.get('/mascota/cercanas', {
+      params: radio ? { radio } : {},
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error al obtener mascotas cercanas:", error);
+    throw error;
+  }
+};
+
