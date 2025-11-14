@@ -10,6 +10,7 @@ import { createFavorito, deleteFavorito, getFavorito } from "../../services/fetc
 import { Mascota } from "../../types/mascota";
 import { Favoritos } from "../../types/favoritos";
 import { useAuth } from "../../hooks/useAuth";
+import { adoptanteByUsuarioId } from "../../services/fetchAdoptante";
 
 export default function HomeScreen() {
   const { theme } = useTheme();
@@ -81,8 +82,25 @@ export default function HomeScreen() {
 
   useFocusEffect(
     useCallback(() => {
-      setRadioLocal(5);
-      fetchMascotas(5);
+      const fetchBase = async () => {
+        setLoading(true);
+        try {
+          const adoptante = await adoptanteByUsuarioId();
+          if (adoptante?.radio_busqueda) {
+            setRadioLocal(adoptante.radio_busqueda);
+            fetchMascotas(adoptante.radio_busqueda);
+          } else {
+            setRadioLocal(5);
+            fetchMascotas(5);
+          }
+        } catch (error) {
+          console.error("Error al obtener adoptante:", error);
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      fetchBase();
     }, [currentUser])
   );
 
