@@ -108,6 +108,9 @@ importers:
       '@types/react':
         specifier: ~19.1.0
         version: 19.1.15
+      metro-minify-terser:
+        specifier: ^0.83.3
+        version: 0.83.3
       typescript:
         specifier: ~5.9.2
         version: 5.9.2
@@ -2282,6 +2285,10 @@ packages:
 
   metro-minify-terser@0.83.2:
     resolution: {integrity: sha512-zvIxnh7U0JQ7vT4quasKsijId3dOAWgq+ip2jF/8TMrPUqQabGrs04L2dd0haQJ+PA+d4VvK/bPOY8X/vL2PWw==}
+    engines: {node: '>=20.19.4'}
+
+  metro-minify-terser@0.83.3:
+    resolution: {integrity: sha512-O2BmfWj6FSfzBLrNCXt/rr2VYZdX5i6444QJU0fFoc7Ljg+Q+iqebwE3K0eTvkI6TRjELsXk1cjU+fXwAR4OjQ==}
     engines: {node: '>=20.19.4'}
 
   metro-resolver@0.83.2:
@@ -5985,6 +5992,11 @@ snapshots:
       - supports-color
 
   metro-minify-terser@0.83.2:
+    dependencies:
+      flow-enums-runtime: 0.0.6
+      terser: 5.44.0
+
+  metro-minify-terser@0.83.3:
     dependencies:
       flow-enums-runtime: 0.0.6
       terser: 5.44.0
