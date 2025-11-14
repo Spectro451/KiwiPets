@@ -2,7 +2,7 @@ import { View, TouchableOpacity, Text, StyleSheet } from "react-native";
 import { useFocusEffect } from '@react-navigation/native';
 import { useTheme } from "../../theme/ThemeContext";
 import { useCallback, useState, useRef } from "react";
-import { getMascotas } from "../../services/fetchMascotas";
+import { getMascotas, getMascotasCercanas } from "../../services/fetchMascotas";
 import PetSwipe from "../../components/petSwipe";
 import SkeletonCard from "../../components/skeletonCard";
 import { createAdopcion } from "../../services/fetchAdopcion";
@@ -20,6 +20,8 @@ export default function HomeScreen() {
   const [isButtonDisabled, setIsButtonDisabled] = useState(false);
   const currentUser = useAuth().user;
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [radioLocal, setRadioLocal] = useState<number>(5);
+  const [sinResultados, setSinResultados] = useState(false);
 
 
   const handleSwipe = (dir: "left" | "right") => {
@@ -55,27 +57,42 @@ export default function HomeScreen() {
     }, 450);
   };
 
+  const fetchMascotas = async (radio: number) => {
+    setLoading(true);
+    try {
+      const data = await getMascotasCercanas(radio); 
+      const disponibles = data.filter((pet: any) => pet.estado_adopcion !== "Adoptado");
+      setPets(disponibles);
+
+      if (disponibles.length === 0) setSinResultados(true);
+      else setSinResultados(false);
+
+      const favoritosData = await getFavorito();
+      const misFavoritos = favoritosData.filter((f: Favoritos) => f.adoptante?.usuario.id === currentUser?.id);
+      setFavoritos(currentUser ? misFavoritos : []);
+      setCurrentIndex(0);
+    } catch (error) {
+      console.error("Error al obtener mascotas:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
   useFocusEffect(
     useCallback(() => {
-      const fetchPets = async () => {
-        setLoading(true)
-        try {
-          const data = await getMascotas();
-          const disponibles = data.filter((pet: any) => pet.estado_adopcion !== "Adoptado");
-          setPets(disponibles);
-          const favoritosData = await getFavorito();
-          const misFavoritos = favoritosData.filter((f: Favoritos) => f.adoptante?.usuario.id === currentUser?.id);
-          setFavoritos(currentUser ? misFavoritos : []);
-          setCurrentIndex(0);
-        } catch (error) {
-          console.error("Error al obtener mascotas:", error);
-        } finally{
-          setLoading(false)
-        }
-      };
-      fetchPets();
+      setRadioLocal(5);
+      fetchMascotas(5);
     }, [currentUser])
   );
+
+  const aumentarRadio = () => {
+    if (radioLocal < 40) {
+      const nuevoRadio = radioLocal + 5;
+      setRadioLocal(nuevoRadio);
+      fetchMascotas(nuevoRadio);
+    }
+  };
 
   if (loading) {
     return (
@@ -97,6 +114,31 @@ export default function HomeScreen() {
       </View>
     );
   }
+
+    if (sinResultados) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: theme.colors.background }}>
+        <Text style={{color:theme.colors.text}}>
+          No se encontraron mascotas en tu radio de {radioLocal} km.
+        </Text>
+        {radioLocal < 40 && (
+          <TouchableOpacity
+            onPress={aumentarRadio}
+            style={{
+              marginTop: 10,
+              backgroundColor: theme.colors.accent,
+              paddingVertical: 10,
+              paddingHorizontal: 20,
+              borderRadius: 8,
+            }}
+          >
+            <Text style={{ color: "white", fontWeight: "bold" }}>Aumentar radio a {radioLocal + 5} km</Text>
+          </TouchableOpacity>
+        )}
+      </View>
+    );
+  }
+
   if (!pets.length) return <Text>No hay mascotas disponibles.</Text>;
   
 return (

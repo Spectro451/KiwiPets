@@ -13,6 +13,7 @@ export type Adoptante ={
   comuna?: string;
   latitud?: number;
   longitud?: number;
+  radio_busqueda?: number;
   experiencia_mascotas:string;
   cantidad_mascotas:number;
   especie_preferida:EspeciePreferida;

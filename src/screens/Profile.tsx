@@ -2,7 +2,7 @@ import { View, Text, TouchableOpacity, ActivityIndicator, StyleSheet } from "rea
 import { useAuth } from "../hooks/useAuth";
 import { useCallback, useState } from "react";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
-import { adoptanteByUsuarioId } from "../services/fetchAdoptante";
+import { adoptanteByUsuarioId, updateAdoptante } from "../services/fetchAdoptante";
 import { getAdopcion } from "../services/fetchAdopcion";
 import { getFavorito } from "../services/fetchFavoritos";
 import { getNotificaciones } from "../services/fetchNotificaciones";
@@ -11,6 +11,8 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useTheme } from "../theme/ThemeContext";
 import { refugioByUsuarioId } from "../services/fetchRefugio";
 import { getMascotas } from "../services/fetchMascotas";
+import Slider from "@react-native-community/slider";
+
 
 interface ProfileScreenProps {
   route: { params: { onLogout?: () => Promise<void> } };
@@ -26,6 +28,9 @@ export default function ProfileScreen({ route }: ProfileScreenProps) {
   const [favoritosCount, setFavoritosCount] = useState(0);
   const [notificacionesCount, setNotificacionesCount] = useState(0);
   const [mascotasCount, setMascotasCount] = useState(0);
+  const [radioBusqueda, setRadioBusqueda] = useState(data?.radio_busqueda || 5);
+  const [actualizandoRadio, setActualizandoRadio] = useState(false);
+
   const {theme} = useTheme();
 
   useFocusEffect(
@@ -37,6 +42,7 @@ export default function ProfileScreen({ route }: ProfileScreenProps) {
           if (user.tipo === "Adoptante") {
             const profileData = await adoptanteByUsuarioId();
             setData(profileData);
+            setRadioBusqueda(profileData.radio_busqueda ?? 5);
 
             const adopciones = await getAdopcion();
             setAdopcionesCount(adopciones.length);
@@ -107,9 +113,50 @@ export default function ProfileScreen({ route }: ProfileScreenProps) {
                 <Text style={[styles.seccionTitulo, {color:theme.colors.text}]}>Solicitudes</Text>
                 <Text style={[styles.seccionNumero, {color:theme.colors.textSecondary}]}>{adopcionesCount}</Text>
               </View>
+
               <View style={[styles.seccion, {backgroundColor:theme.colors.backgroundSecondary}]}>
                 <Text style={[styles.seccionTitulo, {color:theme.colors.text}]}>Favoritos</Text>
                 <Text style={[styles.seccionNumero, {color:theme.colors.textSecondary}]}>{favoritosCount}</Text>
+              </View>
+              <View style={[styles.seccion, { backgroundColor: theme.colors.backgroundSecondary }]}>
+                <Text style={[styles.seccionTitulo, { color: theme.colors.text }]}>
+                  Radio de búsqueda: {radioBusqueda} km
+                </Text>
+
+                <Slider
+                  style={{ width: "100%", marginTop: 10 }}
+                  minimumValue={5}
+                  maximumValue={40}
+                  step={5}
+                  value={radioBusqueda}
+                  onValueChange={setRadioBusqueda}
+                  minimumTrackTintColor={theme.colors.accent}
+                  maximumTrackTintColor={theme.colors.textSecondary}
+                />
+
+                <TouchableOpacity
+                  disabled={actualizandoRadio}
+                  onPress={async () => {
+                    try {
+                      setActualizandoRadio(true);
+                      await updateAdoptante(data.rut, { radio_busqueda: radioBusqueda });
+                    } finally {
+                      setActualizandoRadio(false);
+                    }
+                  }}
+                  style={{
+                    marginTop: 10,
+                    backgroundColor: theme.colors.accent,
+                    paddingVertical: 10,
+                    borderRadius: 8,
+                    alignItems: "center",
+                    opacity: actualizandoRadio ? 0.5 : 1,
+                  }}
+                >
+                  <Text style={{ color: "white", fontWeight: "bold" }}>
+                    {actualizandoRadio ? "Actualizando..." : "Actualizar Radio"}
+                  </Text>
+                </TouchableOpacity>
               </View>
             </>
           )}
