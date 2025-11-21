@@ -1,12 +1,28 @@
 import { useCallback, useEffect, useState } from "react";
 import Checkbox from "expo-checkbox";
 import { useTheme } from "../theme/ThemeContext";
-import { Alert, View, StyleSheet, FlatList, TouchableOpacity, Text, Dimensions, Platform, Modal } from "react-native";
+import {
+  Alert,
+  View,
+  StyleSheet,
+  FlatList,
+  TouchableOpacity,
+  Text,
+  Dimensions,
+  Platform,
+  Modal,
+} from "react-native";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { Notificaciones } from "../types/notificaciones";
-import { deleteNotificaciones, getNotificaciones, marcarLeida } from "../services/fetchNotificaciones";
+import {
+  deleteNotificaciones,
+  getNotificaciones,
+  marcarLeida,
+} from "../services/fetchNotificaciones";
 import { useAuth } from "../hooks/useAuth";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { getAdopcion, getAdopcionId } from "../services/fetchAdopcion";
+import { EstadoAdopcion } from "../types/enums";
 
 const { width } = Dimensions.get("window");
 const isWeb = Platform.OS === "web";
@@ -19,7 +35,9 @@ export default function NotificacionesScreen({ navigation }: any) {
   const [loading, setLoading] = useState(false);
   const [botonBloqueado, setBotonBloqueado] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
-  const [mensajeSeleccionado, setMensajeSeleccionado] = useState<string | null>(null);
+  const [mensajeSeleccionado, setMensajeSeleccionado] = useState<string | null>(
+    null
+  );
 
   const fetchNotificaciones = async () => {
     setLoading(true);
@@ -41,8 +59,8 @@ export default function NotificacionesScreen({ navigation }: any) {
   );
 
   const toggleSelection = (id: number) => {
-    setSeleccionadas(prev =>
-      prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
+    setSeleccionadas((prev) =>
+      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]
     );
   };
 
@@ -56,15 +74,19 @@ export default function NotificacionesScreen({ navigation }: any) {
     setBotonBloqueado(true);
 
     // Aqui separa leido de no leida
-    const seleccionadasLeidas = notificaciones
-      .filter(n => seleccionadas.includes(n.id) && n.leido);
+    const seleccionadasLeidas = notificaciones.filter(
+      (n) => seleccionadas.includes(n.id) && n.leido
+    );
 
-    const noLeidas = notificaciones
-      .filter(n => seleccionadas.includes(n.id) && !n.leido);
+    const noLeidas = notificaciones.filter(
+      (n) => seleccionadas.includes(n.id) && !n.leido
+    );
 
     // Mostrar modal para no leida
     if (noLeidas.length > 0) {
-      setMensajeSeleccionado(`Debe marcar como leido antes de borrar la notificacion`);
+      setMensajeSeleccionado(
+        `Debe marcar como leido antes de borrar la notificacion`
+      );
       setModalVisible(true);
     }
 
@@ -75,12 +97,18 @@ export default function NotificacionesScreen({ navigation }: any) {
 
     try {
       // Solo eliminar las leídas
-      await Promise.all(seleccionadasLeidas.map(n => deleteNotificaciones(n.id)));
+      await Promise.all(
+        seleccionadasLeidas.map((n) => deleteNotificaciones(n.id))
+      );
 
       // Actualizar la lista de notificaciones y las seleccionadas
-      const idsEliminadas = seleccionadasLeidas.map(n => n.id);
-      setNotificaciones(prev => prev.filter(n => !idsEliminadas.includes(n.id)));
-      setSeleccionadas(prev => prev.filter(id => !idsEliminadas.includes(id)));
+      const idsEliminadas = seleccionadasLeidas.map((n) => n.id);
+      setNotificaciones((prev) =>
+        prev.filter((n) => !idsEliminadas.includes(n.id))
+      );
+      setSeleccionadas((prev) =>
+        prev.filter((id) => !idsEliminadas.includes(id))
+      );
     } catch (err) {
       console.error("Error al borrar notificaciones:", err);
     } finally {
@@ -89,18 +117,33 @@ export default function NotificacionesScreen({ navigation }: any) {
   };
 
   const handlePress = async (item: Notificaciones) => {
+    // Marcar como leída si no lo está
     if (!item.leido) {
       await marcarLeida(item.id);
-      setNotificaciones(prev =>
-        prev.map(n => n.id === item.id ? { ...n, leido: true } : n)
+      setNotificaciones((prev) =>
+        prev.map((n) => (n.id === item.id ? { ...n, leido: true } : n))
       );
     }
 
-    // Solo navegar si hay adopcionId
     if (user?.tipo === "Refugio" && item.adopcionId) {
-      navigation.push("DetalleAdopcion", { id: item.adopcionId });
+      try {
+        const adopcion = await getAdopcionId(item.adopcionId);
+
+        if (
+          adopcion.adoptante &&
+          adopcion.estado === EstadoAdopcion.EN_PROCESO
+        ) {
+          navigation.push("DetalleAdopcion", { id: item.adopcionId });
+          return;
+        }
+        setMensajeSeleccionado(item.mensaje || "Notificación sin detalle");
+        setModalVisible(true);
+      } catch {
+        setMensajeSeleccionado(item.mensaje || "Notificación sin detalle");
+        setModalVisible(true);
+      }
     } else if (user?.tipo === "Adoptante") {
-      setMensajeSeleccionado(item.mensaje);
+      setMensajeSeleccionado(item.mensaje || "Notificación sin detalle");
       setModalVisible(true);
     }
   };
@@ -111,10 +154,9 @@ export default function NotificacionesScreen({ navigation }: any) {
       setSeleccionadas([]);
     } else {
       // Si no todas están seleccionadas, selecciona todas
-      setSeleccionadas(notificaciones.map(n => n.id));
+      setSeleccionadas(notificaciones.map((n) => n.id));
     }
   };
-
 
   const renderItem = ({ item }: { item: Notificaciones }) => (
     <View
@@ -123,24 +165,23 @@ export default function NotificacionesScreen({ navigation }: any) {
         {
           borderColor: theme.colors.backgroundTertiary,
           backgroundColor: theme.colors.backgroundSecondary,
-        }
+        },
       ]}
     >
       <Checkbox
         value={seleccionadas.includes(item.id)}
         onValueChange={() => toggleSelection(item.id)}
-        color={seleccionadas.includes(item.id) ? theme.colors.accent : undefined}
+        color={
+          seleccionadas.includes(item.id) ? theme.colors.accent : undefined
+        }
         style={{ marginRight: 10 }}
       />
 
-      <TouchableOpacity
-        onPress={() => handlePress(item)}
-        style={{ flex: 1 }}
-      >
+      <TouchableOpacity onPress={() => handlePress(item)} style={{ flex: 1 }}>
         <Text
           style={[
             styles.nombre,
-            { color: item.leido ? theme.colors.secondary : theme.colors.text }
+            { color: item.leido ? theme.colors.secondary : theme.colors.text },
           ]}
           numberOfLines={1}
         >
@@ -154,7 +195,10 @@ export default function NotificacionesScreen({ navigation }: any) {
   );
 
   return (
-    <SafeAreaView edges={['top']} style={{ flex: 1, backgroundColor: theme.colors.background }}>
+    <SafeAreaView
+      edges={["top"]}
+      style={{ flex: 1, backgroundColor: theme.colors.background }}
+    >
       <Text style={[styles.titulo, { color: theme.colors.text }]}>
         Mis notificaciones
       </Text>
@@ -162,21 +206,26 @@ export default function NotificacionesScreen({ navigation }: any) {
         style={[
           styles.botonEliminar,
           {
-            backgroundColor: notificaciones.length > 0 ? theme.colors.accent : theme.colors.errorDeshabilitado,
+            backgroundColor:
+              notificaciones.length > 0
+                ? theme.colors.accent
+                : theme.colors.errorDeshabilitado,
             opacity: notificaciones.length > 0 ? 1 : 0.6,
-            marginBottom: 10
-          }
+            marginBottom: 10,
+          },
         ]}
         onPress={toggleSeleccionarTodo}
         disabled={notificaciones.length === 0}
       >
         <Text style={styles.botonTexto}>
-          {seleccionadas.length === notificaciones.length ? "Deseleccionar todo" : "Seleccionar todo"}
+          {seleccionadas.length === notificaciones.length
+            ? "Deseleccionar todo"
+            : "Seleccionar todo"}
         </Text>
       </TouchableOpacity>
       <FlatList
         data={notificaciones}
-        keyExtractor={item => item.id.toString()}
+        keyExtractor={(item) => item.id.toString()}
         renderItem={renderItem}
         refreshing={loading}
         onRefresh={fetchNotificaciones}
@@ -187,9 +236,12 @@ export default function NotificacionesScreen({ navigation }: any) {
         style={[
           styles.botonEliminar,
           {
-            backgroundColor: seleccionadas.length > 0 ? theme.colors.error : theme.colors.errorDeshabilitado,
-            opacity: seleccionadas.length > 0 ? 1 : 0.6
-          }
+            backgroundColor:
+              seleccionadas.length > 0
+                ? theme.colors.error
+                : theme.colors.errorDeshabilitado,
+            opacity: seleccionadas.length > 0 ? 1 : 0.6,
+          },
         ]}
         onPress={eliminarSeleccionadas}
         disabled={seleccionadas.length === 0 || botonBloqueado}
@@ -199,10 +251,20 @@ export default function NotificacionesScreen({ navigation }: any) {
 
       <Modal visible={modalVisible} transparent animationType="fade">
         <View style={styles.modalOverlay}>
-          <View style={[styles.modalContent, { backgroundColor: theme.colors.backgroundSecondary }]}>
-            <Text style={[styles.modalTexto, { color: theme.colors.text }]}>{mensajeSeleccionado}</Text>
+          <View
+            style={[
+              styles.modalContent,
+              { backgroundColor: theme.colors.backgroundSecondary },
+            ]}
+          >
+            <Text style={[styles.modalTexto, { color: theme.colors.text }]}>
+              {mensajeSeleccionado}
+            </Text>
             <TouchableOpacity
-              style={[styles.botonCerrar, { backgroundColor: theme.colors.accent }]}
+              style={[
+                styles.botonCerrar,
+                { backgroundColor: theme.colors.accent },
+              ]}
               onPress={() => setModalVisible(false)}
             >
               <Text style={styles.botonTexto}>Cerrar</Text>
@@ -240,23 +302,23 @@ const styles = StyleSheet.create({
   titulo: {
     fontSize: 24,
     fontWeight: "bold",
-    textAlign: "center"
+    textAlign: "center",
   },
   modalOverlay: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.6)",
     justifyContent: "center",
-    alignItems: "center"
+    alignItems: "center",
   },
   modalContent: {
     padding: 20,
     borderRadius: 10,
-    maxWidth: "90%"
+    maxWidth: "90%",
   },
   modalTexto: { fontSize: 16, marginBottom: 20 },
   botonCerrar: {
     padding: 12,
     borderRadius: 10,
-    alignItems: "center"
-  }
+    alignItems: "center",
+  },
 });

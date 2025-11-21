@@ -19,72 +19,72 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useTheme } from "../../theme/ThemeContext";
 import { Edad, EspeciePreferida, Sexo, Vivienda } from "../../types/enums";
 import { Picker } from "@react-native-picker/picker";
-import { deleteUsuario } from "../../services/fetchUsuario";
 import { useAuth } from "../../hooks/useAuth";
 import { buscarDirecciones, Direccion } from "../../services/mapBox";
-
-type FormularioAdoptanteProps = {
-  setRedirect: (val: string | null) => void;
-  onCancel: () => void;
-};
+import { RouteProp, useNavigation, useRoute } from "@react-navigation/native";
 
 const { width } = Dimensions.get("window");
 const isWeb = Platform.OS === "web";
 const FORM_CARD_WIDTH = isWeb
   ? Math.min(width * 0.6, 480)
   : Math.min(width * 0.94, 400);
+type RootStackParamList = {
+  EditarAdoptante: { perfilData: any };
+};
 
-export default function FormularioAdoptante({
-  setRedirect,
-  onCancel,
-}: FormularioAdoptanteProps) {
-  const [rutActual, setRutActual] = useState<string | null>(null); // el del url
-  const [adoptanteRut, setAdoptanteRut] = useState<string | null>(null); // el pa editar
-  const [nombre, setNombre] = useState("");
-  const [direccion, setDireccion] = useState("");
-  const [telefono, setTelefono] = useState("");
-  const [edad, setEdad] = useState<number>(0);
-  const [experienciaMascotas, setExperienciaMascotas] = useState<"Si" | "No">(
-    "No"
+type EditarAdoptanteRouteProp = RouteProp<
+  RootStackParamList,
+  "EditarAdoptante"
+>;
+export default function EditarAdoptante() {
+  const route = useRoute<EditarAdoptanteRouteProp>();
+  const navigation = useNavigation();
+  const { perfilData } = route.params;
+
+  const [rutActual, setRutActual] = useState<string | null>(perfilData.rut);
+  const [adoptanteRut, setAdoptanteRut] = useState<string | null>(
+    perfilData.rut
   );
-  const [cantidadMascotas, setCantidadMascotas] = useState<number>(0);
+  const [nombre, setNombre] = useState(perfilData.nombre);
+  const [direccion, setDireccion] = useState(perfilData.direccion);
+  const [telefono, setTelefono] = useState(perfilData.telefono);
+  const [edad, setEdad] = useState<number>(perfilData.edad);
+  const [experienciaMascotas, setExperienciaMascotas] = useState<"Si" | "No">(
+    perfilData.experiencia_mascotas ?? "No"
+  );
+  const [cantidadMascotas, setCantidadMascotas] = useState(
+    perfilData.cantidad_mascotas ?? 0
+  );
   const [especiePreferida, setEspeciePreferida] = useState<EspeciePreferida>(
-    EspeciePreferida.CUALQUIERA
+    perfilData.especie_preferida ?? EspeciePreferida.CUALQUIERA
   );
   const [tipoVivienda, setTipoVivienda] = useState<Vivienda>(
-    Vivienda.CASA_PATIO
+    perfilData.tipo_vivienda ?? Vivienda.CASA_PATIO
   );
-  const [sexo, setSexo] = useState<Sexo>(Sexo.CUALQUIERA);
-  const [edadBuscada, setEdadBuscada] = useState<Edad>(Edad.CACHORRO);
-  const [motivoAdopcion, setMotivoAdopcion] = useState("");
-  const [loading, setLoading] = useState(true);
+  const [sexo, setSexo] = useState<Sexo>(perfilData.sexo ?? Sexo.CUALQUIERA);
+  const [edadBuscada, setEdadBuscada] = useState<Edad>(
+    perfilData.edad_buscada ?? Edad.CACHORRO
+  );
+  const [motivoAdopcion, setMotivoAdopcion] = useState(
+    perfilData.motivo_adopcion ?? ""
+  );
+  const [comuna, setComuna] = useState(perfilData.comuna ?? "");
+  const [latitud, setLatitud] = useState<number | undefined>(
+    perfilData.latitud
+  );
+  const [longitud, setLongitud] = useState<number | undefined>(
+    perfilData.longitud
+  );
+  const [comunaSeleccionada, setComunaSeleccionada] = useState<string | null>(
+    perfilData.comuna ?? null
+  );
+
+  const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [comuna, setComuna] = useState("");
-  const [latitud, setLatitud] = useState<number | undefined>(undefined);
-  const [longitud, setLongitud] = useState<number | undefined>(undefined);
   const [sugerenciasComuna, setSugerenciasComuna] = useState<Direccion[]>([]);
   const [loadingComuna, setLoadingComuna] = useState(false);
-
   const { theme } = useTheme();
-
-  useEffect(() => {
-    const loadAdoptante = async () => {
-      setLoading(true);
-      try {
-        //se busca el adoptante en base a la id del tokenssss
-        const data = await adoptanteByUsuarioId();
-        if (!data) throw new Error("No se encontró adoptante");
-        setRutActual(data.rut);
-      } catch (err: any) {
-        setError(err.message || "Error al cargar datos del adoptante");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadAdoptante();
-  }, []);
 
   const handleSave = async () => {
     if (!adoptanteRut) return;
@@ -103,11 +103,7 @@ export default function FormularioAdoptante({
       setError("Debe ingresar dirección");
       return;
     }
-    if (!comuna.trim()) {
-      setError("Debe ingresar comuna");
-      return;
-    }
-    if (!sugerenciasComuna.some((dir) => dir.comuna === comuna)) {
+    if (comuna !== comunaSeleccionada) {
       setError("Debes seleccionar una comuna de la lista");
       return;
     }
@@ -162,7 +158,8 @@ export default function FormularioAdoptante({
       });
 
       await AsyncStorage.removeItem("goToFormulario");
-      setRedirect(null);
+
+      navigation.goBack();
     } catch (err: any) {
       console.error(err);
       if (err.response?.status === 500) {
@@ -175,30 +172,9 @@ export default function FormularioAdoptante({
     }
   };
 
-  const handleCancel = async () => {
-    try {
-      const userStr = await AsyncStorage.getItem("user");
-      if (!userStr) return;
-
-      const user = JSON.parse(userStr);
-
-      // Borra usuario en backend
-      await deleteUsuario(user.id);
-
-      // Limpieza local
-      await AsyncStorage.removeItem("user");
-      await AsyncStorage.removeItem("token");
-      await AsyncStorage.removeItem("goToFormulario");
-
-      // pal loby
-      onCancel();
-    } catch (err) {
-      console.error("Error al cancelar el formulario:", err);
-    }
-  };
-
   const handleComunaChange = async (text: string) => {
     setComuna(text);
+    setComunaSeleccionada(null);
     if (text.trim().length < 3) {
       setSugerenciasComuna([]);
       return;
@@ -221,6 +197,7 @@ export default function FormularioAdoptante({
     setLatitud(dir.latitud);
     setLongitud(dir.longitud);
     setSugerenciasComuna([]);
+    setComunaSeleccionada(dir.comuna);
 
     console.log("Comuna seleccionada:", dir.comuna);
     console.log("Latitud:", dir.latitud, "Longitud:", dir.longitud);
@@ -546,7 +523,7 @@ export default function FormularioAdoptante({
                     marginLeft: 5,
                   },
                 ]}
-                onPress={handleCancel}
+                onPress={() => navigation.goBack()}
               >
                 <Text
                   style={{ color: theme.colors.secondary, fontWeight: "bold" }}

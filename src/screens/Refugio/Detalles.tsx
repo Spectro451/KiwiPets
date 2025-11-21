@@ -7,7 +7,7 @@ import {
   ActivityIndicator,
   TouchableOpacity,
   ScrollView,
-  Platform
+  Platform,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useTheme } from "../../theme/ThemeContext";
@@ -47,7 +47,7 @@ export default function Detalles({ route }: any) {
 
   const aprobar = async () => {
     const updated = await updateAdopcion(id, {
-      data: { estado: EstadoAdopcion.ACEPTADA }
+      data: { estado: EstadoAdopcion.ACEPTADA },
     });
 
     if (updated) {
@@ -61,7 +61,7 @@ export default function Detalles({ route }: any) {
 
     const updated = await updateAdopcion(id, {
       data: { estado: EstadoAdopcion.RECHAZADA },
-      motivo
+      motivo,
     });
 
     if (updated) {
@@ -72,7 +72,14 @@ export default function Detalles({ route }: any) {
 
   if (loading || !adopcion) {
     return (
-      <SafeAreaView style={{ flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: theme.colors.background }}>
+      <SafeAreaView
+        style={{
+          flex: 1,
+          justifyContent: "center",
+          alignItems: "center",
+          backgroundColor: theme.colors.background,
+        }}
+      >
         <ActivityIndicator size="large" color={theme.colors.accent} />
       </SafeAreaView>
     );
@@ -81,11 +88,16 @@ export default function Detalles({ route }: any) {
   const a = adopcion;
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.background }} edges={["top", "bottom"]}>
+    <SafeAreaView
+      style={{ flex: 1, backgroundColor: theme.colors.background }}
+      edges={["top", "bottom"]}
+    >
       <ScrollView contentContainerStyle={styles.scroll}>
-
         {/* Botón Back */}
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backRow}>
+        <TouchableOpacity
+          onPress={() => navigation.goBack()}
+          style={styles.backRow}
+        >
           <Text style={[styles.backIcon, { color: theme.colors.text }]}>←</Text>
         </TouchableOpacity>
 
@@ -95,36 +107,94 @@ export default function Detalles({ route }: any) {
         </Text>
 
         {/* CARD ─ Mascota */}
-        <View style={[styles.card, { backgroundColor: theme.colors.backgroundSecondary, borderColor: theme.colors.backgroundTertiary }]}>
+        <View
+          style={[
+            styles.card,
+            {
+              backgroundColor: theme.colors.backgroundSecondary,
+              borderColor: theme.colors.backgroundTertiary,
+            },
+          ]}
+        >
           <Text style={[styles.cardHeader, { color: theme.colors.secondary }]}>
             Mascota
           </Text>
 
           <InfoRow label="Nombre" value={a.mascota?.nombre} theme={theme} />
-          <InfoRow label="Raza" value={a.mascota?.raza || "No especificada"} theme={theme} />
-          <InfoRow label="Edad" value={`${a.mascota?.edad} años`} theme={theme} />
-          <InfoRow label="Personalidad" value={a.mascota?.personalidad} theme={theme} />
-          <InfoRow label="Descripción" value={a.mascota?.descripcion} theme={theme} />
+          <InfoRow
+            label="Raza"
+            value={a.mascota?.raza || "No especificada"}
+            theme={theme}
+          />
+          <InfoRow
+            label="Edad"
+            value={`${a.mascota?.edad} años`}
+            theme={theme}
+          />
+          <InfoRow
+            label="Personalidad"
+            value={a.mascota?.personalidad}
+            theme={theme}
+          />
+          <InfoRow
+            label="Descripción"
+            value={a.mascota?.descripcion}
+            theme={theme}
+          />
         </View>
 
         {/* CARD ─ Adoptante */}
-        <View style={[styles.card, { backgroundColor: theme.colors.backgroundSecondary, borderColor: theme.colors.backgroundTertiary }]}>
-          <Text style={[styles.cardHeader, { color: theme.colors.secondary }]}>Adoptante</Text>
+        <View
+          style={[
+            styles.card,
+            {
+              backgroundColor: theme.colors.backgroundSecondary,
+              borderColor: theme.colors.backgroundTertiary,
+            },
+          ]}
+        >
+          <Text style={[styles.cardHeader, { color: theme.colors.secondary }]}>
+            Adoptante
+          </Text>
 
           <InfoRow label="Nombre" value={a.adoptante?.nombre} theme={theme} />
-          <InfoRow label="Teléfono" value={a.adoptante?.telefono} theme={theme} />
-          <InfoRow label="Dirección" value={a.adoptante?.direccion} theme={theme} />
-          <InfoRow label="Motivo adopción" value={a.adoptante?.motivo_adopcion} theme={theme} />
+          <InfoRow
+            label="Teléfono"
+            value={a.adoptante?.telefono}
+            theme={theme}
+          />
+          <InfoRow
+            label="Dirección"
+            value={a.adoptante?.direccion}
+            theme={theme}
+          />
+          <InfoRow
+            label="Motivo adopción"
+            value={a.adoptante?.motivo_adopcion}
+            theme={theme}
+          />
         </View>
 
         {/* CARD ─ Proceso */}
-        <View style={[styles.card, { backgroundColor: theme.colors.backgroundSecondary, borderColor: theme.colors.backgroundTertiary }]}>
+        <View
+          style={[
+            styles.card,
+            {
+              backgroundColor: theme.colors.backgroundSecondary,
+              borderColor: theme.colors.backgroundTertiary,
+            },
+          ]}
+        >
           <Text style={[styles.cardHeader, { color: theme.colors.secondary }]}>
             Estado del proceso
           </Text>
 
           <InfoRow label="Estado" value={a.estado} theme={theme} />
-          <InfoRow label="Fecha" value={new Date(a.fecha).toLocaleDateString()} theme={theme} />
+          <InfoRow
+            label="Fecha"
+            value={new Date(a.fecha_solicitud).toLocaleDateString()}
+            theme={theme}
+          />
         </View>
 
         {/* BOTONES */}
@@ -132,7 +202,10 @@ export default function Detalles({ route }: any) {
           <View style={styles.actionRow}>
             <TouchableOpacity
               onPress={aprobar}
-              style={[styles.actionButton, { backgroundColor: theme.colors.accent }]}
+              style={[
+                styles.actionButton,
+                { backgroundColor: theme.colors.accent },
+              ]}
             >
               <Text style={styles.actionText}>Aprobar</Text>
             </TouchableOpacity>
@@ -150,16 +223,23 @@ export default function Detalles({ route }: any) {
       {/* MODAL ─ Rechazo */}
       <Modal visible={modalRechazo} transparent animationType="fade">
         <View style={styles.modalBg}>
-          <View style={[styles.modalCard, { backgroundColor: theme.colors.background }]}>
-            <Text style={[styles.modalTitle, { color: theme.colors.text }]}>Motivo del rechazo</Text>
+          <View
+            style={[
+              styles.modalCard,
+              { backgroundColor: theme.colors.background },
+            ]}
+          >
+            <Text style={[styles.modalTitle, { color: theme.colors.text }]}>
+              Motivo del rechazo
+            </Text>
 
             <TextInput
               style={[
                 styles.modalInput,
                 {
                   borderColor: theme.colors.backgroundTertiary,
-                  color: theme.colors.text
-                }
+                  color: theme.colors.text,
+                },
               ]}
               multiline
               value={motivo}
@@ -177,10 +257,17 @@ export default function Detalles({ route }: any) {
               </TouchableOpacity>
 
               <TouchableOpacity
-                style={[styles.modalBtn, { backgroundColor: theme.colors.backgroundTertiary }]}
+                style={[
+                  styles.modalBtn,
+                  { backgroundColor: theme.colors.backgroundTertiary },
+                ]}
                 onPress={() => setModalRechazo(false)}
               >
-                <Text style={[styles.modalBtnTxt, { color: theme.colors.text }]}>Cancelar</Text>
+                <Text
+                  style={[styles.modalBtnTxt, { color: theme.colors.text }]}
+                >
+                  Cancelar
+                </Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -190,8 +277,15 @@ export default function Detalles({ route }: any) {
       {/* MODAL ─ Éxito */}
       <Modal visible={modalExito} transparent animationType="fade">
         <View style={styles.modalBg}>
-          <View style={[styles.modalCard, { backgroundColor: theme.colors.background }]}>
-            <Text style={[styles.modalTitle, { color: theme.colors.text }]}>¡Adopción aceptada!</Text>
+          <View
+            style={[
+              styles.modalCard,
+              { backgroundColor: theme.colors.background },
+            ]}
+          >
+            <Text style={[styles.modalTitle, { color: theme.colors.text }]}>
+              ¡Adopción aceptada!
+            </Text>
 
             <TouchableOpacity
               style={[styles.modalBtn, { backgroundColor: "#4CAF50" }]}
@@ -213,8 +307,12 @@ export default function Detalles({ route }: any) {
 function InfoRow({ label, value, theme }: any) {
   return (
     <View style={styles.infoRow}>
-      <Text style={[styles.infoLabel, { color: theme.colors.textSecondary }]}>{label}:</Text>
-      <Text style={[styles.infoValue, { color: theme.colors.text }]}>{value}</Text>
+      <Text style={[styles.infoLabel, { color: theme.colors.textSecondary }]}>
+        {label}:
+      </Text>
+      <Text style={[styles.infoValue, { color: theme.colors.text }]}>
+        {value}
+      </Text>
     </View>
   );
 }
@@ -222,7 +320,7 @@ function InfoRow({ label, value, theme }: any) {
 const styles = StyleSheet.create({
   scroll: {
     padding: 20,
-    gap: 20
+    gap: 20,
   },
 
   backRow: {

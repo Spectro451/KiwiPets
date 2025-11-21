@@ -65,6 +65,9 @@ export default function FormularioAdoptante({
   const [longitud, setLongitud] = useState<number | undefined>(undefined);
   const [sugerenciasComuna, setSugerenciasComuna] = useState<Direccion[]>([]);
   const [loadingComuna, setLoadingComuna] = useState(false);
+  const [comunaSeleccionada, setComunaSeleccionada] = useState<string | null>(
+    null
+  );
 
   const { theme } = useTheme();
 
@@ -103,11 +106,7 @@ export default function FormularioAdoptante({
       setError("Debe ingresar dirección");
       return;
     }
-    if (!comuna.trim()) {
-      setError("Debe ingresar comuna");
-      return;
-    }
-    if (!sugerenciasComuna.some((dir) => dir.comuna === comuna)) {
+    if (comuna !== comunaSeleccionada) {
       setError("Debes seleccionar una comuna de la lista");
       return;
     }
@@ -199,6 +198,7 @@ export default function FormularioAdoptante({
 
   const handleComunaChange = async (text: string) => {
     setComuna(text);
+    setComunaSeleccionada(null);
     if (text.trim().length < 3) {
       setSugerenciasComuna([]);
       return;
@@ -221,6 +221,7 @@ export default function FormularioAdoptante({
     setLatitud(dir.latitud);
     setLongitud(dir.longitud);
     setSugerenciasComuna([]);
+    setComunaSeleccionada(dir.comuna);
 
     console.log("Comuna seleccionada:", dir.comuna);
     console.log("Latitud:", dir.latitud, "Longitud:", dir.longitud);

@@ -42,6 +42,9 @@ export default function FormularioRefugio({
 
   const [sugerenciasComuna, setSugerenciasComuna] = useState<Direccion[]>([]);
   const [loadingComuna, setLoadingComuna] = useState(false);
+  const [comunaSeleccionada, setComunaSeleccionada] = useState<string | null>(
+    null
+  );
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -88,13 +91,8 @@ export default function FormularioRefugio({
       return;
     }
 
-    if (!comuna.trim()) {
-      setError("Debes ingresar comuna");
-      return;
-    }
-
-    if (!sugerenciasComuna.some((d) => d.comuna === comuna)) {
-      setError("Debes seleccionar una comuna válida de la lista");
+    if (comuna !== comunaSeleccionada) {
+      setError("Debes seleccionar una comuna de la lista");
       return;
     }
 
@@ -142,7 +140,7 @@ export default function FormularioRefugio({
   // ---- Buscar comuna ----
   const handleComunaChange = async (text: string) => {
     setComuna(text);
-
+    setComunaSeleccionada(null);
     if (text.trim().length < 3) {
       setSugerenciasComuna([]);
       return;
@@ -150,9 +148,10 @@ export default function FormularioRefugio({
 
     setLoadingComuna(true);
     try {
-      const res = await buscarDirecciones(text);
-      setSugerenciasComuna(res);
-    } catch (e) {
+      const results = await buscarDirecciones(text);
+      setSugerenciasComuna(results);
+    } catch (err) {
+      console.error(err);
       setSugerenciasComuna([]);
     } finally {
       setLoadingComuna(false);
@@ -164,6 +163,10 @@ export default function FormularioRefugio({
     setLatitud(dir.latitud);
     setLongitud(dir.longitud);
     setSugerenciasComuna([]);
+    setComunaSeleccionada(dir.comuna);
+
+    console.log("Comuna seleccionada:", dir.comuna);
+    console.log("Latitud:", dir.latitud, "Longitud:", dir.longitud);
   };
 
   if (loading)
@@ -253,9 +256,7 @@ export default function FormularioRefugio({
                 style={{
                   padding: 8,
                   borderBottomWidth:
-                    index !== Math.min(sugerenciasComuna.length, 3) - 1
-                      ? 1
-                      : 0,
+                    index !== Math.min(sugerenciasComuna.length, 3) - 1 ? 1 : 0,
                   borderColor: theme.colors.accent,
                 }}
               >

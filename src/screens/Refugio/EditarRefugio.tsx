@@ -20,14 +20,13 @@ type RootStackParamList = {
   EditarRefugio: { perfilData: any };
 };
 
-type EditarRefugioRouteProp = RouteProp<
-  RootStackParamList,
-  "EditarRefugio"
->;
+type EditarRefugioRouteProp = RouteProp<RootStackParamList, "EditarRefugio">;
 
 const { width } = Dimensions.get("window");
 const isWeb = Platform.OS === "web";
-const CARD_WIDTH = isWeb ? Math.min(width * 0.55, 520) : Math.min(width * 0.94, 420);
+const CARD_WIDTH = isWeb
+  ? Math.min(width * 0.55, 520)
+  : Math.min(width * 0.94, 420);
 
 export default function EditarRefugio() {
   const navigation = useNavigation();
@@ -39,15 +38,22 @@ export default function EditarRefugio() {
   const [direccion, setDireccion] = useState(perfilData.direccion);
   const [telefono, setTelefono] = useState(perfilData.telefono);
   const [comuna, setComuna] = useState(perfilData.comuna ?? "");
-  const [latitud, setLatitud] = useState<number | undefined>(perfilData.latitud);
-  const [longitud, setLongitud] = useState<number | undefined>(perfilData.longitud);
+  const [latitud, setLatitud] = useState<number | undefined>(
+    perfilData.latitud
+  );
+  const [longitud, setLongitud] = useState<number | undefined>(
+    perfilData.longitud
+  );
 
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const [sugerenciasComuna, setSugerenciasComuna] = useState<Direccion[]>([]);
   const [loadingComuna, setLoadingComuna] = useState(false);
-  const [comunaValida, setComunaValida] = useState(!!perfilData.comuna);
+
+  const [comunaSeleccionada, setComunaSeleccionada] = useState<string | null>(
+    perfilData.comuna ?? null
+  );
 
   // ---------------- VALIDAR Y GUARDAR ----------------
   const handleSave = async () => {
@@ -62,13 +68,8 @@ export default function EditarRefugio() {
       return;
     }
 
-    if (!comuna.trim()) {
-      setError("Debes ingresar una comuna");
-      return;
-    }
-
-    if (!comunaValida) {
-      setError("Debes seleccionar una comuna desde la lista");
+    if (comuna !== comunaSeleccionada) {
+      setError("Debes seleccionar una comuna de la lista");
       return;
     }
 
@@ -96,19 +97,18 @@ export default function EditarRefugio() {
   // ---------------- BUSCAR COMUNA ----------------
   const handleComunaChange = async (text: string) => {
     setComuna(text);
-    setComunaValida(false);
-
+    setComunaSeleccionada(null);
     if (text.trim().length < 3) {
       setSugerenciasComuna([]);
       return;
     }
 
     setLoadingComuna(true);
-
     try {
       const results = await buscarDirecciones(text);
       setSugerenciasComuna(results);
-    } catch {
+    } catch (err) {
+      console.error(err);
       setSugerenciasComuna([]);
     } finally {
       setLoadingComuna(false);
@@ -120,7 +120,10 @@ export default function EditarRefugio() {
     setLatitud(dir.latitud);
     setLongitud(dir.longitud);
     setSugerenciasComuna([]);
-    setComunaValida(true);
+    setComunaSeleccionada(dir.comuna);
+
+    console.log("Comuna seleccionada:", dir.comuna);
+    console.log("Latitud:", dir.latitud, "Longitud:", dir.longitud);
   };
 
   // ---------------- UI ----------------
@@ -199,10 +202,7 @@ export default function EditarRefugio() {
 
           {sugerenciasComuna.length > 0 && (
             <View
-              style={[
-                styles.dropdown,
-                { borderColor: theme.colors.accent },
-              ]}
+              style={[styles.dropdown, { borderColor: theme.colors.accent }]}
             >
               {sugerenciasComuna.slice(0, 3).map((dir, index) => (
                 <TouchableOpacity
@@ -271,10 +271,7 @@ export default function EditarRefugio() {
 
             <TouchableOpacity
               onPress={() => navigation.goBack()}
-              style={[
-                styles.btn,
-                { backgroundColor: theme.colors.error },
-              ]}
+              style={[styles.btn, { backgroundColor: theme.colors.error }]}
             >
               <Text style={[styles.btnTxt, { color: theme.colors.secondary }]}>
                 Cancelar

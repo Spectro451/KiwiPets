@@ -1,8 +1,8 @@
 import { ThemeProvider, useTheme } from "./src/theme/ThemeContext";
 import BottomTabs from "./src/navigation/Tabs";
 import AuthStack from "./src/navigation/AuthStack";
-import { useAuth } from './src/hooks/useAuth';
-import {NavigationContainer } from '@react-navigation/native';
+import { useAuth } from "./src/hooks/useAuth";
+import { NavigationContainer } from "@react-navigation/native";
 import { ActivityIndicator, View } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import FormularioRefugio from "./src/screens/Refugio/FormularioRefugio";
@@ -28,15 +28,15 @@ const RootStack = createNativeStackNavigator();
 export default function App() {
   const auth = useAuth();
   const [redirect, setRedirect] = useState<string | null>(null);
-  const {theme} = useTheme(); 
+  const { theme } = useTheme();
   const [navKey, setNavKey] = useState(0);
 
   const handleLogout = async () => {
-    await AsyncStorage.clear(); 
+    await AsyncStorage.clear();
     auth.setToken(null);
     auth.setUser(null);
     setRedirect(null);
-    setNavKey(k => k + 1); 
+    setNavKey((k) => k + 1);
   };
 
   // Revisar si hay que ir al formulario post-register
@@ -54,7 +54,7 @@ export default function App() {
 
   if (auth.loading) {
     return (
-      <View style={{ flex:1, justifyContent:'center', alignItems:'center' }}>
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
         <ActivityIndicator size="large" />
       </View>
     );
@@ -68,26 +68,49 @@ export default function App() {
             <TempStack.Navigator screenOptions={{ headerShown: false }}>
               {redirect === "Adoptante" ? (
                 <TempStack.Screen name="FormularioAdoptante">
-                  {props => <FormularioAdoptante {...props} setRedirect={setRedirect} onCancel={handleLogout} />}
+                  {(props) => (
+                    <FormularioAdoptante
+                      {...props}
+                      setRedirect={setRedirect}
+                      onCancel={handleLogout}
+                    />
+                  )}
                 </TempStack.Screen>
               ) : (
                 <TempStack.Screen name="FormularioRefugio">
-                  {props => <FormularioRefugio {...props} setRedirect={setRedirect} onCancel={handleLogout} />}
+                  {(props) => (
+                    <FormularioRefugio
+                      {...props}
+                      setRedirect={setRedirect}
+                      onCancel={handleLogout}
+                    />
+                  )}
                 </TempStack.Screen>
               )}
             </TempStack.Navigator>
           ) : (
-            <RootStack.Navigator screenOptions={{ headerShown: false, contentStyle: { backgroundColor: theme.colors.background } }}>
+            <RootStack.Navigator
+              screenOptions={{
+                headerShown: false,
+                contentStyle: { backgroundColor: theme.colors.background },
+              }}
+            >
               <RootStack.Screen name="MainTabs">
-                {props => <BottomTabs {...props} user={auth.user!} onLogout={handleLogout} />}
+                {(props) => (
+                  <BottomTabs
+                    {...props}
+                    user={auth.user!}
+                    onLogout={handleLogout}
+                  />
+                )}
               </RootStack.Screen>
               <RootStack.Screen
                 name="DetalleAdopcion"
                 component={DetalleAdopcion}
                 options={{
                   headerShown: false,
-                  animation: 'slide_from_right',
-                  contentStyle: { backgroundColor: theme.colors.background }
+                  animation: "slide_from_right",
+                  contentStyle: { backgroundColor: theme.colors.background },
                 }}
               />
               <RootStack.Screen
@@ -96,7 +119,7 @@ export default function App() {
                 options={{
                   headerShown: false,
                   animation: "slide_from_right",
-                  contentStyle: { backgroundColor: theme.colors.background }
+                  contentStyle: { backgroundColor: theme.colors.background },
                 }}
               />
               <RootStack.Screen
@@ -105,7 +128,7 @@ export default function App() {
                 options={{
                   headerShown: false,
                   animation: "slide_from_right",
-                  contentStyle: { backgroundColor: theme.colors.background }
+                  contentStyle: { backgroundColor: theme.colors.background },
                 }}
               />
               <RootStack.Screen
@@ -114,7 +137,7 @@ export default function App() {
                 options={{
                   headerShown: false,
                   animation: "slide_from_right",
-                  contentStyle: { backgroundColor: theme.colors.background }
+                  contentStyle: { backgroundColor: theme.colors.background },
                 }}
               />
               <RootStack.Screen
@@ -123,7 +146,7 @@ export default function App() {
                 options={{
                   headerShown: false,
                   animation: "slide_from_right",
-                  contentStyle: { backgroundColor: theme.colors.background }
+                  contentStyle: { backgroundColor: theme.colors.background },
                 }}
               />
               <RootStack.Screen
@@ -132,7 +155,7 @@ export default function App() {
                 options={{
                   headerShown: false,
                   animation: "slide_from_right",
-                  contentStyle: { backgroundColor: theme.colors.background }
+                  contentStyle: { backgroundColor: theme.colors.background },
                 }}
               />
               <RootStack.Screen
@@ -141,7 +164,7 @@ export default function App() {
                 options={{
                   headerShown: false,
                   animation: "slide_from_right",
-                  contentStyle: { backgroundColor: theme.colors.background }
+                  contentStyle: { backgroundColor: theme.colors.background },
                 }}
               />
               <RootStack.Screen
@@ -150,7 +173,7 @@ export default function App() {
                 options={{
                   headerShown: false,
                   animation: "slide_from_right",
-                  contentStyle: { backgroundColor: theme.colors.background }
+                  contentStyle: { backgroundColor: theme.colors.background },
                 }}
               />
               <RootStack.Screen
@@ -159,7 +182,7 @@ export default function App() {
                 options={{
                   headerShown: false,
                   animation: "slide_from_right",
-                  contentStyle: { backgroundColor: theme.colors.background }
+                  contentStyle: { backgroundColor: theme.colors.background },
                 }}
               />
               <RootStack.Screen
@@ -168,7 +191,7 @@ export default function App() {
                 options={{
                   headerShown: false,
                   animation: "slide_from_right",
-                  contentStyle: { backgroundColor: theme.colors.background }
+                  contentStyle: { backgroundColor: theme.colors.background },
                 }}
               />
               <RootStack.Screen
@@ -177,9 +200,9 @@ export default function App() {
                 options={{
                   headerShown: false,
                   animation: "slide_from_right",
-                  contentStyle: { backgroundColor: theme.colors.background }
+                  contentStyle: { backgroundColor: theme.colors.background },
                 }}
-              />              
+              />
             </RootStack.Navigator>
           )
         ) : (
