@@ -90,7 +90,10 @@ export default function FormularioAdoptante({
   }, []);
 
   const handleSave = async () => {
-    if (!adoptanteRut) return;
+    if (!adoptanteRut?.trim()) {
+      setError("Debe ingresar un RUT");
+      return;
+    }
 
     const rutRegex = /^\d{7,8}[0-9kK]$/;
     if (!rutRegex.test(adoptanteRut)) {
