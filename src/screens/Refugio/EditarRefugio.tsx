@@ -1,5 +1,16 @@
 import { useState } from "react";
-import { View, Text, TextInput, Dimensions, Platform, StyleSheet, TouchableOpacity, KeyboardAvoidingView, ScrollView, ActivityIndicator } from "react-native";
+import {
+  View,
+  Text,
+  TextInput,
+  Dimensions,
+  Platform,
+  StyleSheet,
+  TouchableOpacity,
+  KeyboardAvoidingView,
+  ScrollView,
+  ActivityIndicator,
+} from "react-native";
 import { updateRefugio } from "../../services/fetchRefugio";
 import { useTheme } from "../../theme/ThemeContext";
 import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
@@ -9,11 +20,14 @@ type RootStackParamList = {
   EditarRefugio: { perfilData: any };
 };
 
-type EditarRefugioRouteProp = RouteProp<RootStackParamList, "EditarRefugio">;
+type EditarRefugioRouteProp = RouteProp<
+  RootStackParamList,
+  "EditarRefugio"
+>;
 
 const { width } = Dimensions.get("window");
 const isWeb = Platform.OS === "web";
-const FORM_CARD_WIDTH = isWeb ? Math.min(width * 0.6, 480) : Math.min(width * 0.94, 400);
+const CARD_WIDTH = isWeb ? Math.min(width * 0.55, 520) : Math.min(width * 0.94, 420);
 
 export default function EditarRefugio() {
   const navigation = useNavigation();
@@ -24,33 +38,37 @@ export default function EditarRefugio() {
   const [nombre, setNombre] = useState(perfilData.nombre);
   const [direccion, setDireccion] = useState(perfilData.direccion);
   const [telefono, setTelefono] = useState(perfilData.telefono);
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [comuna, setComuna] = useState(perfilData.comuna ?? "");
   const [latitud, setLatitud] = useState<number | undefined>(perfilData.latitud);
   const [longitud, setLongitud] = useState<number | undefined>(perfilData.longitud);
+
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
   const [sugerenciasComuna, setSugerenciasComuna] = useState<Direccion[]>([]);
   const [loadingComuna, setLoadingComuna] = useState(false);
-  const [comunaValida, setComunaValida] = useState<boolean>(!!perfilData.comuna);
+  const [comunaValida, setComunaValida] = useState(!!perfilData.comuna);
 
+  // ---------------- VALIDAR Y GUARDAR ----------------
   const handleSave = async () => {
     if (!nombre.trim() || !direccion.trim() || !telefono.trim()) {
       setError("Todos los campos son obligatorios");
       return;
     }
+
     const telefonoRegex = /^\+\d{7,15}$/;
     if (!telefonoRegex.test(telefono)) {
-      setError("Debes incluir prefijo nacional y sin espacios");
+      setError("Formato de teléfono inválido. Ej: +56912345678");
       return;
     }
+
     if (!comuna.trim()) {
-      setError("Debes ingresar comuna");
+      setError("Debes ingresar una comuna");
       return;
     }
 
     if (!comunaValida) {
-      setError("Debes seleccionar una comuna de la lista");
-      setSaving(false);
+      setError("Debes seleccionar una comuna desde la lista");
       return;
     }
 
@@ -66,6 +84,7 @@ export default function EditarRefugio() {
         latitud,
         longitud,
       });
+
       navigation.goBack();
     } catch {
       setError("Error al guardar cambios");
@@ -74,9 +93,10 @@ export default function EditarRefugio() {
     }
   };
 
+  // ---------------- BUSCAR COMUNA ----------------
   const handleComunaChange = async (text: string) => {
     setComuna(text);
-    setComunaValida(false); // reset al escribir
+    setComunaValida(false);
 
     if (text.trim().length < 3) {
       setSugerenciasComuna([]);
@@ -84,11 +104,11 @@ export default function EditarRefugio() {
     }
 
     setLoadingComuna(true);
+
     try {
       const results = await buscarDirecciones(text);
       setSugerenciasComuna(results);
-    } catch (err) {
-      console.error(err);
+    } catch {
       setSugerenciasComuna([]);
     } finally {
       setLoadingComuna(false);
@@ -103,94 +123,162 @@ export default function EditarRefugio() {
     setComunaValida(true);
   };
 
+  // ---------------- UI ----------------
   return (
     <KeyboardAvoidingView
       style={{ flex: 1, backgroundColor: theme.colors.background }}
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
-      <ScrollView contentContainerStyle={{ flex: 1, justifyContent: "center", alignItems: "center", padding: 20 }}>
-        <View style={{
-          width: FORM_CARD_WIDTH,
-          backgroundColor: theme.colors.backgroundSecondary,
-          padding: 20,
-          borderRadius: 10,
-          borderWidth: 2,
-          borderColor: theme.colors.accent,
-        }}>
-          <Text style={[styles.label, { color: theme.colors.secondary }]}>Nombre:</Text>
-          <TextInput value={nombre} onChangeText={setNombre} placeholder="Nombre del refugio" style={[styles.input, { color: theme.colors.text }]} placeholderTextColor={theme.colors.text} />
+      <ScrollView
+        contentContainerStyle={{
+          flexGrow: 1,
+          justifyContent: "center",
+          alignItems: "center",
+          paddingVertical: 26,
+          paddingHorizontal: isWeb ? 40 : 20,
+        }}
+        keyboardShouldPersistTaps="handled"
+      >
+        <View
+          style={[
+            styles.card,
+            {
+              width: CARD_WIDTH,
+              backgroundColor: theme.colors.backgroundSecondary,
+              borderColor: theme.colors.backgroundTertiary,
+            },
+          ]}
+        >
+          <Text style={[styles.title, { color: theme.colors.text }]}>
+            Editar refugio
+          </Text>
 
-          <Text style={[styles.label, { color: theme.colors.secondary }]}>Dirección:</Text>
-          <TextInput value={direccion} onChangeText={setDireccion} placeholder="Dirección" style={[styles.input, { color: theme.colors.text }]} placeholderTextColor={theme.colors.text} />
+          {/* Nombre */}
+          <Text style={[styles.label, { color: theme.colors.secondary }]}>
+            Nombre
+          </Text>
+          <TextInput
+            value={nombre}
+            onChangeText={setNombre}
+            placeholder="Nombre del refugio"
+            placeholderTextColor={theme.colors.text}
+            style={[styles.input, { color: theme.colors.text }]}
+          />
 
-          <Text style={[styles.label, { color: theme.colors.secondary }]}>Comuna:</Text>
+          {/* Dirección */}
+          <Text style={[styles.label, { color: theme.colors.secondary }]}>
+            Dirección
+          </Text>
+          <TextInput
+            value={direccion}
+            onChangeText={setDireccion}
+            placeholder="Dirección exacta"
+            placeholderTextColor={theme.colors.text}
+            style={[styles.input, { color: theme.colors.text }]}
+          />
+
+          {/* Comuna */}
+          <Text style={[styles.label, { color: theme.colors.secondary }]}>
+            Comuna
+          </Text>
           <TextInput
             value={comuna}
             onChangeText={handleComunaChange}
-            placeholder="Ingrese comuna"
-            style={[styles.input, { color: theme.colors.text }]}
+            placeholder="Ingresa la comuna"
             placeholderTextColor={theme.colors.text}
+            style={[styles.input, { color: theme.colors.text }]}
           />
 
-          {loadingComuna && <ActivityIndicator size="small" color={theme.colors.secondary} />}
+          {loadingComuna && (
+            <ActivityIndicator
+              size="small"
+              color={theme.colors.secondary}
+              style={{ marginBottom: 8 }}
+            />
+          )}
 
           {sugerenciasComuna.length > 0 && (
-            <View style={{
-              borderWidth: 1,
-              borderColor: theme.colors.accent,
-              borderRadius: 6,
-              maxHeight: 150,
-              marginBottom: 10,
-            }}>
+            <View
+              style={[
+                styles.dropdown,
+                { borderColor: theme.colors.accent },
+              ]}
+            >
               {sugerenciasComuna.slice(0, 3).map((dir, index) => (
                 <TouchableOpacity
                   key={index}
                   onPress={() => handleSelectComuna(dir)}
-                  style={{
-                    padding: 8,
-                    borderBottomWidth: index !== Math.min(sugerenciasComuna.length, 3) - 1 ? 1 : 0,
-                    borderColor: theme.colors.accent,
-                  }}
+                  style={[
+                    styles.dropdownItem,
+                    {
+                      borderBottomWidth:
+                        index < Math.min(3, sugerenciasComuna.length) - 1
+                          ? 1
+                          : 0,
+                      borderColor: theme.colors.accent,
+                    },
+                  ]}
                 >
                   <Text style={{ color: theme.colors.text }}>
-                    {dir.comuna}{dir.ciudad ? `, ${dir.ciudad}` : ""}
+                    {dir.comuna}
+                    {dir.ciudad ? `, ${dir.ciudad}` : ""}
                   </Text>
                 </TouchableOpacity>
               ))}
             </View>
           )}
 
-          <Text style={[styles.label, { color: theme.colors.secondary }]}>Teléfono:</Text>
-          <TextInput 
-            value={telefono} 
-            onChangeText={t => {
-              let filtrado = t.replace(/[^0-9+]/g, '');
-              setTelefono(filtrado);
+          {/* Teléfono */}
+          <Text style={[styles.label, { color: theme.colors.secondary }]}>
+            Teléfono
+          </Text>
+          <TextInput
+            value={telefono}
+            onChangeText={(t) => {
+              const limpio = t.replace(/[^0-9+]/g, "");
+              setTelefono(limpio);
             }}
-            placeholder="+56912345678" 
-            keyboardType="phone-pad" 
-            style={[styles.input, {color:theme.colors.text}]} 
-            placeholderTextColor={theme.colors.text} 
+            placeholder="+56912345678"
+            placeholderTextColor={theme.colors.text}
+            keyboardType="phone-pad"
+            style={[styles.input, { color: theme.colors.text }]}
           />
 
-          {error && <Text style={[styles.error, { color: theme.colors.error }]}>{error}</Text>}
+          {error && (
+            <Text style={[styles.errorText, { color: theme.colors.error }]}>
+              {error}
+            </Text>
+          )}
 
-          <View style={{ flexDirection: "row", justifyContent: "space-between", marginTop: 10 }}>
+          {/* Botones */}
+          <View style={styles.btnRow}>
             <TouchableOpacity
-              style={[styles.button, { flex: 1, backgroundColor: theme.colors.backgroundTertiary, marginRight: 5 }]}
               onPress={handleSave}
               disabled={saving}
+              style={[
+                styles.btn,
+                {
+                  backgroundColor: saving
+                    ? theme.colors.backgroundTertiary
+                    : theme.colors.accent,
+                },
+              ]}
             >
-              <Text style={{ color: theme.colors.secondary, fontWeight: "bold" }}>
+              <Text style={[styles.btnTxt, { color: theme.colors.secondary }]}>
                 {saving ? "Guardando..." : "Guardar"}
               </Text>
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={[styles.button, { flex: 1, backgroundColor: theme.colors.error, marginLeft: 5 }]}
               onPress={() => navigation.goBack()}
+              style={[
+                styles.btn,
+                { backgroundColor: theme.colors.error },
+              ]}
             >
-              <Text style={{ color: theme.colors.secondary, fontWeight: "bold" }}>Cancelar</Text>
+              <Text style={[styles.btnTxt, { color: theme.colors.secondary }]}>
+                Cancelar
+              </Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -200,27 +288,62 @@ export default function EditarRefugio() {
 }
 
 const styles = StyleSheet.create({
+  card: {
+    padding: 24,
+    borderRadius: 12,
+    borderWidth: 2,
+    ...(Platform.OS === "web"
+      ? {
+          boxShadow: "0 4px 14px rgba(0,0,0,0.15)",
+        }
+      : {}),
+  },
+  title: {
+    fontSize: 22,
+    fontWeight: "bold",
+    textAlign: "center",
+    marginBottom: 18,
+  },
   label: {
-    marginBottom: 6,
     fontSize: 15,
     fontWeight: "bold",
+    marginBottom: 6,
   },
   input: {
     borderWidth: 1,
-    borderColor: "gray",
-    padding: 8,
-    borderRadius: 4,
-    marginBottom: 10,
+    borderRadius: 8,
+    padding: 10,
+    marginBottom: 12,
+    fontSize: 15,
   },
-  error: {
+  dropdown: {
+    borderWidth: 1,
+    borderRadius: 8,
+    marginBottom: 10,
+    overflow: "hidden",
+  },
+  dropdownItem: {
+    padding: 10,
+  },
+  errorText: {
     textAlign: "center",
-    marginBottom: 10,
+    marginBottom: 12,
+    fontWeight: "bold",
   },
-  button: {
-    width: "100%",
+  btnRow: {
+    flexDirection: "row",
+    marginTop: 10,
+    gap: 10,
+  },
+  btn: {
+    flex: 1,
     height: 48,
     borderRadius: 10,
-    alignItems: "center",
     justifyContent: "center",
+    alignItems: "center",
+  },
+  btnTxt: {
+    fontWeight: "bold",
+    fontSize: 15,
   },
 });

@@ -1,80 +1,169 @@
-import { useEffect, useState } from "react";
-import { View, Text, TextInput, ActivityIndicator, Dimensions, Platform, StyleSheet, TouchableOpacity, KeyboardAvoidingView, ScrollView } from "react-native";
-import { updateAdoptante } from "../../services/fetchAdoptante";
-import { useTheme } from "../../theme/ThemeContext";
-import { Edad, EspeciePreferida, Sexo, Vivienda } from "../../types/enums";
-import { Picker } from '@react-native-picker/picker';
-import { Adoptante } from "../../types/adoptante";
-import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
-import { buscarDirecciones, Direccion } from "../../services/mapBox";
+import { useState } from "react";
+import {
+  View,
+  Text,
+  TextInput,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+  ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { Picker } from "@react-native-picker/picker";
+import { useRoute, useNavigation } from "@react-navigation/native";
 
-type RootStackParamList = {
-  EditarAdoptante: { perfilData: Adoptante };
+import { useTheme } from "../../theme/ThemeContext";
+import { updateAdoptante } from "../../services/fetchAdoptante";
+import { buscarDirecciones, Direccion } from "../../services/mapBox";
+import {
+  Edad,
+  EspeciePreferida,
+  Sexo,
+  Vivienda,
+} from "../../types/enums";
+import { Adoptante } from "../../types/adoptante";
+
+type Params = {
+  perfilData: Adoptante;
 };
 
-type EditarAdoptanteRouteProp = RouteProp<RootStackParamList, "EditarAdoptante">;
-
-const { width } = Dimensions.get("window");
-const isWeb = Platform.OS === "web";
-const FORM_CARD_WIDTH = isWeb ? Math.min(width * 0.6, 480) : Math.min(width * 0.94, 400);
+// --------------------------------------------------------
+// ESTILO PICKER COMPATIBLE CON TU THEME
+// --------------------------------------------------------
+const pickerStyle = (theme: any) => ({
+  borderWidth: 1,
+  borderColor: theme.colors.border,
+  backgroundColor: theme.colors.backgroundSecondary,
+  color: theme.colors.text,
+  borderRadius: 8,
+  marginBottom: 12,
+});
 
 export default function EditarAdoptante() {
+  const route = useRoute();
   const navigation = useNavigation();
-  const route = useRoute<EditarAdoptanteRouteProp>();
-  const { perfilData } = route.params;
+  const { perfilData } = route.params as Params;
   const { theme } = useTheme();
 
-  const [nombre, setNombre] = useState(perfilData.nombre);
+  // --------------------------------------------------------
+  // ESTADO DEL FORMULARIO
+  // --------------------------------------------------------
   const [rut, setRut] = useState(perfilData.rut);
-  const [rutOriginal] = useState(perfilData.rut);
+  const rutOriginal = perfilData.rut;
+
+  const [nombre, setNombre] = useState(perfilData.nombre);
   const [direccion, setDireccion] = useState(perfilData.direccion);
   const [telefono, setTelefono] = useState(perfilData.telefono);
   const [edad, setEdad] = useState(perfilData.edad);
+
   const [experienciaMascotas, setExperienciaMascotas] = useState<"Si" | "No">(
     perfilData.experiencia_mascotas === "Si" ? "Si" : "No"
   );
-  const [cantidadMascotas, setCantidadMascotas] = useState(perfilData.cantidad_mascotas);
-  const [especiePreferida, setEspeciePreferida] = useState<EspeciePreferida>(perfilData.especie_preferida);
-  const [tipoVivienda, setTipoVivienda] = useState<Vivienda>(perfilData.tipo_vivienda);
+
+  const [cantidadMascotas, setCantidadMascotas] = useState(
+    perfilData.cantidad_mascotas
+  );
+
+  const [especiePreferida, setEspeciePreferida] = useState<EspeciePreferida>(
+    perfilData.especie_preferida
+  );
+
+  const [tipoVivienda, setTipoVivienda] = useState<Vivienda>(
+    perfilData.tipo_vivienda
+  );
+
   const [sexo, setSexo] = useState<Sexo>(perfilData.sexo);
-  const [edadBuscada, setEdadBuscada] = useState<Edad>(perfilData.edad_buscada);
-  const [motivoAdopcion, setMotivoAdopcion] = useState(perfilData.motivo_adopcion);
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+
+  const [edadBuscada, setEdadBuscada] = useState<Edad>(
+    perfilData.edad_buscada
+  );
+
+  const [motivoAdopcion, setMotivoAdopcion] = useState(
+    perfilData.motivo_adopcion
+  );
+
+  // comuna + mapa
   const [comuna, setComuna] = useState(perfilData.comuna ?? "");
-  const [latitud, setLatitud] = useState<number | undefined>(perfilData.latitud);
-  const [longitud, setLongitud] = useState<number | undefined>(perfilData.longitud);
+  const [latitud, setLatitud] = useState<number | undefined>(
+    perfilData.latitud
+  );
+  const [longitud, setLongitud] = useState<number | undefined>(
+    perfilData.longitud
+  );
+
   const [sugerenciasComuna, setSugerenciasComuna] = useState<Direccion[]>([]);
   const [loadingComuna, setLoadingComuna] = useState(false);
-  const [comunaValida, setComunaValida] = useState<boolean>(!!perfilData.comuna);
+  const [comunaValida, setComunaValida] = useState<boolean>(
+    !!perfilData.comuna
+  );
 
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSave = async () => {
+  // --------------------------------------------------------
+  // BUSCAR COMUNA (MAPBOX)
+  // --------------------------------------------------------
+  const handleComunaChange = async (txt: string) => {
+    setComuna(txt);
+    setComunaValida(false);
+
+    if (txt.trim().length < 3) {
+      setSugerenciasComuna([]);
+      return;
+    }
+
+    setLoadingComuna(true);
+    try {
+      const results = await buscarDirecciones(txt);
+      setSugerenciasComuna(results);
+    } catch {
+      setSugerenciasComuna([]);
+    } finally {
+      setLoadingComuna(false);
+    }
+  };
+
+  const seleccionarComuna = (dir: Direccion) => {
+    setComuna(dir.comuna);
+    setLatitud(dir.latitud);
+    setLongitud(dir.longitud);
+    setSugerenciasComuna([]);
+    setComunaValida(true);
+  };
+
+  // --------------------------------------------------------
+  // VALIDAR Y GUARDAR
+  // --------------------------------------------------------
+  const guardar = async () => {
     if (!nombre.trim() || !direccion.trim() || !telefono.trim()) {
       setError("Todos los campos son obligatorios");
       return;
     }
-    const rutRegex = /^\d{7,8}[0-9kK]$/;
-    if (!rutRegex.test(rut)) {
-      setError("Rut invalido");
+
+    if (!/^\d{7,8}[0-9kK]$/.test(rut)) {
+      setError("RUT inválido (sin puntos ni guion)");
       return;
     }
-    const telefonoRegex = /^\+\d{7,15}$/;
-    if (!telefonoRegex.test(telefono)) {
-      setError("Debes incluir prefijo nacional y sin espacios");
+
+    if (!/^\+\d{7,15}$/.test(telefono)) {
+      setError("Teléfono inválido (+569...)");
       return;
     }
+
     if (edad < 18 || edad > 100) {
-      setError("Debes ser mayor de 18");
+      setError("Edad inválida");
       return;
     }
+
     if (cantidadMascotas < 0 || cantidadMascotas > 20) {
-      setError("Cantidad de mascotas debe estar entre 0 y 20");
+      setError("Cantidad de mascotas inválida");
       return;
     }
+
     if (!comunaValida) {
-      setError("Debes seleccionar una comuna de la lista");
-      setSaving(false);
+      setError("Selecciona una comuna válida");
       return;
     }
 
@@ -85,270 +174,399 @@ export default function EditarAdoptante() {
       await updateAdoptante(rutOriginal, {
         rut: rut.toLowerCase(),
         nombre,
-        edad,
-        telefono,
         direccion,
+        telefono,
+        edad,
         comuna,
         latitud,
         longitud,
         experiencia_mascotas: experienciaMascotas,
-        cantidad_mascotas: experienciaMascotas === "Si" ? cantidadMascotas : 0,
+        cantidad_mascotas:
+          experienciaMascotas === "Si" ? cantidadMascotas : 0,
         especie_preferida: especiePreferida,
         tipo_vivienda: tipoVivienda,
         sexo,
         edad_buscada: edadBuscada,
         motivo_adopcion: motivoAdopcion,
       });
+
       navigation.goBack();
     } catch {
-      setError("Error al guardar cambios");
+      setError("Error guardando cambios");
     } finally {
       setSaving(false);
     }
   };
 
-  const handleComunaChange = async (text: string) => {
-    setComuna(text);
-    setComunaValida(false);
-
-    if (text.trim().length < 3) {
-      setSugerenciasComuna([]);
-      return;
-    }
-
-    setLoadingComuna(true);
-    try {
-      const results = await buscarDirecciones(text);
-      setSugerenciasComuna(results);
-    } catch (err) {
-      console.error(err);
-      setSugerenciasComuna([]);
-    } finally {
-      setLoadingComuna(false);
-    }
-  };
-
-  const handleSelectComuna = (dir: Direccion) => {
-    setComuna(dir.comuna);
-    setLatitud(dir.latitud);
-    setLongitud(dir.longitud);
-    setSugerenciasComuna([]);
-    setComunaValida(true);
-  };
-
+  // --------------------------------------------------------
+  // UI
+  // --------------------------------------------------------
   return (
-    <KeyboardAvoidingView
+    <SafeAreaView
       style={{ flex: 1, backgroundColor: theme.colors.background }}
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
+      edges={["top", "bottom"]}
     >
-      <ScrollView contentContainerStyle={{ alignItems: "center", padding: 20 }}>
-        <View style={{
-          width: FORM_CARD_WIDTH,
-          backgroundColor: theme.colors.backgroundSecondary,
-          padding: 20,
-          borderRadius: 10,
-          borderWidth: 2,
-          borderColor: theme.colors.accent,
-        }}>
-          <Text style={[styles.label, { color: theme.colors.secondary }]}>Rut:</Text>
-          <TextInput
-            value={rut ?? ""} 
-            onChangeText={t => {
-            const soloNumeros = t.replace(/[^0-9kK]/g, '');
-            setRut(soloNumeros);
-            }}
-            placeholder="rut sin punto ni guion" 
-            style={[styles.input, { color: theme.colors.text }]} 
-            placeholderTextColor={theme.colors.text} 
-          />
-          <Text style={[styles.label, { color: theme.colors.secondary }]}>Nombre:</Text>
-          <TextInput value={nombre} onChangeText={setNombre} placeholder="Nombre del adoptante" style={[styles.input, { color: theme.colors.text }]} placeholderTextColor={theme.colors.text} />
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        style={{ flex: 1 }}
+      >
+        <ScrollView contentContainerStyle={styles.container}>
+          <View
+            style={[
+              styles.card,
+              {
+                backgroundColor: theme.colors.backgroundSecondary,
+                borderColor: theme.colors.border,
+              },
+            ]}
+          >
+            {/* RUT */}
+            <Text style={[styles.label, { color: theme.colors.textSecondary }]}>
+              RUT
+            </Text>
+            <TextInput
+              value={rut}
+              onChangeText={(t) => setRut(t.replace(/[^0-9kK]/g, ""))}
+              placeholder="11222333k"
+              placeholderTextColor={theme.colors.textSecondary}
+              style={[styles.input, { color: theme.colors.text, borderColor: theme.colors.border }]}
+            />
 
-          <Text style={[styles.label, { color: theme.colors.secondary }]}>Dirección:</Text>
-          <TextInput value={direccion} onChangeText={setDireccion} placeholder="Dirección" style={[styles.input, { color: theme.colors.text }]} placeholderTextColor={theme.colors.text} />
+            {/* Nombre */}
+            <Text style={[styles.label, { color: theme.colors.textSecondary }]}>
+              Nombre
+            </Text>
+            <TextInput
+              value={nombre}
+              onChangeText={setNombre}
+              style={[styles.input, { color: theme.colors.text, borderColor: theme.colors.border }]}
+            />
 
-        <Text style={[styles.label, { color: theme.colors.secondary }]}>Comuna:</Text>
-        <TextInput
-          value={comuna}
-          onChangeText={handleComunaChange}
-          placeholder="Ingrese comuna"
-          style={[styles.input, { color: theme.colors.text }]}
-          placeholderTextColor={theme.colors.text}
-        />
+            {/* Dirección */}
+            <Text style={[styles.label, { color: theme.colors.textSecondary }]}>
+              Dirección
+            </Text>
+            <TextInput
+              value={direccion}
+              onChangeText={setDireccion}
+              style={[styles.input, { color: theme.colors.text, borderColor: theme.colors.border }]}
+            />
 
-        {loadingComuna && <ActivityIndicator size="small" color={theme.colors.secondary} />}
+            {/* Comuna */}
+            <Text style={[styles.label, { color: theme.colors.textSecondary }]}>
+              Comuna
+            </Text>
+            <TextInput
+              value={comuna}
+              onChangeText={handleComunaChange}
+              placeholder="Ingresa comuna"
+              placeholderTextColor={theme.colors.textSecondary}
+              style={[styles.input, { color: theme.colors.text, borderColor: theme.colors.border }]}
+            />
 
-        {sugerenciasComuna.length > 0 && (
-          <View style={{
-            borderWidth: 1,
-            borderColor: theme.colors.accent,
-            borderRadius: 6,
-            maxHeight: 150,
-            marginBottom: 10,
-          }}>
-            {sugerenciasComuna.slice(0, 3).map((dir, index) => (
-              <TouchableOpacity
-                key={index}
-                onPress={() => handleSelectComuna(dir)}
-                style={{
-                  padding: 8,
-                  borderBottomWidth: index !== Math.min(sugerenciasComuna.length, 3) - 1 ? 1 : 0,
-                  borderColor: theme.colors.accent,
-                }}
+            {loadingComuna && (
+              <ActivityIndicator color={theme.colors.accent} />
+            )}
+
+            {sugerenciasComuna.length > 0 && (
+              <View
+                style={[
+                  styles.sugBox,
+                  { borderColor: theme.colors.border },
+                ]}
               >
-                <Text style={{ color: theme.colors.text }}>
-                  {dir.comuna}{dir.ciudad ? `, ${dir.ciudad}` : ""}
+                {sugerenciasComuna.slice(0, 3).map((dir, idx) => (
+                  <TouchableOpacity
+                    key={idx}
+                    onPress={() => seleccionarComuna(dir)}
+                    style={styles.sugItem}
+                  >
+                    <Text style={{ color: theme.colors.text }}>
+                      {dir.comuna}
+                      {dir.ciudad ? ", " + dir.ciudad : ""}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            )}
+
+            {/* Teléfono */}
+            <Text style={[styles.label, { color: theme.colors.textSecondary }]}>
+              Teléfono
+            </Text>
+            <TextInput
+              value={telefono}
+              onChangeText={(t) => setTelefono(t.replace(/[^0-9+]/g, ""))}
+              keyboardType="phone-pad"
+              style={[styles.input, { color: theme.colors.text, borderColor: theme.colors.border }]}
+            />
+
+            {/* Edad */}
+            <Text style={[styles.label, { color: theme.colors.textSecondary }]}>
+              Edad
+            </Text>
+            <TextInput
+              value={edad.toString()}
+              onChangeText={(t) =>
+                setEdad(Number(t.replace(/[^0-9]/g, "")) || 0)
+              }
+              keyboardType="number-pad"
+              style={[styles.input, { color: theme.colors.text, borderColor: theme.colors.border }]}
+            />
+
+            {/* Experiencia mascotas */}
+            <Text style={[styles.label, { color: theme.colors.textSecondary }]}>
+              ¿Tienes experiencia con mascotas?
+            </Text>
+
+            <View style={{ flexDirection: "row", marginBottom: 10 }}>
+              {["Si", "No"].map((op) => (
+                <TouchableOpacity
+                  key={op}
+                  onPress={() => setExperienciaMascotas(op as any)}
+                  style={styles.radioRow}
+                >
+                  <View
+                    style={[
+                      styles.radio,
+                      { borderColor: theme.colors.textSecondary },
+                    ]}
+                  >
+                    {experienciaMascotas === op && (
+                      <View
+                        style={[
+                          styles.radioDot,
+                          { backgroundColor: theme.colors.textSecondary },
+                        ]}
+                      />
+                    )}
+                  </View>
+                  <Text style={{ color: theme.colors.text }}>{op}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            {experienciaMascotas === "Si" && (
+              <>
+                <Text
+                  style={[styles.label, { color: theme.colors.textSecondary }]}
+                >
+                  Cantidad de mascotas
+                </Text>
+                <TextInput
+                  value={cantidadMascotas.toString()}
+                  onChangeText={(t) =>
+                    setCantidadMascotas(Number(t.replace(/[^0-9]/g, "")) || 0)
+                  }
+                  keyboardType="number-pad"
+                  style={[styles.input, { color: theme.colors.text, borderColor: theme.colors.border }]}
+                />
+              </>
+            )}
+
+            {/* SELECTS */}
+            <Text style={[styles.label, { color: theme.colors.textSecondary }]}>
+              Especie preferida
+            </Text>
+            <Picker
+              selectedValue={especiePreferida}
+              onValueChange={setEspeciePreferida}
+              style={pickerStyle(theme)}
+            >
+              {Object.values(EspeciePreferida).map((v) => (
+                <Picker.Item key={v} label={v} value={v} />
+              ))}
+            </Picker>
+
+            <Text style={[styles.label, { color: theme.colors.textSecondary }]}>
+              Tipo de vivienda
+            </Text>
+            <Picker
+              selectedValue={tipoVivienda}
+              onValueChange={setTipoVivienda}
+              style={pickerStyle(theme)}
+            >
+              {Object.values(Vivienda).map((v) => (
+                <Picker.Item key={v} label={v} value={v} />
+              ))}
+            </Picker>
+
+            <Text style={[styles.label, { color: theme.colors.textSecondary }]}>
+              Sexo
+            </Text>
+            <Picker
+              selectedValue={sexo}
+              onValueChange={setSexo}
+              style={pickerStyle(theme)}
+            >
+              {Object.values(Sexo).map((v) => (
+                <Picker.Item key={v} label={v} value={v} />
+              ))}
+            </Picker>
+
+            <Text style={[styles.label, { color: theme.colors.textSecondary }]}>
+              Edad buscada
+            </Text>
+            <Picker
+              selectedValue={edadBuscada}
+              onValueChange={setEdadBuscada}
+              style={pickerStyle(theme)}
+            >
+              {Object.values(Edad).map((v) => (
+                <Picker.Item key={v} label={v} value={v} />
+              ))}
+            </Picker>
+
+            {/* Motivo adopción */}
+            <Text style={[styles.label, { color: theme.colors.textSecondary }]}>
+              Motivo de adopción
+            </Text>
+            <TextInput
+              value={motivoAdopcion}
+              onChangeText={setMotivoAdopcion}
+              multiline
+              numberOfLines={3}
+              style={[
+                styles.textarea,
+                { color: theme.colors.text, borderColor: theme.colors.border },
+              ]}
+            />
+
+            {error && (
+              <Text style={{ color: theme.colors.error, marginBottom: 10 }}>
+                {error}
+              </Text>
+            )}
+
+            {/* BOTONES */}
+            <View style={styles.btnRow}>
+              <TouchableOpacity
+                style={[
+                  styles.btn,
+                  {
+                    backgroundColor: theme.colors.accent,
+                  },
+                ]}
+                onPress={guardar}
+                disabled={saving}
+              >
+                <Text
+                  style={{
+                    color: "#fff",
+                    fontWeight: "bold",
+                  }}
+                >
+                  {saving ? "Guardando..." : "Guardar"}
                 </Text>
               </TouchableOpacity>
-            ))}
-          </View>
-        )}
 
-          <Text style={[styles.label, { color: theme.colors.secondary }]}>Teléfono:</Text>
-          <TextInput 
-            value={telefono} 
-            onChangeText={t => {
-              let filtrado = t.replace(/[^0-9+]/g, '');
-              setTelefono(filtrado);
-            }}
-            placeholder="+56912345678" 
-            keyboardType="phone-pad" 
-            style={[styles.input, { color: theme.colors.text }]} 
-            placeholderTextColor={theme.colors.text} 
-          />
-
-          <Text style={[styles.label, { color: theme.colors.secondary }]}>Edad:</Text>
-          <TextInput 
-            value={edad.toString()} 
-            onChangeText={t => {
-              const soloNumeros = t.replace(/[^0-9]/g, ""); // elimina letras
-              setEdad(soloNumeros ? Number(soloNumeros) : 0);
-            }}
-            placeholder="Edad" 
-            keyboardType="number-pad" 
-            style={[styles.input, { color: theme.colors.text }]} 
-            placeholderTextColor={theme.colors.text} 
-          />
-
-          <Text style={[styles.label, { color: theme.colors.secondary }]}>¿Tienes experiencia con mascotas?</Text>
-          <View style={{ flexDirection: "row", marginBottom: 10 }}>
-            {["Si", "No"].map(opcion => (
               <TouchableOpacity
-                key={opcion}
-                onPress={() => setExperienciaMascotas(opcion as "Si" | "No")}
-                style={{ flexDirection: "row", alignItems: "center", marginRight: 20 }}
+                style={[
+                  styles.btn,
+                  { backgroundColor: theme.colors.error },
+                ]}
+                onPress={() => navigation.goBack()}
               >
-                <View style={{
-                  width: 20,
-                  height: 20,
-                  borderRadius: 10,
-                  borderWidth: 2,
-                  borderColor: theme.colors.secondary,
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}>
-                  {experienciaMascotas === opcion && (
-                    <View style={{
-                      width: 12,
-                      height: 12,
-                      borderRadius: 6,
-                      backgroundColor: theme.colors.secondary,
-                    }} />
-                  )}
-                </View>
-                <Text style={{ marginLeft: 6, color: theme.colors.secondary }}>{opcion}</Text>
+                <Text
+                  style={{
+                    color: "#fff",
+                    fontWeight: "bold",
+                  }}
+                >
+                  Cancelar
+                </Text>
               </TouchableOpacity>
-            ))}
+            </View>
           </View>
-
-          {experienciaMascotas === "Si" && (
-            <>
-              <Text style={[styles.label, { color: theme.colors.secondary }]}>Cuántas mascotas tiene:</Text>
-              <TextInput
-                value={cantidadMascotas.toString()}
-                onChangeText={t => {
-                  const soloNumeros = t.replace(/[^0-9]/g, ""); // elimina letras
-                  setCantidadMascotas(soloNumeros ? Number(soloNumeros) : 0);
-                }}
-                placeholder="Cantidad"
-                keyboardType="number-pad"
-                style={[styles.input, { color: theme.colors.text }]}
-                placeholderTextColor={theme.colors.text}
-              />
-            </>
-          )}
-
-          <Text style={[styles.label, { color: theme.colors.secondary }]}>Especie preferida:</Text>
-          <Picker selectedValue={especiePreferida} onValueChange={setEspeciePreferida} style={[styles.input, { color: theme.colors.text, backgroundColor:theme.colors.backgroundSecondary }]}>
-            {Object.values(EspeciePreferida).map(e => <Picker.Item key={e} label={e} value={e} />)}
-          </Picker>
-
-          <Text style={[styles.label, { color: theme.colors.secondary }]}>Tipo de vivienda:</Text>
-          <Picker selectedValue={tipoVivienda} onValueChange={setTipoVivienda} style={[styles.input, { color: theme.colors.text, backgroundColor:theme.colors.backgroundSecondary }]}>
-            {Object.values(Vivienda).map(v => <Picker.Item key={v} label={v} value={v} />)}
-          </Picker>
-
-          <Text style={[styles.label, { color: theme.colors.secondary }]}>Sexo:</Text>
-          <Picker selectedValue={sexo} onValueChange={setSexo} style={[styles.input, { color: theme.colors.text, backgroundColor:theme.colors.backgroundSecondary }]}>
-            {Object.values(Sexo).map(s => <Picker.Item key={s} label={s} value={s} />)}
-          </Picker>
-
-          <Text style={[styles.label, { color: theme.colors.secondary }]}>Edad buscada:</Text>
-          <Picker selectedValue={edadBuscada} onValueChange={setEdadBuscada} style={[styles.input, { color: theme.colors.text, backgroundColor:theme.colors.backgroundSecondary }]}>
-            {Object.values(Edad).map(e => <Picker.Item key={e} label={e} value={e} />)}
-          </Picker>
-
-          <Text style={[styles.label, { color: theme.colors.secondary }]}>Motivo de adopción:</Text>
-          <TextInput value={motivoAdopcion} onChangeText={setMotivoAdopcion} placeholder="Me gustaria adoptar porque..." style={[styles.input, { color: theme.colors.text }]} placeholderTextColor={theme.colors.text} multiline numberOfLines={3} />
-
-          {error && <Text style={[styles.error, { color: theme.colors.error }]}>{error}</Text>}
-
-          <View style={{ flexDirection: "row", justifyContent: "space-between", marginTop: 10 }}>
-            <TouchableOpacity
-              style={[styles.button, { flex: 1, backgroundColor: theme.colors.backgroundTertiary, marginRight: 5 }]}
-              onPress={handleSave}
-              disabled={saving}
-            >
-              <Text style={{ color: theme.colors.secondary, fontWeight: "bold" }}>
-                {saving ? "Guardando..." : "Guardar"}
-              </Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[styles.button, { flex: 1, backgroundColor: theme.colors.error, marginLeft: 5 }]}
-              onPress={() => navigation.goBack()}
-            >
-              <Text style={{ color: theme.colors.secondary, fontWeight: "bold" }}>Cancelar</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }
 
+// --------------------------------------------------------
+// ESTILOS
+// --------------------------------------------------------
 const styles = StyleSheet.create({
+  container: {
+    alignItems: "center",
+    padding: 20,
+  },
+
+  card: {
+    width: "100%",
+    maxWidth: 420,
+    padding: 20,
+    borderWidth: 2,
+    borderRadius: 12,
+  },
+
   label: {
-    marginBottom: 6,
     fontSize: 15,
     fontWeight: "bold",
+    marginBottom: 6,
   },
+
   input: {
     borderWidth: 1,
-    borderColor: "gray",
+    borderRadius: 8,
     padding: 8,
-    borderRadius: 4,
+    marginBottom: 12,
+  },
+
+  textarea: {
+    borderWidth: 1,
+    borderRadius: 8,
+    padding: 8,
+    height: 80,
+    marginBottom: 12,
+  },
+
+  radioRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginRight: 16,
+  },
+
+  radio: {
+    width: 22,
+    height: 22,
+    borderWidth: 2,
+    borderRadius: 12,
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 6,
+  },
+
+  radioDot: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+  },
+
+  sugBox: {
+    borderWidth: 1,
+    borderRadius: 6,
     marginBottom: 10,
   },
-  error: {
-    textAlign: "center",
-    marginBottom: 10,
+
+  sugItem: {
+    padding: 8,
+    borderBottomWidth: 1,
+    borderColor: "#ccc",
   },
-  button: {
-    width: "100%",
-    height: 48,
+
+  btnRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 10,
+  },
+
+  btn: {
+    flex: 1,
+    paddingVertical: 12,
     borderRadius: 10,
     alignItems: "center",
-    justifyContent: "center",
+    marginHorizontal: 5,
   },
 });

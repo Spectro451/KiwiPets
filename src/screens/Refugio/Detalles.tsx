@@ -1,272 +1,345 @@
-import { View, Text, Platform, Dimensions, StyleSheet, TouchableOpacity, Modal, Alert, TextInput, ActivityIndicator } from "react-native";
-import { useRoute, RouteProp, useNavigation } from "@react-navigation/native";
-import { useEffect, useState } from "react";
-import { Adopcion } from "../../types/adopcion";
+import {
+  View,
+  Text,
+  StyleSheet,
+  Modal,
+  TextInput,
+  ActivityIndicator,
+  TouchableOpacity,
+  ScrollView,
+  Platform
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { useTheme } from "../../theme/ThemeContext";
+import { useCallback, useState } from "react";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { getAdopcionId, updateAdopcion } from "../../services/fetchAdopcion";
 import { EstadoAdopcion } from "../../types/enums";
-import { useTheme } from "../../theme/ThemeContext";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { Linking } from "react-native";
 
-
-
-
-type RouteParams = {
-  DetalleAdopcion: { id: number };
-};
-const isWeb = Platform.OS === "web";
-const { width } = Dimensions.get("window");
-
-export default function DetalleAdopcion() {
-  const route = useRoute<RouteProp<RouteParams, "DetalleAdopcion">>();
+export default function Detalles({ route }: any) {
   const { id } = route.params;
-  const [adopcion, setAdopcion] = useState<Adopcion | null>(null);
+  const navigation = useNavigation();
+  const { theme } = useTheme();
+
+  const [adopcion, setAdopcion] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
   const [modalRechazo, setModalRechazo] = useState(false);
   const [motivo, setMotivo] = useState("");
-  const navigation = useNavigation();
-  const [modalExito, setModalExito] = useState(false);
-  const {theme} = useTheme();
 
-  useEffect(()=>{
-    const fetchAdopcion = async()=>{
+  const [modalExito, setModalExito] = useState(false);
+
+  const cargarAdopcion = async () => {
+    try {
+      setLoading(true);
       const data = await getAdopcionId(id);
       setAdopcion(data);
-    };
-    fetchAdopcion();
-  },[id]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  if (!adopcion) {
-    return (
-      <View style={{ 
-        flex: 1,
-        justifyContent: "center",
-        alignItems: "center",
-        backgroundColor: theme.colors.background,
-      }}>
-        <ActivityIndicator size="large" color={theme.colors.accent} />
-      </View>
-    );
-  }
+  useFocusEffect(
+    useCallback(() => {
+      cargarAdopcion();
+    }, [id])
+  );
 
-
-  const handleAceptar = async () => {
-    const updated = await updateAdopcion(adopcion.id, { 
-      data: { estado: EstadoAdopcion.ACEPTADA } 
+  const aprobar = async () => {
+    const updated = await updateAdopcion(id, {
+      data: { estado: EstadoAdopcion.ACEPTADA }
     });
+
     if (updated) {
       setAdopcion(updated);
       setModalExito(true);
     }
   };
 
-  const handleRechazar = async ()=>{
-    if(!motivo.trim()){
-      Alert.alert("Debe ingresar un motivo");
-      return;
-    }
-    const updated = await updateAdopcion(adopcion.id, {
-      data: {estado:EstadoAdopcion.RECHAZADA},
-      motivo: motivo
+  const rechazar = async () => {
+    if (!motivo.trim()) return;
+
+    const updated = await updateAdopcion(id, {
+      data: { estado: EstadoAdopcion.RECHAZADA },
+      motivo
     });
-    if(updated){
-      setAdopcion(updated);
+
+    if (updated) {
       setModalRechazo(false);
-      setMotivo("");
       navigation.goBack();
     }
   };
 
-  const AdoptanteInfo = ({ adopcion }: { adopcion: Adopcion }) => (
-    <View style={[styles.column, {backgroundColor:theme.colors.backgroundSecondary, borderColor:theme.colors.backgroundTertiary}]}>
-      <Text style={[styles.title, {color:theme.colors.text}]}>Adoptante</Text>
-      <Text style={{color:theme.colors.text}}><Text style={{ fontWeight: "bold", color:theme.colors.textSecondary }}>RUT:</Text> {adopcion.adoptante.rut}</Text>
-      <Text style={{color:theme.colors.text}}><Text style={{ fontWeight: "bold", color:theme.colors.textSecondary }}>Nombre:</Text> {adopcion.adoptante.nombre}</Text>
-      <Text style={{color:theme.colors.text}}><Text style={{ fontWeight: "bold", color:theme.colors.textSecondary }}>Edad:</Text> {adopcion.adoptante.edad} años</Text>
-      <Text style={{color:theme.colors.text}}>
-        <Text style={{ fontWeight: "bold", color:theme.colors.textSecondary }}>Teléfono:</Text>{" "}
-        <Text
-          style={{ color: "#2196F3", textDecorationLine: "underline" }}
-          onPress={() => Linking.openURL(`tel:${adopcion.adoptante.telefono}`)}
-        >
-          {adopcion.adoptante.telefono}
-        </Text>
-      </Text>
-      <Text style={{color:theme.colors.text}}><Text style={{ fontWeight: "bold", color:theme.colors.textSecondary }}>Dirección:</Text> {adopcion.adoptante.direccion}</Text>
-      <Text style={{color:theme.colors.text}}><Text style={{ fontWeight: "bold", color:theme.colors.textSecondary }}>Experiencia con mascotas:</Text> {adopcion.adoptante.experiencia_mascotas ? "Sí" : "No"}</Text>
-      <Text style={{color:theme.colors.text}}><Text style={{ fontWeight: "bold", color:theme.colors.textSecondary }}>Cantidad de mascotas:</Text> {adopcion.adoptante.cantidad_mascotas}</Text>
-      <Text style={{color:theme.colors.text}}><Text style={{ fontWeight: "bold", color:theme.colors.textSecondary }}>Tipo de vivienda:</Text> {adopcion.adoptante.tipo_vivienda}</Text>
-      <Text style={{color:theme.colors.text}}><Text style={{ fontWeight: "bold", color:theme.colors.textSecondary }}>Motivo adopción:</Text> {adopcion.adoptante.motivo_adopcion}</Text>
-    </View>
-  );
+  if (loading || !adopcion) {
+    return (
+      <SafeAreaView style={{ flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: theme.colors.background }}>
+        <ActivityIndicator size="large" color={theme.colors.accent} />
+      </SafeAreaView>
+    );
+  }
 
-  const MascotaInfo = ({ adopcion }: { adopcion: Adopcion }) => (
-    <View style={[styles.column, {backgroundColor:theme.colors.backgroundSecondary, borderColor:theme.colors.backgroundTertiary}]}>
-      <Text style={[styles.title, {color:theme.colors.text}]}>Mascota</Text>
-      <Text style={{color:theme.colors.text}}><Text style={{ fontWeight: "bold", color:theme.colors.textSecondary }}>Nombre:</Text> {adopcion.mascota.nombre}</Text>
-      <Text style={{color:theme.colors.text}}><Text style={{ fontWeight: "bold", color:theme.colors.textSecondary }}>Especie:</Text> {adopcion.mascota.especie}</Text>
-      <Text style={{color:theme.colors.text}}><Text style={{ fontWeight: "bold", color:theme.colors.textSecondary }}>Raza:</Text> {adopcion.mascota.raza}</Text>
-      <Text style={{color:theme.colors.text}}><Text style={{ fontWeight: "bold", color:theme.colors.textSecondary }}>Edad:</Text> {adopcion.mascota.edad} años</Text>
-      <Text style={{color:theme.colors.text}}><Text style={{ fontWeight: "bold", color:theme.colors.textSecondary }}>Género:</Text> {adopcion.mascota.genero}</Text>
-      <Text style={{color:theme.colors.text}}><Text style={{ fontWeight: "bold", color:theme.colors.textSecondary }}>Tamaño:</Text> {adopcion.mascota.tamaño}</Text>
-      <Text style={{color:theme.colors.text}}><Text style={{ fontWeight: "bold", color:theme.colors.textSecondary }}>Vacunado:</Text> {adopcion.mascota.vacunado ? "Sí" : "No"}</Text>
-      <Text style={{color:theme.colors.text}}><Text style={{ fontWeight: "bold", color:theme.colors.textSecondary }}>Esterilizado:</Text> {adopcion.mascota.esterilizado ? "Sí" : "No"}</Text>
-      <Text style={{color:theme.colors.text}}><Text style={{ fontWeight: "bold", color:theme.colors.textSecondary }}>Discapacidad:</Text> {adopcion.mascota.discapacidad ? "Sí" : "No"}</Text>
-      <Text style={{color:theme.colors.text}}><Text style={{ fontWeight: "bold", color:theme.colors.textSecondary }}>Requisitos adopción:</Text> {adopcion.mascota.requisito_adopcion}</Text>
-      <Text style={{color:theme.colors.text}}><Text style={{ fontWeight: "bold", color:theme.colors.textSecondary }}>Personalidad:</Text> {adopcion.mascota.personalidad}</Text>
-      <Text style={{color:theme.colors.text}}><Text style={{ fontWeight: "bold", color:theme.colors.textSecondary }}>Descripción:</Text> {adopcion.mascota.descripcion}</Text>
-    </View>
-  );
+  const a = adopcion;
 
   return (
-    <SafeAreaView edges={['top', 'bottom']} style={{ flex: 1, backgroundColor: theme.colors.background }}>
-      <View style={[styles.container, {backgroundColor:theme.colors.background}]}>
-        <TouchableOpacity 
-          style={styles.backButtonContainer} 
-          onPress={() => navigation.goBack()}
-        >
-          <Text style={{ fontSize: 30, color: theme.colors.text, fontWeight: "bold" }}>
-            ←
-          </Text>
+    <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.background }} edges={["top", "bottom"]}>
+      <ScrollView contentContainerStyle={styles.scroll}>
+
+        {/* Botón Back */}
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backRow}>
+          <Text style={[styles.backIcon, { color: theme.colors.text }]}>←</Text>
         </TouchableOpacity>
 
-        <AdoptanteInfo adopcion={adopcion}/>
-        <MascotaInfo adopcion={adopcion}/>
+        {/* Título */}
+        <Text style={[styles.screenTitle, { color: theme.colors.text }]}>
+          Detalles de la Adopción
+        </Text>
 
-        <View style={styles.buttonsContainer}>
-          <TouchableOpacity style={[styles.button, styles.aceptar]} onPress={handleAceptar}>
-            <Text style={styles.buttonText}>Aceptar</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={[styles.button, styles.rechazar]} onPress={()=>setModalRechazo(true)}>
-            <Text style={styles.buttonText}>Rechazar</Text>
-          </TouchableOpacity>
+        {/* CARD ─ Mascota */}
+        <View style={[styles.card, { backgroundColor: theme.colors.backgroundSecondary, borderColor: theme.colors.backgroundTertiary }]}>
+          <Text style={[styles.cardHeader, { color: theme.colors.secondary }]}>
+            Mascota
+          </Text>
+
+          <InfoRow label="Nombre" value={a.mascota?.nombre} theme={theme} />
+          <InfoRow label="Raza" value={a.mascota?.raza || "No especificada"} theme={theme} />
+          <InfoRow label="Edad" value={`${a.mascota?.edad} años`} theme={theme} />
+          <InfoRow label="Personalidad" value={a.mascota?.personalidad} theme={theme} />
+          <InfoRow label="Descripción" value={a.mascota?.descripcion} theme={theme} />
         </View>
 
-        <Modal visible={modalRechazo} transparent animationType="slide">
-          <View style={styles.modalBackground}>
-            <View style={[styles.modalContent, {backgroundColor:theme.colors.background, borderWidth:2, borderColor:theme.colors.backgroundTertiary}]}>
-              <Text style={{color:theme.colors.text, marginBottom:10, fontWeight:"bold", fontSize:16}}>
-                Ingrese el motivo del rechazo
-              </Text>
-              <TextInput
-                style={[styles.input,{
-                  borderColor:theme.colors.backgroundTertiary,
-                  color:theme.colors.text,
-                }]}
-                placeholder="Escriba aquí..."
-                placeholderTextColor={theme.colors.textSecondary}
-                value={motivo}
-                onChangeText={setMotivo}
-                multiline
-              />
-              <View style={{flexDirection:"row", gap:10}}>
-                <TouchableOpacity
-                  style={[styles.button, styles.rechazar]}
-                  onPress={handleRechazar}
-                >
-                  <Text style={styles.buttonText}>Rechazar</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[styles.button, {backgroundColor: theme.colors.backgroundTertiary}]}
-                  onPress={() => setModalRechazo(false)}
-                >
-                  <Text style={{color:theme.colors.text, fontWeight:"bold"}}>Cancelar</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
+        {/* CARD ─ Adoptante */}
+        <View style={[styles.card, { backgroundColor: theme.colors.backgroundSecondary, borderColor: theme.colors.backgroundTertiary }]}>
+          <Text style={[styles.cardHeader, { color: theme.colors.secondary }]}>Adoptante</Text>
+
+          <InfoRow label="Nombre" value={a.adoptante?.nombre} theme={theme} />
+          <InfoRow label="Teléfono" value={a.adoptante?.telefono} theme={theme} />
+          <InfoRow label="Dirección" value={a.adoptante?.direccion} theme={theme} />
+          <InfoRow label="Motivo adopción" value={a.adoptante?.motivo_adopcion} theme={theme} />
+        </View>
+
+        {/* CARD ─ Proceso */}
+        <View style={[styles.card, { backgroundColor: theme.colors.backgroundSecondary, borderColor: theme.colors.backgroundTertiary }]}>
+          <Text style={[styles.cardHeader, { color: theme.colors.secondary }]}>
+            Estado del proceso
+          </Text>
+
+          <InfoRow label="Estado" value={a.estado} theme={theme} />
+          <InfoRow label="Fecha" value={new Date(a.fecha).toLocaleDateString()} theme={theme} />
+        </View>
+
+        {/* BOTONES */}
+        {a.estado === "En proceso" && (
+          <View style={styles.actionRow}>
+            <TouchableOpacity
+              onPress={aprobar}
+              style={[styles.actionButton, { backgroundColor: theme.colors.accent }]}
+            >
+              <Text style={styles.actionText}>Aprobar</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={() => setModalRechazo(true)}
+              style={[styles.actionButton, { backgroundColor: "#D9534F" }]}
+            >
+              <Text style={styles.actionText}>Rechazar</Text>
+            </TouchableOpacity>
           </View>
-        </Modal>
-        <Modal visible={modalExito} transparent animationType="slide">
-          <View style={styles.modalBackground}>
-            <View style={[styles.modalContent, {backgroundColor:theme.colors.background, borderWidth:2, borderColor:theme.colors.backgroundTertiary}]}>
-              <Text style={{ marginBottom: 20, textAlign: "center", color:theme.colors.text }}>¡Adopción realizada!</Text>
+        )}
+      </ScrollView>
+
+      {/* MODAL ─ Rechazo */}
+      <Modal visible={modalRechazo} transparent animationType="fade">
+        <View style={styles.modalBg}>
+          <View style={[styles.modalCard, { backgroundColor: theme.colors.background }]}>
+            <Text style={[styles.modalTitle, { color: theme.colors.text }]}>Motivo del rechazo</Text>
+
+            <TextInput
+              style={[
+                styles.modalInput,
+                {
+                  borderColor: theme.colors.backgroundTertiary,
+                  color: theme.colors.text
+                }
+              ]}
+              multiline
+              value={motivo}
+              placeholder="Escriba aquí..."
+              placeholderTextColor={theme.colors.textSecondary}
+              onChangeText={setMotivo}
+            />
+
+            <View style={styles.modalRow}>
               <TouchableOpacity
-                style={[styles.button, { backgroundColor: "#4CAF50" }]}
-                onPress={() => {
-                  setModalExito(false);
-                  navigation.goBack();
-                }}
+                style={[styles.modalBtn, { backgroundColor: "#D9534F" }]}
+                onPress={rechazar}
               >
-                <Text style={styles.buttonText}>Aceptar</Text>
+                <Text style={styles.modalBtnTxt}>Rechazar</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.modalBtn, { backgroundColor: theme.colors.backgroundTertiary }]}
+                onPress={() => setModalRechazo(false)}
+              >
+                <Text style={[styles.modalBtnTxt, { color: theme.colors.text }]}>Cancelar</Text>
               </TouchableOpacity>
             </View>
           </View>
-        </Modal>
-      </View>
+        </View>
+      </Modal>
+
+      {/* MODAL ─ Éxito */}
+      <Modal visible={modalExito} transparent animationType="fade">
+        <View style={styles.modalBg}>
+          <View style={[styles.modalCard, { backgroundColor: theme.colors.background }]}>
+            <Text style={[styles.modalTitle, { color: theme.colors.text }]}>¡Adopción aceptada!</Text>
+
+            <TouchableOpacity
+              style={[styles.modalBtn, { backgroundColor: "#4CAF50" }]}
+              onPress={() => {
+                setModalExito(false);
+                navigation.goBack();
+              }}
+            >
+              <Text style={styles.modalBtnTxt}>Aceptar</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
 
+/* COMPONENTE REUTILIZABLE */
+function InfoRow({ label, value, theme }: any) {
+  return (
+    <View style={styles.infoRow}>
+      <Text style={[styles.infoLabel, { color: theme.colors.textSecondary }]}>{label}:</Text>
+      <Text style={[styles.infoValue, { color: theme.colors.text }]}>{value}</Text>
+    </View>
+  );
+}
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    flexDirection: isWeb ? "row" : "column",
-    justifyContent: isWeb ? "center": "space-around",
-    gap: 25,
-    padding: 10,
-    flexWrap: "wrap",
-    alignContent:"center"
+  scroll: {
+    padding: 20,
+    gap: 20
   },
-  column: {
-    minWidth: 350,
-    padding: 12,
-    borderWidth: 3,
-    borderRadius: 8,
-  },
-  title: {
-    fontWeight: "bold",
-    fontSize: 20,
-    textAlign: "center",
-    marginBottom: 12,
-  },
-  buttonsContainer: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-    gap: 20,
-    alignItems: "center",
+
+  backRow: {
     width: "100%",
-    marginBottom:10
   },
-  button: {
-    paddingVertical: 10,
+
+  backIcon: {
+    fontSize: 30,
+    fontWeight: "bold",
+  },
+
+  screenTitle: {
+    fontSize: 26,
+    fontWeight: "700",
+    textAlign: "center",
+    marginBottom: 5,
+  },
+
+  card: {
+    borderWidth: 2,
+    borderRadius: 14,
+    padding: 18,
+    gap: 12,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 4,
+  },
+
+  cardHeader: {
+    fontSize: 20,
+    fontWeight: "700",
+    marginBottom: 6,
+  },
+
+  infoRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
+
+  infoLabel: {
+    fontSize: 15,
+    fontWeight: "600",
+  },
+
+  infoValue: {
+    fontSize: 15,
+    flexShrink: 1,
+    textAlign: "right",
+  },
+
+  actionRow: {
+    flexDirection: "row",
+    justifyContent: "space-evenly",
+    marginTop: 10,
+  },
+
+  actionButton: {
+    paddingVertical: 12,
     paddingHorizontal: 20,
-    borderRadius: 6,
+    borderRadius: 12,
+    minWidth: 120,
     alignItems: "center",
   },
-  aceptar: {
-    backgroundColor: "#4CAF50",
+
+  actionText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "bold",
   },
-  rechazar: {
-    backgroundColor: "#F44336",
+
+  modalBg: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.55)",
+    justifyContent: "center",
+    alignItems: "center",
   },
-  buttonText: {
+
+  modalCard: {
+    width: Platform.OS === "web" ? 420 : 320,
+    padding: 20,
+    borderRadius: 16,
+    elevation: 5,
+    gap: 15,
+  },
+
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: "700",
+    textAlign: "center",
+  },
+
+  modalInput: {
+    borderWidth: 1,
+    borderRadius: 10,
+    padding: 12,
+    minHeight: 70,
+    textAlignVertical: "top",
+  },
+
+  modalRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    gap: 12,
+  },
+
+  modalBtn: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 12,
+    alignItems: "center",
+  },
+
+  modalBtnTxt: {
     color: "#fff",
     fontWeight: "bold",
-  },
-  modalBackground: {
-    flex: 1,
-    justifyContent: "center",
-    backgroundColor: "rgba(0,0,0,0.4)",
-    alignItems: "center",
-  },
-  modalContent: {
-    width:isWeb ? 500 : 350,
-    padding: 20,
-    borderRadius: 8,
-    alignItems: "center",
-  },
-  input: {
-    borderWidth:1,
-    borderRadius:6,
-    padding:8,
-    width:"100%",
-    minHeight:70,
-    textAlignVertical:"top",
-    marginBottom:15
-  },
-  backButtonContainer: {
-    width: "100%", 
-    justifyContent: "flex-start",
-    padding:0
+    fontSize: 16,
   },
 });

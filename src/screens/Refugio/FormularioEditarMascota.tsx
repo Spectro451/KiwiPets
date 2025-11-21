@@ -34,7 +34,7 @@ export default function FormularioEditarMascotaScreen({ navigation, route }: any
   const [fecha_ingreso, setFechaIngreso] = useState(new Date());
   const [discapacidad, setDiscapacidad] = useState(false);
   const [descripcion, setDescripcion] = useState("");
-  const [personalidad, setPersonalidad] = useState("");
+  const [personalidad, setPersonalidad] = useState(""); 
   const [foto, setFoto] = useState<string | undefined>();
   const [requisito_adopcion, setRequisitoAdopcion] = useState("");
   const [estado_adopcion, setEstadoAdopcion] = useState<Estado>(Estado.DISPONIBLE);

@@ -1,245 +1,277 @@
-import { View, TouchableOpacity, Text, StyleSheet } from "react-native";
-import { useFocusEffect } from '@react-navigation/native';
-import { useTheme } from "../../theme/ThemeContext";
 import { useCallback, useState, useRef } from "react";
-import { getMascotas, getMascotasCercanas } from "../../services/fetchMascotas";
-import PetSwipe from "../../components/petSwipe";
-import SkeletonCard from "../../components/skeletonCard";
+import { View, TouchableOpacity, Text, StyleSheet } from "react-native";
+import { useFocusEffect } from "@react-navigation/native";
+import { useTheme } from "../../theme/ThemeContext";
+
+import { getMascotasCercanas } from "../../services/fetchMascotas";
 import { createAdopcion } from "../../services/fetchAdopcion";
 import { createFavorito, deleteFavorito, getFavorito } from "../../services/fetchFavoritos";
-import { Mascota } from "../../types/mascota";
-import { Favoritos } from "../../types/favoritos";
-import { useAuth } from "../../hooks/useAuth";
 import { adoptanteByUsuarioId } from "../../services/fetchAdoptante";
+
+import PetSwipe from "../../components/petSwipe";
+import SkeletonCard from "../../components/skeletonCard";
+import { useAuth } from "../../hooks/useAuth";
+
+// ======================================================
+//  ESTILOS DINÁMICOS (CORRECTOS PARA TYPESCRIPT)
+// ======================================================
+
+function emptyContainer(theme: any) {
+  return {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 20,
+    backgroundColor: theme.colors.background,
+  } as const;
+}
+
+function btnAumentar(theme: any) {
+  return {
+    marginTop: 10,
+    backgroundColor: theme.colors.accent,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+  } as const;
+}
+
+function botonInferior(theme: any, disabled: boolean) {
+  return {
+    width: 90,
+    height: 50,
+    borderRadius: 25,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: disabled
+      ? theme.colors.backgroundSecondary
+      : theme.colors.backgroundTertiary,
+  } as const;
+}
+
+function botonTexto(theme: any) {
+  return {
+    color: theme.colors.text,
+    fontWeight: "700" as const,
+  };
+}
+
+// ======================================================
+//                   HOME SCREEN
+// ======================================================
 
 export default function HomeScreen() {
   const { theme } = useTheme();
-  const [pets, setPets] = useState<Mascota[]>([]);
-  const swipeRef = useRef<{ triggerSwipe: (dir: "left" | "right") => void; getCurrentIndex: ()=>number; }>(null);
+  const { user } = useAuth();
+
+  const [pets, setPets] = useState<any[]>([]);
+  const [favoritos, setFavoritos] = useState<any[]>([]);
+
   const [loading, setLoading] = useState(true);
-  const [favoritos, setFavoritos] = useState<Favoritos[]>([]);
-  const [isButtonDisabled, setIsButtonDisabled] = useState(false);
-  const currentUser = useAuth().user;
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [radioLocal, setRadioLocal] = useState<number>(5);
   const [sinResultados, setSinResultados] = useState(false);
+
+  const swipeRef = useRef<any>(null);
+  const [indexActual, setIndexActual] = useState(0);
+
+  const [radioBusqueda, setRadioBusqueda] = useState(5);
   const [vistas, setVistas] = useState<number[]>([]);
+  const [bloqueado, setBloqueado] = useState(false);
 
-  const handleSwipe = (dir: "left" | "right") => {
-    if (isButtonDisabled) return;
-    setIsButtonDisabled(true);
-
-    requestAnimationFrame(() => {
-      swipeRef.current?.triggerSwipe(dir);
-      setTimeout(() => {
-        setIsButtonDisabled(false);
-      }, 450);
-    });
-  };
-
-  const handleFavorito = async (mascotaId: number) => {
-    if (isButtonDisabled) return;
-    setIsButtonDisabled(true);
-
-    const favExist = favoritos.find(f => f.mascota.id_mascota === mascotaId);
-
-    if (favExist) {
-      // borra si hay favorito
-      await deleteFavorito(favExist.id);
-      setFavoritos(prev => prev.filter(f => f.mascota.id_mascota !== mascotaId));
-    } else {
-      // Si no está, agregar
-      const nuevo = await createFavorito(mascotaId);
-      if (nuevo) setFavoritos(prev => [nuevo, ...prev]);
-    }
-
-    setTimeout(() => {
-      setIsButtonDisabled(false);
-    }, 450);
-  };
-
-  const fetchMascotas = async (radio: number, vistasActuales: number[] = vistas) => {
+  // ======================================================
+  // Principal
+  // ======================================================
+  const fetchMascotas = async (radio: number, vistasLocales: number[] = vistas) => {
     setLoading(true);
+
     try {
-      const data = await getMascotasCercanas(radio); 
-      const disponibles = data.filter((pet: any) => pet.estado_adopcion !== "Adoptado");
+      const data = await getMascotasCercanas(radio);
 
-      const disponiblesFiltradas = disponibles.filter((p:any) => !vistasActuales.includes(p.id_mascota ?? p.id));
+      const disponibles = data.filter((m: any) => m.estado_adopcion !== "Adoptado");
+      const filtradas = disponibles.filter((m: any) => !vistasLocales.includes(m.id_mascota));
 
-      setPets(disponiblesFiltradas);
+      setPets(filtradas);
+      setSinResultados(filtradas.length === 0);
 
-      if (disponiblesFiltradas.length === 0) setSinResultados(true);
-      else setSinResultados(false);
+      const favs = await getFavorito();
+      setFavoritos(favs.filter((f: any) => f.adoptante?.usuario.id === user?.id));
 
-      const favoritosData = await getFavorito();
-      const misFavoritos = favoritosData.filter((f: Favoritos) => f.adoptante?.usuario.id === currentUser?.id);
-      setFavoritos(currentUser ? misFavoritos : []);
-      setCurrentIndex(0);
-    } catch (error) {
-      console.error("Error al obtener mascotas:", error);
+      setIndexActual(0);
+    } catch (err) {
+      console.log("Error:", err);
     } finally {
       setLoading(false);
     }
   };
 
-
+  // ======================================================
+  // Cargar en Focus
+  // ======================================================
   useFocusEffect(
     useCallback(() => {
-      const fetchBase = async () => {
-        setLoading(true);
+      const cargar = async () => {
         try {
-          const adoptante = await adoptanteByUsuarioId();
-          if (adoptante?.radio_busqueda) {
-            setRadioLocal(adoptante.radio_busqueda);
-            fetchMascotas(adoptante.radio_busqueda);
-          } else {
-            setRadioLocal(5);
-            fetchMascotas(5);
-          }
-        } catch (error) {
-          console.error("Error al obtener adoptante:", error);
-        } finally {
-          setLoading(false);
+          const adopt = await adoptanteByUsuarioId();
+          const radio = adopt?.radio_busqueda ?? 5;
+          setRadioBusqueda(radio);
+
+          fetchMascotas(radio);
+        } catch {
+          fetchMascotas(5);
         }
       };
 
-      fetchBase();
-    }, [currentUser])
+      cargar();
+    }, [user])
   );
 
-  const aumentarRadio = () => {
-    if (radioLocal < 40) {
-      const nuevoRadio = radioLocal + 5;
-      setRadioLocal(nuevoRadio);
-      fetchMascotas(nuevoRadio);
+  // ======================================================
+  // Toggle Favorito
+  // ======================================================
+  const toggleFavorito = async (petId: number) => {
+    if (bloqueado) return;
+    setBloqueado(true);
+
+    const existe = favoritos.find((f: any) => f.mascota.id_mascota === petId);
+
+    if (existe) {
+      await deleteFavorito(existe.id);
+      setFavoritos((prev) => prev.filter((f) => f.mascota.id_mascota !== petId));
+    } else {
+      const nuevo = await createFavorito(petId);
+      if (nuevo) setFavoritos((prev) => [nuevo, ...prev]);
     }
+
+    setTimeout(() => setBloqueado(false), 400);
   };
 
+  // ======================================================
+  // Ejecutar Swipes Manuales
+  // ======================================================
+  const ejecutarSwipe = (dir: "left" | "right") => {
+    if (bloqueado) return;
+    setBloqueado(true);
+
+    swipeRef.current?.triggerSwipe(dir);
+
+    setTimeout(() => setBloqueado(false), 300);
+  };
+
+  // ======================================================
+  // Loading
+  // ======================================================
   if (loading) {
     return (
       <View style={{ flex: 1, backgroundColor: theme.colors.background }}>
         <SkeletonCard />
-
-        {/* Botones Skeleton */}
-        <View style={styles.buttonsContainer}>
-          {[...Array(3)].map((_, i) => (
-            <View
-              key={i}
-              style={[
-                styles.button,
-                { backgroundColor: theme.colors.backgroundTertiary, opacity: 0.5 },
-              ]}
-            />
-          ))}
-        </View>
+        <View style={styles.buttonsLoading} />
       </View>
     );
   }
 
-    if (sinResultados) {
+  // ======================================================
+  // Sin Resultados
+  // ======================================================
+  if (sinResultados) {
     return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: theme.colors.background }}>
-        <Text style={{color:theme.colors.text}}>
-          No se encontraron mascotas en tu radio de {radioLocal} km.
+      <View style={emptyContainer(theme)}>
+        <Text style={{ color: theme.colors.text }}>
+          No se encontraron mascotas en tu radio de {radioBusqueda} km
         </Text>
-        {radioLocal < 40 && (
+
+        {radioBusqueda < 40 && (
           <TouchableOpacity
-            onPress={aumentarRadio}
-            style={{
-              marginTop: 10,
-              backgroundColor: theme.colors.accent,
-              paddingVertical: 10,
-              paddingHorizontal: 20,
-              borderRadius: 8,
+            onPress={() => {
+              const nuevo = radioBusqueda + 5;
+              setRadioBusqueda(nuevo);
+              fetchMascotas(nuevo);
             }}
+            style={btnAumentar(theme)}
           >
-            <Text style={{ color: "white", fontWeight: "bold" }}>Aumentar radio a {radioLocal + 5} km</Text>
+            <Text style={{ color: "#fff", fontWeight: "700" }}>
+              Aumentar radio a {radioBusqueda + 5} km
+            </Text>
           </TouchableOpacity>
         )}
       </View>
     );
   }
 
-  if (!pets.length) return <Text>No hay mascotas disponibles.</Text>;
-  
-return (
+  if (!pets.length) {
+    return (
+      <View style={emptyContainer(theme)}>
+        <Text style={{ color: theme.colors.text }}>No hay mascotas disponibles.</Text>
+      </View>
+    );
+  }
+
+  // ======================================================
+  // UI PRINCIPAL
+  // ======================================================
+  return (
     <View style={{ flex: 1, backgroundColor: theme.colors.background }}>
-<PetSwipe 
-  ref={swipeRef} 
-  pets={pets} 
-  onSwipeEnd={async (dir, petId) => {
-    if (dir === "right") {
-      const res = await createAdopcion(petId);
-      if (res) console.log("adopcion creada", res);
-    }
+      <PetSwipe
+        ref={swipeRef}
+        pets={pets}
+        onIndexChange={setIndexActual}
+        onSwipeEnd={async (dir: "left" | "right", petId: number) => {
+          if (dir === "right") {
+            await createAdopcion(petId);
+          }
 
-  setVistas(prev => {
-    const next = prev.includes(petId) ? prev : [...prev, petId];
-    fetchMascotas(radioLocal, next);
-    return next;
-  });
+          const nuevas = vistas.includes(petId) ? vistas : [...vistas, petId];
+          setVistas(nuevas);
+          fetchMascotas(radioBusqueda, nuevas);
+        }}
+      />
 
-    setFavoritos(prev => [...prev]);
-  }}
-  onIndexChange={setCurrentIndex}
-/>
-
-      <View style={styles.buttonsContainer}>
+      {/* BOTONES INFERIORES */}
+      <View style={styles.buttons}>
         <TouchableOpacity
-          style={[
-            styles.button,
-            { backgroundColor: isButtonDisabled ? theme.colors.backgroundSecondary : theme.colors.backgroundTertiary },
-          ]}
-          onPress={() => handleSwipe("left")}
-          disabled={isButtonDisabled}
+          style={botonInferior(theme, bloqueado)}
+          onPress={() => ejecutarSwipe("left")}
         >
-          <Text style={{ color: theme.colors.secondary, fontWeight: "bold" }}>Siguiente</Text>
+          <Text style={botonTexto(theme)}>Siguiente</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={[
-            styles.button,
-            { backgroundColor: isButtonDisabled ? theme.colors.backgroundSecondary : theme.colors.backgroundTertiary },
-          ]}
-          onPress={() => {
-            const index = swipeRef.current?.getCurrentIndex() ?? 0;
-            const petId = pets[index].id_mascota;
-            handleFavorito(petId);
-          }}
-          disabled={isButtonDisabled}
+          style={botonInferior(theme, bloqueado)}
+          onPress={() => toggleFavorito(pets[indexActual].id_mascota)}
         >
-          <Text style={{ color: theme.colors.secondary, fontWeight: "bold" }}>
-            {favoritos.some(f => f.mascota.id_mascota === pets[currentIndex].id_mascota) ? "❤️" : "favorito"}
+          <Text style={botonTexto(theme)}>
+            {favoritos.some(
+              (f: any) => f.mascota.id_mascota === pets[indexActual].id_mascota
+            )
+              ? "❤️"
+              : "Favorito"}
           </Text>
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={[
-            styles.button,
-            { backgroundColor: isButtonDisabled ? theme.colors.backgroundSecondary : theme.colors.backgroundTertiary },
-          ]}
-          onPress={() => handleSwipe("right")}
-          disabled={isButtonDisabled}
+          style={botonInferior(theme, bloqueado)}
+          onPress={() => ejecutarSwipe("right")}
         >
-          <Text style={{ color: theme.colors.secondary, fontWeight: "bold" }}>Like</Text>
+          <Text style={botonTexto(theme)}>Like</Text>
         </TouchableOpacity>
       </View>
     </View>
   );
 }
 
+// ======================================================
+//      STYLESHEET — SOLO ESTILOS ESTÁTICOS
+// ======================================================
+
 const styles = StyleSheet.create({
-  button: {
-    width: 65,
-    height: 48,
-    borderRadius: 24,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  buttonsContainer: {
+  buttons: {
     flexDirection: "row",
     justifyContent: "space-around",
     width: "100%",
-    margin: 10,
+    paddingVertical: 12,
+  },
+
+  buttonsLoading: {
+    width: "100%",
+    height: 70,
+    marginTop: 20,
   },
 });

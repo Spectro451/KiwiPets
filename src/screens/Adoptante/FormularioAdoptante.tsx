@@ -1,425 +1,201 @@
-import { useEffect, useState } from "react";
-import { View, Text, TextInput, ActivityIndicator, Dimensions, Platform, StyleSheet, TouchableOpacity, KeyboardAvoidingView, ScrollView } from "react-native";
-import { adoptanteByUsuarioId, updateAdoptante } from "../../services/fetchAdoptante";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useState } from "react";
+import {
+  View,
+  Text,
+  ScrollView,
+  StyleSheet,
+  TextInput,
+  TouchableOpacity,
+  useWindowDimensions,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useTheme } from "../../theme/ThemeContext";
-import { Edad, EspeciePreferida, Sexo, Vivienda } from "../../types/enums";
-import { Picker } from '@react-native-picker/picker';
-import { deleteUsuario } from "../../services/fetchUsuario";
-import { useAuth } from "../../hooks/useAuth";
-import { buscarDirecciones, Direccion } from "../../services/mapBox";
+import { createAdopcion } from "../../services/fetchAdopcion";
 
-type FormularioAdoptanteProps = {
-  setRedirect: (val: string | null) => void;
-  onCancel: () => void;
-};
 
-const { width } = Dimensions.get("window");
-const isWeb = Platform.OS === "web";
-const FORM_CARD_WIDTH = isWeb ? Math.min(width * 0.6, 480) : Math.min(width * 0.94, 400);
-
-export default function FormularioAdoptante({ setRedirect, onCancel }: FormularioAdoptanteProps) {
-  const [rutActual, setRutActual] = useState<string | null>(null); // el del url
-  const [adoptanteRut, setAdoptanteRut] = useState<string | null>(null); // el pa editar
-  const [nombre, setNombre] = useState("");
-  const [direccion, setDireccion] = useState("");
-  const [telefono, setTelefono] = useState("");
-  const [edad, setEdad] = useState<number>(0);
-  const [experienciaMascotas, setExperienciaMascotas] = useState<"Si" | "No">("No");
-  const [cantidadMascotas, setCantidadMascotas] = useState<number>(0);
-  const [especiePreferida, setEspeciePreferida] = useState<EspeciePreferida>(EspeciePreferida.CUALQUIERA);
-  const [tipoVivienda, setTipoVivienda] = useState<Vivienda>(Vivienda.CASA_PATIO);
-  const [sexo, setSexo] = useState<Sexo>(Sexo.CUALQUIERA);
-  const [edadBuscada, setEdadBuscada] = useState<Edad>(Edad.CACHORRO);
-  const [motivoAdopcion, setMotivoAdopcion] = useState("");
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [comuna, setComuna] = useState("");
-  const [latitud, setLatitud] = useState<number | undefined>(undefined);
-  const [longitud, setLongitud] = useState<number | undefined>(undefined);
-  const [sugerenciasComuna, setSugerenciasComuna] = useState<Direccion[]>([]);
-  const [loadingComuna, setLoadingComuna] = useState(false);
-
+export default function FormularioAdoptante({ navigation, route }: any) {
+  const { id_mascota } = route.params;
   const { theme } = useTheme();
+  const { width } = useWindowDimensions();
+  const isSmall = width < 600;
 
-  useEffect(() => {
-    const loadAdoptante = async () => {
-      setLoading(true);
-      try {
-        //se busca el adoptante en base a la id del tokenssss
-        const data = await adoptanteByUsuarioId();
-        if (!data) throw new Error("No se encontró adoptante");
-        setRutActual(data.rut);
-      } catch (err: any) {
-        setError(err.message || "Error al cargar datos del adoptante");
-      } finally {
-        setLoading(false);
-      }
-    };
+  const [form, setForm] = useState({
+    nombre: "",
+    telefono: "",
+    direccion: "",
+  });
 
-    loadAdoptante();
-  }, []);
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
-  const handleSave = async () => {
-    if (!adoptanteRut) return;
+  const validate = () => {
+    if (!form.nombre.trim()) return "Nombre requerido";
+    if (!form.telefono.trim()) return "Teléfono requerido";
+    if (!form.direccion.trim()) return "Dirección requerida";
+    return null;
+  };
 
-    const rutRegex = /^\d{7,8}[0-9kK]$/;
-    if (!rutRegex.test(adoptanteRut)) {
-      setError("Rut inválido");
+  const handleSubmit = async () => {
+    const err = validate();
+    if (err) {
+      setError(err);
       return;
     }
-
-    if (!nombre.trim()) {
-      setError("Debe ingresar nombre");
-      return;
-    }
-    if (!direccion.trim()) {
-      setError("Debe ingresar dirección");
-      return;
-    }
-    if (!comuna.trim()) {
-      setError("Debe ingresar comuna");
-      return;
-    }
-    if (!sugerenciasComuna.some(dir => dir.comuna === comuna)) {
-      setError("Debes seleccionar una comuna de la lista");
-      return;
-    }
-    if (!telefono.trim()) {
-      setError("Debe ingresar teléfono");
-      return;
-    }
-    if (!motivoAdopcion.trim()) {
-      setError("Debe ingresar motivo de adopción");
-      return;
-    }
-
-    const telefonoRegex = /^\+\d{7,15}$/;
-    if (!telefonoRegex.test(telefono)) {
-      setError("Debes incluir prefijo nacional y sin espacios");
-      return;
-    }
-
-    if (edad < 18 || edad > 100) {
-      setError("Debes ser mayor de 18");
-      return;
-    }
-
-    if (experienciaMascotas === "Si" && (cantidadMascotas < 0 || cantidadMascotas > 20)) {
-      setError("Cantidad de mascotas debe estar entre 0 y 20");
-      return;
-    }
-
-    setSaving(true);
-    setError(null); // solo reseteamos aquí, justo antes de enviar al backend
 
     try {
-      await updateAdoptante(rutActual!, {
-        rut: adoptanteRut.toLowerCase(),
-        nombre,
-        edad,
-        telefono,
-        direccion,
-        comuna,
-        latitud: latitud ?? undefined,
-        longitud: longitud ?? undefined,
-        experiencia_mascotas: experienciaMascotas,
-        cantidad_mascotas: experienciaMascotas === "Si" ? cantidadMascotas : 0,
-        especie_preferida: especiePreferida,
-        tipo_vivienda: tipoVivienda,
-        sexo,
-        edad_buscada: edadBuscada,
-        motivo_adopcion: motivoAdopcion,
-      });
-
-      await AsyncStorage.removeItem("goToFormulario");
-      setRedirect(null);
-    } catch (err: any) {
-      console.error(err);
-      if (err.response?.status === 500) {
-        setError("RUT ya existente");
-      } else {
-        setError("Error al guardar cambios");
-      }
+      setError(null);
+      setLoading(true);
+      await createAdopcion(id_mascota);
+      navigation.goBack();
+    } catch (e) {
+      console.error("Error al enviar solicitud:", e);
+      setError("No se pudo enviar la solicitud");
     } finally {
-      setSaving(false);
+      setLoading(false);
     }
   };
 
-const handleCancel = async () => {
-  try {
-    const userStr = await AsyncStorage.getItem("user");
-    if (!userStr) return;
-
-    const user = JSON.parse(userStr);
-
-    // Borra usuario en backend
-    await deleteUsuario(user.id);
-
-    // Limpieza local
-    await AsyncStorage.removeItem("user");
-    await AsyncStorage.removeItem("token");
-    await AsyncStorage.removeItem("goToFormulario");
-
-    // pal loby
-    onCancel();
-
-  } catch (err) {
-    console.error("Error al cancelar el formulario:", err);
-  }
-};
-
-const handleComunaChange = async (text: string) => {
-  setComuna(text);
-  if (text.trim().length < 3) {
-    setSugerenciasComuna([]);
-    return;
-  }
-
-  setLoadingComuna(true);
-  try {
-    const results = await buscarDirecciones(text);
-    setSugerenciasComuna(results);
-  } catch (err) {
-    console.error(err);
-    setSugerenciasComuna([]);
-  } finally {
-    setLoadingComuna(false);
-  }
-};
-
-const handleSelectComuna = (dir: Direccion) => {
-  setComuna(dir.comuna);
-  setLatitud(dir.latitud);
-  setLongitud(dir.longitud);
-  setSugerenciasComuna([]);
-
-  console.log("Comuna seleccionada:", dir.comuna);
-  console.log("Latitud:", dir.latitud, "Longitud:", dir.longitud);
-};
-
-  if (loading) return <ActivityIndicator size="large" color={theme.colors.secondary} style={{ flex: 1, backgroundColor:theme.colors.background }} />;
-
   return (
-    <KeyboardAvoidingView
+    <SafeAreaView
       style={{ flex: 1, backgroundColor: theme.colors.background }}
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
+      edges={["top", "bottom"]}
     >
-      <ScrollView
-        contentContainerStyle={{ alignItems: "center", padding: 20 }}
-        keyboardShouldPersistTaps="handled"
-      >
-    <View style={{ flex: 1, padding: 20, backgroundColor: theme.colors.background, justifyContent: "center", alignItems: "center" }}>
-      <View style={{
-        width: FORM_CARD_WIDTH,
-        backgroundColor: theme.colors.backgroundSecondary,
-        padding: 20,
-        borderRadius: 10,
-        borderWidth: 2,
-        borderColor: theme.colors.accent,
-      }}>
-        <Text style={[styles.label, { color: theme.colors.secondary }]}>Rut:</Text>
-        <TextInput
-         value={adoptanteRut ?? ""} 
-         onChangeText={t => {
-          const soloNumeros = t.replace(/[^0-9kK]/g, '');
-          setAdoptanteRut(soloNumeros);
-         }}
-         placeholder="rut sin punto ni guion" 
-         style={[styles.input, { color: theme.colors.text }]} 
-         placeholderTextColor={theme.colors.text} 
-        />
+      <ScrollView contentContainerStyle={{ padding: isSmall ? 14 : 22 }}>
+        {/* HEADER */}
+        <View style={styles.header}>
+          <Text style={[styles.title, { color: theme.colors.text }]}>
+            Formulario de Adopción
+          </Text>
 
-        <Text style={[styles.label, { color: theme.colors.secondary }]}>Nombre:</Text>
-        <TextInput value={nombre} onChangeText={setNombre} placeholder="Nombre del adoptante" style={[styles.input, { color: theme.colors.text }]} placeholderTextColor={theme.colors.text} />
-
-        <Text style={[styles.label, { color: theme.colors.secondary }]}>Dirección:</Text>
-        <TextInput value={direccion} onChangeText={setDireccion} placeholder="Dirección" style={[styles.input, { color: theme.colors.text }]} placeholderTextColor={theme.colors.text} />
-
-        <Text style={[styles.label, { color: theme.colors.secondary }]}>Comuna:</Text>
-        <TextInput
-          value={comuna}
-          onChangeText={handleComunaChange}
-          placeholder="Ingrese comuna"
-          style={[styles.input, { color: theme.colors.text }]}
-          placeholderTextColor={theme.colors.text}
-        />
-
-        {loadingComuna && <ActivityIndicator size="small" color={theme.colors.secondary} />}
-
-        {sugerenciasComuna.length > 0 && (
-          <View style={{
-            borderWidth: 1,
-            borderColor: theme.colors.accent,
-            borderRadius: 6,
-            maxHeight: 150,
-            marginBottom: 10,
-          }}>
-            {sugerenciasComuna.slice(0, 3).map((dir, index) => (
-              <TouchableOpacity
-                key={index}
-                onPress={() => handleSelectComuna(dir)}
-                style={{
-                  padding: 8,
-                  borderBottomWidth: index !== Math.min(sugerenciasComuna.length, 3) - 1 ? 1 : 0,
-                  borderColor: theme.colors.accent,
-                }}
-              >
-                <Text style={{ color: theme.colors.text }}>
-                  {dir.comuna}{dir.ciudad ? `, ${dir.ciudad}` : ""}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        )}
-
-        <Text style={[styles.label, { color: theme.colors.secondary }]}>Teléfono:</Text>
-        <TextInput 
-          value={telefono} 
-          onChangeText={t => {
-            let filtrado = t.replace(/[^0-9+]/g, '');
-            setTelefono(filtrado);
-          }}
-          placeholder="+56912345678" 
-          keyboardType="phone-pad" 
-          style={[styles.input, { color: theme.colors.text }]} 
-          placeholderTextColor={theme.colors.text} 
-        />
-
-        <Text style={[styles.label, { color: theme.colors.secondary }]}>Edad:</Text>
-        <TextInput 
-          value={edad.toString()} 
-          onChangeText={t => {
-            const soloNumeros = t.replace(/[^0-9]/g, ""); // elimina letras
-            setEdad(soloNumeros ? Number(soloNumeros) : 0);
-          }}
-          placeholder="Edad" 
-          keyboardType="number-pad" 
-          style={[styles.input, { color: theme.colors.text }]} 
-          placeholderTextColor={theme.colors.text} 
-        />
-
-        <Text style={[styles.label, { color: theme.colors.secondary }]}>¿Tienes experiencia con mascotas?</Text>  
-        <View style={{ flexDirection: "row", marginBottom: 10 }}>
-          {["Si", "No"].map(opcion => (
-            <TouchableOpacity
-              key={opcion}
-              onPress={() => setExperienciaMascotas(opcion as "Si" | "No")}
-              style={{ flexDirection: "row", alignItems: "center", marginRight: 20 }}
-            >
-              <View style={{
-                width: 20,
-                height: 20,
-                borderRadius: 10,
-                borderWidth: 2,
-                borderColor: theme.colors.secondary,
-                alignItems: "center",
-                justifyContent: "center",
-              }}>
-                {experienciaMascotas === opcion && (
-                  <View style={{
-                    width: 12,
-                    height: 12,
-                    borderRadius: 6,
-                    backgroundColor: theme.colors.secondary,
-                  }}/>
-                )}
-              </View>
-              <Text style={{ marginLeft: 6, color: theme.colors.secondary }}>{opcion}</Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-
-        {experienciaMascotas === "Si" && (
-          <>
-            <Text style={[styles.label, { color: theme.colors.secondary }]}>Cuántas mascotas tiene:</Text>
-            <TextInput
-              value={cantidadMascotas.toString()}
-              onChangeText={t => {
-                const soloNumeros = t.replace(/[^0-9]/g, ""); // elimina letras
-                setCantidadMascotas(soloNumeros ? Number(soloNumeros) : 0);
-              }}
-              placeholder="Cantidad"
-              keyboardType="number-pad"
-              style={[styles.input, { color: theme.colors.text }]}
-              placeholderTextColor={theme.colors.text}
-            />
-          </>
-        )}
-
-        <Text style={[styles.label, { color: theme.colors.secondary }]}>Especie preferida:</Text>
-        <Picker selectedValue={especiePreferida} onValueChange={(v) => setEspeciePreferida(v)} style={[styles.input, { color: theme.colors.primary }]}>
-          {Object.values(EspeciePreferida).map(e => <Picker.Item key={e} label={e} value={e} />)}
-        </Picker>
-
-        <Text style={[styles.label, { color: theme.colors.secondary }]}>Tipo de vivienda:</Text>
-        <Picker selectedValue={tipoVivienda} onValueChange={(v) => setTipoVivienda(v)} style={[styles.input, { color: theme.colors.primary }]}>
-          {Object.values(Vivienda).map(v => <Picker.Item key={v} label={v} value={v} />)}
-        </Picker>
-
-        <Text style={[styles.label, { color: theme.colors.secondary }]}>Sexo:</Text>
-        <Picker selectedValue={sexo} onValueChange={(v) => setSexo(v)} style={[styles.input, { color: theme.colors.primary }]}>
-          {Object.values(Sexo).map(s => <Picker.Item key={s} label={s} value={s} />)}
-        </Picker>
-
-        <Text style={[styles.label, { color: theme.colors.secondary }]}>Edad buscada:</Text>
-        <Picker selectedValue={edadBuscada} onValueChange={(v) => setEdadBuscada(v)} style={[styles.input, { color: theme.colors.primary }]}>
-          {Object.values(Edad).map(e => <Picker.Item key={e} label={e} value={e} />)}
-        </Picker>
-
-        <Text style={[styles.label, { color: theme.colors.secondary }]}>Motivo de adopción:</Text>
-        <TextInput value={motivoAdopcion} onChangeText={setMotivoAdopcion} placeholder="Me gustaria adoptar porque..." style={[styles.input, { color: theme.colors.text }]} placeholderTextColor={theme.colors.text} multiline numberOfLines={3} />
-
-        {error && <Text style={[styles.error, { color: theme.colors.error }]}>{error}</Text>}
-
-        <View style={{ flexDirection: "row", justifyContent: "space-between", marginTop: 10 }}>
-          <TouchableOpacity
-            style={[styles.button, { flex: 1, backgroundColor: theme.colors.backgroundTertiary, marginRight: 5 }]}
-            onPress={handleSave}
-            disabled={saving}
-          >
-            <Text style={{ color: theme.colors.secondary, fontWeight: "bold" }}>
-              {saving ? "Guardando..." : "Guardar"}
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[styles.button, { flex: 1, backgroundColor: theme.colors.error, marginLeft: 5 }]}
-            onPress={handleCancel}
-          >
-            <Text style={{ color: theme.colors.secondary, fontWeight: "bold" }}>Cancelar</Text>
+          <TouchableOpacity onPress={() => navigation.goBack()}>
+            <Text style={{ fontSize: 22, color: theme.colors.text }}>←</Text>
           </TouchableOpacity>
         </View>
-      </View>
-    </View>
-    </ScrollView>
-  </KeyboardAvoidingView>
+
+        {/* NOMBRE */}
+        <Text style={[styles.label, { color: theme.colors.textSecondary }]}>
+          Nombre Completo
+        </Text>
+        <TextInput
+          value={form.nombre}
+          onChangeText={(t) => setForm({ ...form, nombre: t })}
+          placeholder="Tu nombre"
+          placeholderTextColor={theme.colors.textSecondary}
+          style={[
+            styles.input,
+            {
+              backgroundColor: theme.colors.backgroundSecondary,
+              color: theme.colors.text,
+              borderColor: theme.colors.border,
+            },
+          ]}
+        />
+
+        {/* TELÉFONO */}
+        <Text style={[styles.label, { color: theme.colors.textSecondary }]}>
+          Teléfono
+        </Text>
+        <TextInput
+          value={form.telefono}
+          onChangeText={(t) => setForm({ ...form, telefono: t })}
+          keyboardType="phone-pad"
+          placeholder="+569XXXXXXX"
+          placeholderTextColor={theme.colors.textSecondary}
+          style={[
+            styles.input,
+            {
+              backgroundColor: theme.colors.backgroundSecondary,
+              color: theme.colors.text,
+              borderColor: theme.colors.border,
+            },
+          ]}
+        />
+
+        {/* DIRECCIÓN */}
+        <Text style={[styles.label, { color: theme.colors.textSecondary }]}>
+          Dirección
+        </Text>
+        <TextInput
+          value={form.direccion}
+          onChangeText={(t) => setForm({ ...form, direccion: t })}
+          placeholder="Calle, número, comuna"
+          placeholderTextColor={theme.colors.textSecondary}
+          style={[
+            styles.input,
+            {
+              backgroundColor: theme.colors.backgroundSecondary,
+              color: theme.colors.text,
+              borderColor: theme.colors.border,
+            },
+          ]}
+        />
+
+        {/* ERROR */}
+        {error && (
+          <Text
+            style={{
+              color: theme.colors.error,
+              marginBottom: 10,
+              marginTop: 4,
+            }}
+          >
+            {error}
+          </Text>
+        )}
+
+        {/* BOTÓN */}
+        <TouchableOpacity
+          style={[
+            styles.btn,
+            {
+              backgroundColor: loading ? theme.colors.errorDeshabilitado : theme.colors.accent,
+            },
+          ]}
+          disabled={loading}
+          onPress={handleSubmit}
+        >
+          <Text style={styles.btnText}>
+            {loading ? "Procesando..." : "Enviar Solicitud"}
+          </Text>
+        </TouchableOpacity>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  title: { fontSize: 24, fontWeight: "bold" },
+
+  header: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 20,
+  },
+
   label: {
+    marginTop: 10,
     marginBottom: 6,
     fontSize: 15,
-    fontWeight: "bold",
   },
+
   input: {
-    borderWidth: 1,
-    borderColor: "gray",
-    padding: 8,
-    borderRadius: 4,
-    marginBottom: 10,
-  },
-  error: {
-    textAlign: "center",
-    marginBottom: 10,
-  },
-  button: {
-    width: "100%",
-    height: 48,
+    padding: 12,
     borderRadius: 10,
-    alignItems: "center",
-    justifyContent: "center",
+    marginBottom: 10,
+    borderWidth: 2,
+  },
+
+  btn: {
+    paddingVertical: 13,
+    borderRadius: 10,
+    marginTop: 22,
+  },
+
+  btnText: {
+    color: "#fff",
+    textAlign: "center",
+    fontSize: 16,
+    fontWeight: "bold",
   },
 });

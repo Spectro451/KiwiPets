@@ -1,67 +1,117 @@
-import { useState, useImperativeHandle, forwardRef, useRef } from "react";
-import { View, StyleSheet, Dimensions, Text, PanResponder, Animated } from "react-native";
-import PetCard from "./PetCard";
+import { useState, useImperativeHandle, forwardRef, useRef, useEffect } from "react";
+import {
+  View,
+  StyleSheet,
+  Dimensions,
+  Animated,
+  PanResponder,
+  TouchableOpacity,
+  Text,
+} from "react-native";
+import { useTheme } from "../theme/ThemeContext";     // ← Corrección importante
+import PetCard from "./PetCard";                     // ← Ruta correcta
 import { Mascota } from "../types/mascota";
 
 const { width } = Dimensions.get("window");
+const SWIPE_THRESHOLD = width * 0.25;
 
-type SwipeCardsProps = {
-  pets: Mascota[];
+type Props = {
+  pets?: Mascota[];
+  mascota?: Mascota;
   onSwipeEnd?: (dir: "left" | "right", petId: number) => void;
   onIndexChange?: (index: number) => void;
+  onToggleFavorito?: () => void;
 };
 
-// Usamos forwardRef para exponer la función
-const PetSwipe = forwardRef(({ pets, onSwipeEnd, onIndexChange }: SwipeCardsProps, ref) => {
-  const [currentIndex, setCurrentIndex] = useState(0);
+const PetSwipe = forwardRef((props: Props, ref) => {
+  const { pets, mascota, onSwipeEnd, onIndexChange, onToggleFavorito } = props;
+  const { theme } = useTheme();
+
+  /* -----------------------------------------------------------
+     MODO FAVORITOS (sin swipe)
+  ------------------------------------------------------------ */
+  if (mascota && onToggleFavorito) {
+    return (
+      <View style={styles.favoriteWrapper}>
+        <TouchableOpacity
+          style={[styles.favoriteBtn, { backgroundColor: theme.colors.error }]}
+          onPress={onToggleFavorito}
+        >
+          <Text style={styles.favoriteText}>Quitar de favoritos</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
+  /* -----------------------------------------------------------
+     MODO SWIPE (Tinder)
+  ------------------------------------------------------------ */
+  if (!pets || pets.length === 0) return <View />;
+
+  const [index, setIndex] = useState(0);
   const position = useRef(new Animated.ValueXY()).current;
 
-  const triggerSwipe = (dir: "left" | "right") => {
-    if (!pets.length) return;
+  const rotation = position.x.interpolate({
+    inputRange: [-width, 0, width],
+    outputRange: ["-20deg", "0deg", "20deg"],
+  });
 
-    const targetX = dir === "right" ? width : -width;
-    const currentPetIndex = currentIndex;
+  useEffect(() => {
+    setIndex(0);
+    position.setValue({ x: 0, y: 0 });
+  }, [pets]);
+
+  const animateSwipe = (dir: "left" | "right") => {
+    const currentPet = pets[index];
+    if (!currentPet) return;
 
     Animated.timing(position, {
-      toValue: { x: targetX, y: 0 },
-      duration: 350,
+      toValue: { x: dir === "right" ? width : -width, y: 0 },
+      duration: 300,
       useNativeDriver: false,
     }).start(() => {
       position.setValue({ x: 0, y: 0 });
-      setCurrentIndex(prev => {
-        const next = prev + 1 < pets.length ? prev + 1 : 0;
-        onIndexChange?.(next);
-        return next;
-      });
-      onSwipeEnd?.(dir, pets[currentPetIndex].id_mascota);
+
+      const next = index + 1 < pets.length ? index + 1 : 0;
+      setIndex(next);
+      onIndexChange?.(next);
+      onSwipeEnd?.(dir, currentPet.id_mascota);
     });
   };
 
-  // Exponemos la función al ref
-  useImperativeHandle(ref, () => ({
-    triggerSwipe,
-    getCurrentIndex: () => currentIndex,
-  }));
-
   const panResponder = PanResponder.create({
-    onStartShouldSetPanResponder: (_, gesture) => Math.abs(gesture.dx) > Math.abs(gesture.dy),
-    onMoveShouldSetPanResponder: (_, gesture) => Math.abs(gesture.dx) > Math.abs(gesture.dy),
-    onPanResponderMove: (_, gesture) => {
-      position.setValue({ x: gesture.dx, y: 0 });
+    onStartShouldSetPanResponder: () => true,
+    onMoveShouldSetPanResponder: (_, g) => Math.abs(g.dx) > Math.abs(g.dy),
+    onPanResponderMove: (_, g) => {
+      position.setValue({ x: g.dx, y: 0 });
     },
-    onPanResponderRelease: (_, gesture) => {
-      const threshold = width * 0.25;
-
-      if (gesture.dx > threshold) triggerSwipe("right");
-      else if (gesture.dx < -threshold) triggerSwipe("left");
-      else Animated.spring(position, { toValue: { x: 0, y: 0 }, useNativeDriver: false }).start();
+    onPanResponderRelease: (_, g) => {
+      if (g.dx > SWIPE_THRESHOLD) animateSwipe("right");
+      else if (g.dx < -SWIPE_THRESHOLD) animateSwipe("left");
+      else {
+        Animated.spring(position, {
+          toValue: { x: 0, y: 0 },
+          useNativeDriver: false,
+        }).start();
+      }
     },
   });
 
+  useImperativeHandle(ref, () => ({
+    triggerSwipe: animateSwipe,
+    getCurrentIndex: () => index,
+  }));
+
   return (
     <View style={styles.container}>
-      <Animated.View {...panResponder.panHandlers} style={[position.getLayout(), { width: "100%" }]}>
-        <PetCard pet={pets[currentIndex]} />
+      <Animated.View
+        style={{
+          transform: [{ translateX: position.x }, { rotate: rotation }],
+          width: "100%",
+        }}
+        {...panResponder.panHandlers}
+      >
+        <PetCard mascota={pets[index]} width={260} />
       </Animated.View>
     </View>
   );
@@ -69,18 +119,30 @@ const PetSwipe = forwardRef(({ pets, onSwipeEnd, onIndexChange }: SwipeCardsProp
 
 export default PetSwipe;
 
+/* -----------------------------------------------------------
+   Styles
+------------------------------------------------------------ */
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    alignItems: "center",
     justifyContent: "center",
+    alignItems: "center",
     userSelect: "none",
   },
-  message: {
-    fontSize: 16,
+
+  favoriteWrapper: {
+    marginTop: 10,
+    alignItems: "center",
+  },
+
+  favoriteBtn: {
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    borderRadius: 10,
+  },
+
+  favoriteText: {
+    color: "#fff",
     fontWeight: "bold",
-    marginBottom: 10,
-    color: "red",
-    textAlign: "center",
   },
 });
