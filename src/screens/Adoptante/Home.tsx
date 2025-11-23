@@ -248,23 +248,25 @@ export default function HomeScreen() {
         alignItems: "center",
       }}
     >
-      <View style={{ width: CONTENT_WIDTH }}>
-        <PetSwipe
-          ref={swipeRef}
-          pets={pets}
-          onIndexChange={setIndexActual}
-          onSwipeEnd={async (dir: "left" | "right", petId: number) => {
-            if (dir === "right") {
-              await createAdopcion(petId);
-            }
-
-            const nuevas =
-              vistas.includes(petId) ? vistas : [...vistas, petId];
-            setVistas(nuevas);
-            fetchMascotas(radioBusqueda, nuevas);
-          }}
-        />
-      </View>
+      <View
+  style={{
+    width: CONTENT_WIDTH,
+    alignSelf: "center",
+    alignItems: "center",
+  }}
+>
+  <PetSwipe
+    ref={swipeRef}
+    pets={pets}
+    onIndexChange={setIndexActual}
+    onSwipeEnd={async (dir: "left" | "right", petId: number) => {
+      if (dir === "right") await createAdopcion(petId);
+      const nuevas = vistas.includes(petId) ? vistas : [...vistas, petId];
+      setVistas(nuevas);
+      fetchMascotas(radioBusqueda, nuevas);
+    }}
+  />
+</View>
 
       {/* BOTONES AJUSTADOS AL MISMO ANCHO */}
       <View
