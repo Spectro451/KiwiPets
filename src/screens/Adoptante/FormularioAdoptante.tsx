@@ -20,7 +20,6 @@ import { useTheme } from "../../theme/ThemeContext";
 import { Edad, EspeciePreferida, Sexo, Vivienda } from "../../types/enums";
 import { Picker } from "@react-native-picker/picker";
 import { deleteUsuario } from "../../services/fetchUsuario";
-import { useAuth } from "../../hooks/useAuth";
 import { buscarDirecciones, Direccion } from "../../services/mapBox";
 
 type FormularioAdoptanteProps = {
@@ -29,17 +28,21 @@ type FormularioAdoptanteProps = {
 };
 
 const { width } = Dimensions.get("window");
-const isWeb = Platform.OS === "web";
-const FORM_CARD_WIDTH = isWeb
-  ? Math.min(width * 0.6, 480)
-  : Math.min(width * 0.94, 400);
+const isSmall = width <= 480;
+const isTablet = width > 480 && width <= 840;
+
+const CARD_WIDTH = isSmall
+  ? width * 0.94
+  : isTablet
+  ? Math.min(width * 0.7, 520)
+  : 520;
 
 export default function FormularioAdoptante({
   setRedirect,
   onCancel,
 }: FormularioAdoptanteProps) {
-  const [rutActual, setRutActual] = useState<string | null>(null); // el del url
-  const [adoptanteRut, setAdoptanteRut] = useState<string | null>(null); // el pa editar
+  const [rutActual, setRutActual] = useState<string | null>(null);
+  const [adoptanteRut, setAdoptanteRut] = useState<string | null>(null);
   const [nombre, setNombre] = useState("");
   const [direccion, setDireccion] = useState("");
   const [telefono, setTelefono] = useState("");
@@ -75,7 +78,6 @@ export default function FormularioAdoptante({
     const loadAdoptante = async () => {
       setLoading(true);
       try {
-        //se busca el adoptante en base a la id del tokenssss
         const data = await adoptanteByUsuarioId();
         if (!data) throw new Error("No se encontró adoptante");
         setRutActual(data.rut);
@@ -142,7 +144,7 @@ export default function FormularioAdoptante({
     }
 
     setSaving(true);
-    setError(null); // solo reseteamos aquí, justo antes de enviar al backend
+    setError(null);
 
     try {
       await updateAdoptante(rutActual!, {
@@ -165,13 +167,8 @@ export default function FormularioAdoptante({
 
       await AsyncStorage.removeItem("goToFormulario");
       setRedirect(null);
-    } catch (err: any) {
-      console.error(err);
-      if (err.response?.status === 500) {
-        setError("RUT ya existente");
-      } else {
-        setError("Error al guardar cambios");
-      }
+    } catch {
+      setError("Error al guardar cambios");
     } finally {
       setSaving(false);
     }
@@ -184,15 +181,12 @@ export default function FormularioAdoptante({
 
       const user = JSON.parse(userStr);
 
-      // Borra usuario en backend
       await deleteUsuario(user.id);
 
-      // Limpieza local
       await AsyncStorage.removeItem("user");
       await AsyncStorage.removeItem("token");
       await AsyncStorage.removeItem("goToFormulario");
 
-      // pal loby
       onCancel();
     } catch (err) {
       console.error("Error al cancelar el formulario:", err);
@@ -202,6 +196,7 @@ export default function FormularioAdoptante({
   const handleComunaChange = async (text: string) => {
     setComuna(text);
     setComunaSeleccionada(null);
+
     if (text.trim().length < 3) {
       setSugerenciasComuna([]);
       return;
@@ -211,8 +206,7 @@ export default function FormularioAdoptante({
     try {
       const results = await buscarDirecciones(text);
       setSugerenciasComuna(results);
-    } catch (err) {
-      console.error(err);
+    } catch {
       setSugerenciasComuna([]);
     } finally {
       setLoadingComuna(false);
@@ -225,9 +219,6 @@ export default function FormularioAdoptante({
     setLongitud(dir.longitud);
     setSugerenciasComuna([]);
     setComunaSeleccionada(dir.comuna);
-
-    console.log("Comuna seleccionada:", dir.comuna);
-    console.log("Latitud:", dir.latitud, "Longitud:", dir.longitud);
   };
 
   if (loading)
@@ -245,320 +236,299 @@ export default function FormularioAdoptante({
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
       <ScrollView
-        contentContainerStyle={{ alignItems: "center", padding: 20 }}
+        contentContainerStyle={{
+          flexGrow: 1,
+          justifyContent: "center",
+          alignItems: "center",
+          paddingVertical: 26,
+        }}
         keyboardShouldPersistTaps="handled"
       >
         <View
-          style={{
-            flex: 1,
-            padding: 20,
-            backgroundColor: theme.colors.background,
-            justifyContent: "center",
-            alignItems: "center",
-          }}
-        >
-          <View
-            style={{
-              width: FORM_CARD_WIDTH,
+          style={[
+            styles.card,
+            {
+              width: CARD_WIDTH,
               backgroundColor: theme.colors.backgroundSecondary,
-              padding: 20,
-              borderRadius: 10,
-              borderWidth: 2,
               borderColor: theme.colors.accent,
+            },
+          ]}
+        >
+          {/* ------------ CAMPOS ------------ */}
+
+          <Text style={[styles.label, { color: theme.colors.secondary }]}>
+            Rut:
+          </Text>
+          <TextInput
+            value={adoptanteRut ?? ""}
+            onChangeText={(t) => {
+              const soloNumeros = t.replace(/[^0-9kK]/g, "");
+              setAdoptanteRut(soloNumeros);
             }}
-          >
-            <Text style={[styles.label, { color: theme.colors.secondary }]}>
-              Rut:
-            </Text>
-            <TextInput
-              value={adoptanteRut ?? ""}
-              onChangeText={(t) => {
-                const soloNumeros = t.replace(/[^0-9kK]/g, "");
-                setAdoptanteRut(soloNumeros);
+            placeholder="rut sin punto ni guion"
+            style={[styles.input, { color: theme.colors.text }]}
+            placeholderTextColor={theme.colors.text}
+          />
+
+          <Text style={[styles.label, { color: theme.colors.secondary }]}>
+            Nombre:
+          </Text>
+          <TextInput
+            value={nombre}
+            onChangeText={setNombre}
+            placeholder="Nombre"
+            style={[styles.input, { color: theme.colors.text }]}
+            placeholderTextColor={theme.colors.text}
+          />
+
+          <Text style={[styles.label, { color: theme.colors.secondary }]}>
+            Dirección:
+          </Text>
+          <TextInput
+            value={direccion}
+            onChangeText={setDireccion}
+            placeholder="Dirección"
+            style={[styles.input, { color: theme.colors.text }]}
+            placeholderTextColor={theme.colors.text}
+          />
+
+          <Text style={[styles.label, { color: theme.colors.secondary }]}>
+            Comuna:
+          </Text>
+          <TextInput
+            value={comuna}
+            onChangeText={handleComunaChange}
+            placeholder="Ingrese comuna"
+            style={[styles.input, { color: theme.colors.text }]}
+            placeholderTextColor={theme.colors.text}
+          />
+
+          {loadingComuna && (
+            <ActivityIndicator
+              size="small"
+              color={theme.colors.secondary}
+              style={{ marginBottom: 8 }}
+            />
+          )}
+
+          {sugerenciasComuna.length > 0 && (
+            <View
+              style={{
+                borderWidth: 1,
+                borderColor: theme.colors.accent,
+                borderRadius: 8,
+                overflow: "hidden",
+                marginBottom: 10,
               }}
-              placeholder="rut sin punto ni guion"
-              style={[styles.input, { color: theme.colors.text }]}
-              placeholderTextColor={theme.colors.text}
-            />
-
-            <Text style={[styles.label, { color: theme.colors.secondary }]}>
-              Nombre:
-            </Text>
-            <TextInput
-              value={nombre}
-              onChangeText={setNombre}
-              placeholder="Nombre del adoptante"
-              style={[styles.input, { color: theme.colors.text }]}
-              placeholderTextColor={theme.colors.text}
-            />
-
-            <Text style={[styles.label, { color: theme.colors.secondary }]}>
-              Dirección:
-            </Text>
-            <TextInput
-              value={direccion}
-              onChangeText={setDireccion}
-              placeholder="Dirección"
-              style={[styles.input, { color: theme.colors.text }]}
-              placeholderTextColor={theme.colors.text}
-            />
-
-            <Text style={[styles.label, { color: theme.colors.secondary }]}>
-              Comuna:
-            </Text>
-            <TextInput
-              value={comuna}
-              onChangeText={handleComunaChange}
-              placeholder="Ingrese comuna"
-              style={[styles.input, { color: theme.colors.text }]}
-              placeholderTextColor={theme.colors.text}
-            />
-
-            {loadingComuna && (
-              <ActivityIndicator size="small" color={theme.colors.secondary} />
-            )}
-
-            {sugerenciasComuna.length > 0 && (
-              <View
-                style={{
-                  borderWidth: 1,
-                  borderColor: theme.colors.accent,
-                  borderRadius: 6,
-                  maxHeight: 150,
-                  marginBottom: 10,
-                }}
-              >
-                {sugerenciasComuna.slice(0, 3).map((dir, index) => (
-                  <TouchableOpacity
-                    key={index}
-                    onPress={() => handleSelectComuna(dir)}
-                    style={{
-                      padding: 8,
-                      borderBottomWidth:
-                        index !== Math.min(sugerenciasComuna.length, 3) - 1
-                          ? 1
-                          : 0,
-                      borderColor: theme.colors.accent,
-                    }}
-                  >
-                    <Text style={{ color: theme.colors.text }}>
-                      {dir.comuna}
-                      {dir.ciudad ? `, ${dir.ciudad}` : ""}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-            )}
-
-            <Text style={[styles.label, { color: theme.colors.secondary }]}>
-              Teléfono:
-            </Text>
-            <TextInput
-              value={telefono}
-              onChangeText={(t) => {
-                let filtrado = t.replace(/[^0-9+]/g, "");
-                setTelefono(filtrado);
-              }}
-              placeholder="+56912345678"
-              keyboardType="phone-pad"
-              style={[styles.input, { color: theme.colors.text }]}
-              placeholderTextColor={theme.colors.text}
-            />
-
-            <Text style={[styles.label, { color: theme.colors.secondary }]}>
-              Edad:
-            </Text>
-            <TextInput
-              value={edad.toString()}
-              onChangeText={(t) => {
-                const soloNumeros = t.replace(/[^0-9]/g, ""); // elimina letras
-                setEdad(soloNumeros ? Number(soloNumeros) : 0);
-              }}
-              placeholder="Edad"
-              keyboardType="number-pad"
-              style={[styles.input, { color: theme.colors.text }]}
-              placeholderTextColor={theme.colors.text}
-            />
-
-            <Text style={[styles.label, { color: theme.colors.secondary }]}>
-              ¿Tienes experiencia con mascotas?
-            </Text>
-            <View style={{ flexDirection: "row", marginBottom: 10 }}>
-              {["Si", "No"].map((opcion) => (
+            >
+              {sugerenciasComuna.slice(0, 3).map((dir, index) => (
                 <TouchableOpacity
-                  key={opcion}
-                  onPress={() => setExperienciaMascotas(opcion as "Si" | "No")}
+                  key={index}
+                  onPress={() => handleSelectComuna(dir)}
                   style={{
-                    flexDirection: "row",
-                    alignItems: "center",
-                    marginRight: 20,
+                    padding: 10,
+                    borderBottomWidth: index < 2 ? 1 : 0,
+                    borderColor: theme.colors.accent,
                   }}
                 >
-                  <View
-                    style={{
-                      width: 20,
-                      height: 20,
-                      borderRadius: 10,
-                      borderWidth: 2,
-                      borderColor: theme.colors.secondary,
-                      alignItems: "center",
-                      justifyContent: "center",
-                    }}
-                  >
-                    {experienciaMascotas === opcion && (
-                      <View
-                        style={{
-                          width: 12,
-                          height: 12,
-                          borderRadius: 6,
-                          backgroundColor: theme.colors.secondary,
-                        }}
-                      />
-                    )}
-                  </View>
-                  <Text
-                    style={{ marginLeft: 6, color: theme.colors.secondary }}
-                  >
-                    {opcion}
+                  <Text style={{ color: theme.colors.text }}>
+                    {dir.comuna}
+                    {dir.ciudad ? `, ${dir.ciudad}` : ""}
                   </Text>
                 </TouchableOpacity>
               ))}
             </View>
+          )}
 
-            {experienciaMascotas === "Si" && (
-              <>
-                <Text style={[styles.label, { color: theme.colors.secondary }]}>
-                  Cuántas mascotas tiene:
-                </Text>
-                <TextInput
-                  value={cantidadMascotas.toString()}
-                  onChangeText={(t) => {
-                    const soloNumeros = t.replace(/[^0-9]/g, ""); // elimina letras
-                    setCantidadMascotas(soloNumeros ? Number(soloNumeros) : 0);
+          <Text style={[styles.label, { color: theme.colors.secondary }]}>
+            Teléfono:
+          </Text>
+          <TextInput
+            value={telefono}
+            onChangeText={(t) =>
+              setTelefono(t.replace(/[^0-9+]/g, ""))
+            }
+            placeholder="+56912345678"
+            keyboardType="phone-pad"
+            style={[styles.input, { color: theme.colors.text }]}
+            placeholderTextColor={theme.colors.text}
+          />
+
+          <Text style={[styles.label, { color: theme.colors.secondary }]}>
+            Edad:
+          </Text>
+          <TextInput
+            value={edad.toString()}
+            onChangeText={(t) =>
+              setEdad(t.replace(/[^0-9]/g, "") ? Number(t) : 0)
+            }
+            keyboardType="number-pad"
+            style={[styles.input, { color: theme.colors.text }]}
+            placeholder="Edad"
+            placeholderTextColor={theme.colors.text}
+          />
+
+          <Text style={[styles.label, { color: theme.colors.secondary }]}>
+            ¿Tienes experiencia con mascotas?
+          </Text>
+          <View style={{ flexDirection: "row", marginBottom: 10 }}>
+            {["Si", "No"].map((op) => (
+              <TouchableOpacity
+                key={op}
+                onPress={() => setExperienciaMascotas(op as "Si" | "No")}
+                style={{ flexDirection: "row", alignItems: "center", marginRight: 20 }}
+              >
+                <View
+                  style={{
+                    width: 20,
+                    height: 20,
+                    borderRadius: 10,
+                    borderWidth: 2,
+                    borderColor: theme.colors.secondary,
+                    alignItems: "center",
+                    justifyContent: "center",
                   }}
-                  placeholder="Cantidad"
-                  keyboardType="number-pad"
-                  style={[styles.input, { color: theme.colors.text }]}
-                  placeholderTextColor={theme.colors.text}
-                />
-              </>
-            )}
+                >
+                  {experienciaMascotas === op && (
+                    <View
+                      style={{
+                        width: 12,
+                        height: 12,
+                        borderRadius: 6,
+                        backgroundColor: theme.colors.secondary,
+                      }}
+                    />
+                  )}
+                </View>
+                <Text style={{ marginLeft: 6, color: theme.colors.secondary }}>
+                  {op}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
 
-            <Text style={[styles.label, { color: theme.colors.secondary }]}>
-              Especie preferida:
-            </Text>
-            <Picker
-              selectedValue={especiePreferida}
-              onValueChange={(v) => setEspeciePreferida(v)}
-              style={[styles.input, { color: theme.colors.primary }]}
-            >
-              {Object.values(EspeciePreferida).map((e) => (
-                <Picker.Item key={e} label={e} value={e} />
-              ))}
-            </Picker>
-
-            <Text style={[styles.label, { color: theme.colors.secondary }]}>
-              Tipo de vivienda:
-            </Text>
-            <Picker
-              selectedValue={tipoVivienda}
-              onValueChange={(v) => setTipoVivienda(v)}
-              style={[styles.input, { color: theme.colors.primary }]}
-            >
-              {Object.values(Vivienda).map((v) => (
-                <Picker.Item key={v} label={v} value={v} />
-              ))}
-            </Picker>
-
-            <Text style={[styles.label, { color: theme.colors.secondary }]}>
-              Sexo:
-            </Text>
-            <Picker
-              selectedValue={sexo}
-              onValueChange={(v) => setSexo(v)}
-              style={[styles.input, { color: theme.colors.primary }]}
-            >
-              {Object.values(Sexo).map((s) => (
-                <Picker.Item key={s} label={s} value={s} />
-              ))}
-            </Picker>
-
-            <Text style={[styles.label, { color: theme.colors.secondary }]}>
-              Edad buscada:
-            </Text>
-            <Picker
-              selectedValue={edadBuscada}
-              onValueChange={(v) => setEdadBuscada(v)}
-              style={[styles.input, { color: theme.colors.primary }]}
-            >
-              {Object.values(Edad).map((e) => (
-                <Picker.Item key={e} label={e} value={e} />
-              ))}
-            </Picker>
-
-            <Text style={[styles.label, { color: theme.colors.secondary }]}>
-              Motivo de adopción:
-            </Text>
-            <TextInput
-              value={motivoAdopcion}
-              onChangeText={setMotivoAdopcion}
-              placeholder="Me gustaria adoptar porque..."
-              style={[styles.input, { color: theme.colors.text }]}
-              placeholderTextColor={theme.colors.text}
-              multiline
-              numberOfLines={3}
-            />
-
-            {error && (
-              <Text style={[styles.error, { color: theme.colors.error }]}>
-                {error}
+          {experienciaMascotas === "Si" && (
+            <>
+              <Text style={[styles.label, { color: theme.colors.secondary }]}>
+                Cuántas mascotas tiene:
               </Text>
-            )}
+              <TextInput
+                value={cantidadMascotas.toString()}
+                onChangeText={(t) =>
+                  setCantidadMascotas(
+                    t.replace(/[^0-9]/g, "") ? Number(t) : 0
+                  )
+                }
+                keyboardType="number-pad"
+                style={[styles.input, { color: theme.colors.text }]}
+                placeholder="Cantidad"
+                placeholderTextColor={theme.colors.text}
+              />
+            </>
+          )}
 
-            <View
-              style={{
-                flexDirection: "row",
-                justifyContent: "space-between",
-                marginTop: 10,
-              }}
+          <Text style={[styles.label, { color: theme.colors.secondary }]}>
+            Especie preferida:
+          </Text>
+          <Picker
+            selectedValue={especiePreferida}
+            onValueChange={(v) => setEspeciePreferida(v)}
+            style={[styles.input]}
+          >
+            {Object.values(EspeciePreferida).map((e) => (
+              <Picker.Item key={e} label={e} value={e} />
+            ))}
+          </Picker>
+
+          <Text style={[styles.label, { color: theme.colors.secondary }]}>
+            Tipo de vivienda:
+          </Text>
+          <Picker
+            selectedValue={tipoVivienda}
+            onValueChange={(v) => setTipoVivienda(v)}
+            style={[styles.input]}
+          >
+            {Object.values(Vivienda).map((v) => (
+              <Picker.Item key={v} label={v} value={v} />
+            ))}
+          </Picker>
+
+          <Text style={[styles.label, { color: theme.colors.secondary }]}>
+            Sexo:
+          </Text>
+          <Picker
+            selectedValue={sexo}
+            onValueChange={(v) => setSexo(v)}
+            style={[styles.input]}
+          >
+            {Object.values(Sexo).map((s) => (
+              <Picker.Item key={s} label={s} value={s} />
+            ))}
+          </Picker>
+
+          <Text style={[styles.label, { color: theme.colors.secondary }]}>
+            Edad buscada:
+          </Text>
+          <Picker
+            selectedValue={edadBuscada}
+            onValueChange={(v) => setEdadBuscada(v)}
+            style={[styles.input]}
+          >
+            {Object.values(Edad).map((e) => (
+              <Picker.Item key={e} label={e} value={e} />
+            ))}
+          </Picker>
+
+          <Text style={[styles.label, { color: theme.colors.secondary }]}>
+            Motivo de adopción:
+          </Text>
+          <TextInput
+            value={motivoAdopcion}
+            onChangeText={setMotivoAdopcion}
+            multiline
+            numberOfLines={3}
+            style={[styles.input, { color: theme.colors.text }]}
+            placeholder="Me gustaría adoptar porque..."
+            placeholderTextColor={theme.colors.text}
+          />
+
+          {error && (
+            <Text style={[styles.error, { color: theme.colors.error }]}>
+              {error}
+            </Text>
+          )}
+
+          {/* BOTONES */}
+          <View style={{ flexDirection: "row", marginTop: 10, gap: 10 }}>
+            <TouchableOpacity
+              onPress={handleSave}
+              disabled={saving}
+              style={[
+                styles.button,
+                {
+                  flex: 1,
+                  backgroundColor: saving
+                    ? theme.colors.backgroundTertiary
+                    : theme.colors.accent,
+                },
+              ]}
             >
-              <TouchableOpacity
-                style={[
-                  styles.button,
-                  {
-                    flex: 1,
-                    backgroundColor: theme.colors.backgroundTertiary,
-                    marginRight: 5,
-                  },
-                ]}
-                onPress={handleSave}
-                disabled={saving}
-              >
-                <Text
-                  style={{ color: theme.colors.secondary, fontWeight: "bold" }}
-                >
-                  {saving ? "Guardando..." : "Guardar"}
-                </Text>
-              </TouchableOpacity>
+              <Text style={{ color: theme.colors.secondary, fontWeight: "bold" }}>
+                {saving ? "Guardando..." : "Guardar"}
+              </Text>
+            </TouchableOpacity>
 
-              <TouchableOpacity
-                style={[
-                  styles.button,
-                  {
-                    flex: 1,
-                    backgroundColor: theme.colors.error,
-                    marginLeft: 5,
-                  },
-                ]}
-                onPress={handleCancel}
-              >
-                <Text
-                  style={{ color: theme.colors.secondary, fontWeight: "bold" }}
-                >
-                  Cancelar
-                </Text>
-              </TouchableOpacity>
-            </View>
+            <TouchableOpacity
+              onPress={handleCancel}
+              style={[
+                styles.button,
+                { flex: 1, backgroundColor: theme.colors.error },
+              ]}
+            >
+              <Text style={{ color: theme.colors.secondary, fontWeight: "bold" }}>
+                Cancelar
+              </Text>
+            </TouchableOpacity>
           </View>
         </View>
       </ScrollView>
@@ -567,12 +537,19 @@ export default function FormularioAdoptante({
 }
 
 const styles = StyleSheet.create({
+  card: {
+    padding: 24,
+    borderRadius: 12,
+    borderWidth: 2,
+    ...(Platform.OS === "web"
+      ? { boxShadow: "0 4px 14px rgba(0,0,0,0.15)" }
+      : {}),
+  },
   label: {
     marginBottom: 6,
-    fontSize: 16,
-    fontWeight: "600",
+    fontSize: 15,
+    fontWeight: "bold",
   },
-
   input: {
     borderWidth: 1,
     borderRadius: 10,
@@ -582,17 +559,15 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     minHeight: 46,
   },
-
   error: {
     textAlign: "center",
-    fontSize: 14,
     marginBottom: 12,
+    fontSize: 14,
     fontWeight: "500",
   },
-
   button: {
     height: 48,
-    borderRadius: 12,
+    borderRadius: 10,
     alignItems: "center",
     justifyContent: "center",
   },
