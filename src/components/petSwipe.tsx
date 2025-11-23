@@ -8,8 +8,8 @@ import {
   TouchableOpacity,
   Text,
 } from "react-native";
-import { useTheme } from "../theme/ThemeContext";     // ← Corrección importante
-import PetCard from "./PetCard";                     // ← Ruta correcta
+import { useTheme } from "../theme/ThemeContext";
+import PetCard from "./PetCard";
 import { Mascota } from "../types/mascota";
 
 const { width } = Dimensions.get("window");
@@ -20,22 +20,24 @@ type Props = {
   mascota?: Mascota;
   onSwipeEnd?: (dir: "left" | "right", petId: number) => void;
   onIndexChange?: (index: number) => void;
-  onToggleFavorito?: () => void;
+  // NUEVO: lógica de favoritos delegada al padre
+  onToggleFavorito?: (petId: number) => void;
+  isFavorite?: (petId: number) => boolean;
 };
 
 const PetSwipe = forwardRef((props: Props, ref) => {
-  const { pets, mascota, onSwipeEnd, onIndexChange, onToggleFavorito } = props;
+  const { pets, mascota, onSwipeEnd, onIndexChange, onToggleFavorito, isFavorite } = props;
   const { theme } = useTheme();
 
-  /* -----------------------------------------------------------
-     MODO FAVORITOS (sin swipe)
-  ------------------------------------------------------------ */
+  // -------------------------------------------------------
+  // MODO FAVORITOS (lista de favoritos sin swipe)
+  // -------------------------------------------------------
   if (mascota && onToggleFavorito) {
     return (
       <View style={styles.favoriteWrapper}>
         <TouchableOpacity
           style={[styles.favoriteBtn, { backgroundColor: theme.colors.error }]}
-          onPress={onToggleFavorito}
+          onPress={() => onToggleFavorito(mascota.id_mascota)}
         >
           <Text style={styles.favoriteText}>Quitar de favoritos</Text>
         </TouchableOpacity>
@@ -43,9 +45,9 @@ const PetSwipe = forwardRef((props: Props, ref) => {
     );
   }
 
-  /* -----------------------------------------------------------
-     MODO SWIPE (Tinder)
-  ------------------------------------------------------------ */
+  // -------------------------------------------------------
+  // MODO SWIPE
+  // -------------------------------------------------------
   if (!pets || pets.length === 0) return <View />;
 
   const [index, setIndex] = useState(0);
@@ -102,6 +104,8 @@ const PetSwipe = forwardRef((props: Props, ref) => {
     getCurrentIndex: () => index,
   }));
 
+  const currentPet = pets[index];
+
   return (
     <View style={styles.container}>
       <Animated.View
@@ -112,8 +116,11 @@ const PetSwipe = forwardRef((props: Props, ref) => {
         {...panResponder.panHandlers}
       >
         <PetCard
-          mascota={pets[index]}
+          mascota={currentPet}
           width={width < 840 ? 230 : 260}
+          // aquí respetamos tus nombres
+          isFavorite={isFavorite ? isFavorite(currentPet.id_mascota) : false}
+          onToggleFavorite={() => onToggleFavorito?.(currentPet.id_mascota)}
         />
       </Animated.View>
     </View>

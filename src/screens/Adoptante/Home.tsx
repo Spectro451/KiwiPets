@@ -238,12 +238,15 @@ export default function HomeScreen() {
   // ======================================================
   // UI PRINCIPAL — versión final responsiva
   // ======================================================
-  return (
+ return (
   <View
     style={{
       flex: 1,
       backgroundColor: theme.colors.background,
+      paddingHorizontal: isSmall ? 10 : isTablet ? 20 : 40,
+      paddingTop: isSmall ? 10 : 20,
       alignItems: "center",
+      justifyContent: "space-between",
     }}
   >
     <View
@@ -251,33 +254,35 @@ export default function HomeScreen() {
         width: CONTENT_WIDTH,
         alignSelf: "center",
         alignItems: "center",
-        marginTop: 10,
-        paddingHorizontal: isSmall ? 10 : isTablet ? 20 : 40,
+        flex: 1,
+        justifyContent: "center",
       }}
     >
       <PetSwipe
         ref={swipeRef}
         pets={pets}
         onIndexChange={setIndexActual}
-        onSwipeEnd={async (dir, petId) => {
+        onSwipeEnd={async (dir: "left" | "right", petId: number) => {
           if (dir === "right") await createAdopcion(petId);
           const nuevas = vistas.includes(petId) ? vistas : [...vistas, petId];
           setVistas(nuevas);
           fetchMascotas(radioBusqueda, nuevas);
         }}
+        // aquí conectamos el corazón al mismo toggleFavorito
+        onToggleFavorito={toggleFavorito}
+        isFavorite={(petId) =>
+          favoritos.some(
+            (f: any) => f.mascota.id_mascota === petId
+          )
+        }
       />
     </View>
 
-    {/* BOTONES FIJOS ABAJO */}
     <View
-      style={{
-        position: "absolute",
-        bottom: 90, // queda justo arriba del tab bar
-        width: CONTENT_WIDTH,
-        flexDirection: "row",
-        justifyContent: "space-around",
-        paddingHorizontal: isSmall ? 6 : 12,
-      }}
+      style={[
+        styles.buttons,
+        { width: CONTENT_WIDTH, paddingHorizontal: isSmall ? 6 : 12 },
+      ]}
     >
       <TouchableOpacity
         style={botonInferior(theme, bloqueado)}
@@ -288,9 +293,7 @@ export default function HomeScreen() {
 
       <TouchableOpacity
         style={botonInferior(theme, bloqueado)}
-        onPress={() =>
-          toggleFavorito(pets[indexActual].id_mascota)
-        }
+        onPress={() => toggleFavorito(pets[indexActual].id_mascota)}
       >
         <Text style={botonTexto(theme)}>
           {favoritos.some(
@@ -311,6 +314,7 @@ export default function HomeScreen() {
     </View>
   </View>
 );
+
 }
 
 // ======================================================

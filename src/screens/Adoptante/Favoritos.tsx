@@ -20,20 +20,17 @@ import SkeletonCard from "../../components/skeletonCard";
 export default function FavoritosScreen({ navigation }: any) {
   const { theme } = useTheme();
   const { width } = useWindowDimensions();
-  const MAX_CARD_WIDTH = 250;   // tamaño fijo ideal de las cards de Favoritos
 
-  const CARD_WIDTH =
-    width <= 480
-     ? width * 0.92
-     : width <= 840
-     ? Math.min(width * 0.45, MAX_CARD_WIDTH)
-     : MAX_CARD_WIDTH;
+  const isSmall = width <= 480;
+  const isTablet = width > 480 && width <= 840;
 
   const [favoritos, setFavoritos] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   const [modalVisible, setModalVisible] = useState(false);
   const [modalMascota, setModalMascota] = useState<any>(null);
+
+  const [itemWidth, setItemWidth] = useState(180);
 
   const openModal = (mascota: any) => {
     setModalMascota(mascota);
@@ -78,6 +75,21 @@ export default function FavoritosScreen({ navigation }: any) {
     }
   };
 
+  const onGridLayout = (event: any) => {
+    const gridWidth = event.nativeEvent.layout.width;
+
+    const minWidth = isSmall ? 150 : isTablet ? 160 : 180;
+
+    let cols = Math.floor(gridWidth / minWidth);
+    if (cols < 1) cols = 1;
+    if (cols > 4) cols = 4; // límite sano para Favoritos
+
+    const gap = isSmall ? 10 : 14;
+    const calculated = (gridWidth - gap * (cols - 1)) / cols;
+
+    setItemWidth(calculated);
+  };
+
   return (
     <SafeAreaView
       style={{ flex: 1, backgroundColor: theme.colors.background }}
@@ -94,15 +106,13 @@ export default function FavoritosScreen({ navigation }: any) {
           </TouchableOpacity>
         </View>
 
-        {/* LOADING */}
         {loading && (
           <View style={{ marginTop: 20 }}>
-            <SkeletonCard width={CARD_WIDTH} />
-            <SkeletonCard width={CARD_WIDTH} />
+            <SkeletonCard width={itemWidth} />
+            <SkeletonCard width={itemWidth} />
           </View>
         )}
 
-        {/* VACÍO */}
         {!loading && favoritos.length === 0 && (
           <Text
             style={{
@@ -116,14 +126,13 @@ export default function FavoritosScreen({ navigation }: any) {
           </Text>
         )}
 
-        {/* GRID */}
         <View
+          onLayout={onGridLayout}
           style={[
             styles.grid,
             {
-              gap: width <= 480 ? 12 : 16,
-              maxWidth: 900,
-              alignSelf: "center",
+              justifyContent: isSmall ? "space-between" : "flex-start",
+              gap: isSmall ? 10 : 14,
             },
           ]}
         >
@@ -134,21 +143,22 @@ export default function FavoritosScreen({ navigation }: any) {
                 style={[
                   styles.card,
                   {
+                    width: itemWidth,
                     backgroundColor: theme.colors.backgroundSecondary,
                     borderColor: theme.colors.backgroundTertiary,
-                    width: CARD_WIDTH,
                   },
                 ]}
+                activeOpacity={0.75}
                 onPress={() => openModal(m)}
               >
-                {/* Imagen */}
                 <View style={{ width: "100%", aspectRatio: 1 }}>
                   <Image
-                    source={
-                      m.foto
-                        ? { uri: m.foto }
-                        : { uri: "https://via.placeholder.com/400x400?text=Sin+Foto" }
-                    }
+                    source={{
+                      uri:
+                        m.foto ||
+                        m.mascota?.foto ||
+                        "https://via.placeholder.com/400x400?text=Sin+Foto",
+                    }}
                     style={styles.img}
                   />
                 </View>
@@ -156,11 +166,11 @@ export default function FavoritosScreen({ navigation }: any) {
                 <Text
                   style={[
                     styles.name,
-                    { color: theme.colors.text, marginTop: 8 },
+                    { color: theme.colors.text },
                   ]}
                   numberOfLines={1}
                 >
-                  {m.nombre}
+                  {m.nombre || m.mascota?.nombre || "Sin nombre"}
                 </Text>
 
                 <PetSwipe
@@ -172,7 +182,6 @@ export default function FavoritosScreen({ navigation }: any) {
         </View>
       </ScrollView>
 
-      {/* MODAL */}
       <Modal visible={modalVisible} transparent animationType="fade">
         <View style={styles.modalBackdrop}>
           <View
@@ -244,28 +253,29 @@ const styles = StyleSheet.create({
   grid: {
     flexDirection: "row",
     flexWrap: "wrap",
-    justifyContent: "center",
-    marginTop: 12,
+    width: "100%",
   },
 
   card: {
-    borderWidth: 1.5,
-    borderRadius: 14,
-    overflow: "hidden",
-    paddingBottom: 14,
+    borderWidth: 2,
+    borderRadius: 12,
+    padding: 6,
+    marginBottom: 14,
     alignItems: "center",
   },
 
   img: {
     width: "100%",
     height: "100%",
+    borderRadius: 10,
     resizeMode: "cover",
   },
 
   name: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: "600",
     textAlign: "center",
+    marginTop: 6,
   },
 
   modalBackdrop: {
