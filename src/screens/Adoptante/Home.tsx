@@ -239,74 +239,78 @@ export default function HomeScreen() {
   // UI PRINCIPAL — versión final responsiva
   // ======================================================
   return (
+  <View
+    style={{
+      flex: 1,
+      backgroundColor: theme.colors.background,
+      alignItems: "center",
+    }}
+  >
     <View
       style={{
-        flex: 1,
-        backgroundColor: theme.colors.background,
-        paddingHorizontal: isSmall ? 10 : isTablet ? 20 : 40,
-        paddingTop: isSmall ? 10 : 20,
+        width: CONTENT_WIDTH,
+        alignSelf: "center",
         alignItems: "center",
+        marginTop: 10,
+        paddingHorizontal: isSmall ? 10 : isTablet ? 20 : 40,
       }}
     >
-      <View
-  style={{
-    width: CONTENT_WIDTH,
-    alignSelf: "center",
-    alignItems: "center",
-  }}
->
-  <PetSwipe
-    ref={swipeRef}
-    pets={pets}
-    onIndexChange={setIndexActual}
-    onSwipeEnd={async (dir: "left" | "right", petId: number) => {
-      if (dir === "right") await createAdopcion(petId);
-      const nuevas = vistas.includes(petId) ? vistas : [...vistas, petId];
-      setVistas(nuevas);
-      fetchMascotas(radioBusqueda, nuevas);
-    }}
-  />
-</View>
-
-      {/* BOTONES AJUSTADOS AL MISMO ANCHO */}
-      <View
-        style={[
-          styles.buttons,
-          { width: CONTENT_WIDTH, paddingHorizontal: isSmall ? 6 : 12 },
-        ]}
-      >
-        <TouchableOpacity
-          style={botonInferior(theme, bloqueado)}
-          onPress={() => ejecutarSwipe("left")}
-        >
-          <Text style={botonTexto(theme)}>Siguiente</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={botonInferior(theme, bloqueado)}
-          onPress={() =>
-            toggleFavorito(pets[indexActual].id_mascota)
-          }
-        >
-          <Text style={botonTexto(theme)}>
-            {favoritos.some(
-              (f: any) =>
-                f.mascota.id_mascota === pets[indexActual].id_mascota
-            )
-              ? "❤️"
-              : "Favorito"}
-          </Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={botonInferior(theme, bloqueado)}
-          onPress={() => ejecutarSwipe("right")}
-        >
-          <Text style={botonTexto(theme)}>Like</Text>
-        </TouchableOpacity>
-      </View>
+      <PetSwipe
+        ref={swipeRef}
+        pets={pets}
+        onIndexChange={setIndexActual}
+        onSwipeEnd={async (dir, petId) => {
+          if (dir === "right") await createAdopcion(petId);
+          const nuevas = vistas.includes(petId) ? vistas : [...vistas, petId];
+          setVistas(nuevas);
+          fetchMascotas(radioBusqueda, nuevas);
+        }}
+      />
     </View>
-  );
+
+    {/* BOTONES FIJOS ABAJO */}
+    <View
+      style={{
+        position: "absolute",
+        bottom: 90, // queda justo arriba del tab bar
+        width: CONTENT_WIDTH,
+        flexDirection: "row",
+        justifyContent: "space-around",
+        paddingHorizontal: isSmall ? 6 : 12,
+      }}
+    >
+      <TouchableOpacity
+        style={botonInferior(theme, bloqueado)}
+        onPress={() => ejecutarSwipe("left")}
+      >
+        <Text style={botonTexto(theme)}>Siguiente</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        style={botonInferior(theme, bloqueado)}
+        onPress={() =>
+          toggleFavorito(pets[indexActual].id_mascota)
+        }
+      >
+        <Text style={botonTexto(theme)}>
+          {favoritos.some(
+            (f: any) =>
+              f.mascota.id_mascota === pets[indexActual].id_mascota
+          )
+            ? "❤️"
+            : "Favorito"}
+        </Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        style={botonInferior(theme, bloqueado)}
+        onPress={() => ejecutarSwipe("right")}
+      >
+        <Text style={botonTexto(theme)}>Like</Text>
+      </TouchableOpacity>
+    </View>
+  </View>
+);
 }
 
 // ======================================================
