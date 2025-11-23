@@ -305,12 +305,6 @@ export default function HomeScreen() {
         </Text>
       </TouchableOpacity>
 
-      <TouchableOpacity
-        style={botonInferior(theme, bloqueado)}
-        onPress={() => ejecutarSwipe("right")}
-      >
-        <Text style={botonTexto(theme)}>Like</Text>
-      </TouchableOpacity>
     </View>
   </View>
 );
