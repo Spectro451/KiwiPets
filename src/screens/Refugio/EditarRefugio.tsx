@@ -23,13 +23,8 @@ type RootStackParamList = {
 type EditarRefugioRouteProp = RouteProp<RootStackParamList, "EditarRefugio">;
 
 const { width } = Dimensions.get("window");
-const isSmall = width <= 480;
-const isTablet = width > 480 && width <= 840;
-const CARD_WIDTH = isSmall
-  ? width * 0.92
-  : isTablet
-  ? Math.min(width * 0.7, 520)
-  : 520;
+const isWeb = Platform.OS === "web";
+const CARD_WIDTH = Math.min(width * 0.92, 520);
 
 export default function EditarRefugio() {
   const navigation = useNavigation();
@@ -41,12 +36,8 @@ export default function EditarRefugio() {
   const [direccion, setDireccion] = useState(perfilData.direccion);
   const [telefono, setTelefono] = useState(perfilData.telefono);
   const [comuna, setComuna] = useState(perfilData.comuna ?? "");
-  const [latitud, setLatitud] = useState<number | undefined>(
-    perfilData.latitud
-  );
-  const [longitud, setLongitud] = useState<number | undefined>(
-    perfilData.longitud
-  );
+  const [latitud, setLatitud] = useState<number | undefined>(perfilData.latitud);
+  const [longitud, setLongitud] = useState<number | undefined>(perfilData.longitud);
 
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -58,7 +49,6 @@ export default function EditarRefugio() {
     perfilData.comuna ?? null
   );
 
-  // ---------------- VALIDAR Y GUARDAR ----------------
   const handleSave = async () => {
     if (!nombre.trim() || !direccion.trim() || !telefono.trim()) {
       setError("Todos los campos son obligatorios");
@@ -97,10 +87,10 @@ export default function EditarRefugio() {
     }
   };
 
-  // ---------------- BUSCAR COMUNA ----------------
   const handleComunaChange = async (text: string) => {
     setComuna(text);
     setComunaSeleccionada(null);
+
     if (text.trim().length < 3) {
       setSugerenciasComuna([]);
       return;
@@ -110,8 +100,7 @@ export default function EditarRefugio() {
     try {
       const results = await buscarDirecciones(text);
       setSugerenciasComuna(results);
-    } catch (err) {
-      console.error(err);
+    } catch {
       setSugerenciasComuna([]);
     } finally {
       setLoadingComuna(false);
@@ -124,12 +113,8 @@ export default function EditarRefugio() {
     setLongitud(dir.longitud);
     setSugerenciasComuna([]);
     setComunaSeleccionada(dir.comuna);
-
-    console.log("Comuna seleccionada:", dir.comuna);
-    console.log("Latitud:", dir.latitud, "Longitud:", dir.longitud);
   };
 
-  // ---------------- UI ----------------
   return (
     <KeyboardAvoidingView
       style={{ flex: 1, backgroundColor: theme.colors.background }}
@@ -141,7 +126,7 @@ export default function EditarRefugio() {
           justifyContent: "center",
           alignItems: "center",
           paddingVertical: 26,
-          paddingHorizontal: isSmall ? 16 : 28,
+          paddingHorizontal: 16,
         }}
         keyboardShouldPersistTaps="handled"
       >
@@ -151,7 +136,7 @@ export default function EditarRefugio() {
             {
               width: CARD_WIDTH,
               backgroundColor: theme.colors.backgroundSecondary,
-              borderColor: theme.colors.backgroundTertiary,
+              borderColor: theme.colors.accent,
             },
           ]}
         >
@@ -159,7 +144,6 @@ export default function EditarRefugio() {
             Editar refugio
           </Text>
 
-          {/* Nombre */}
           <Text style={[styles.label, { color: theme.colors.secondary }]}>
             Nombre
           </Text>
@@ -171,7 +155,6 @@ export default function EditarRefugio() {
             style={[styles.input, { color: theme.colors.text }]}
           />
 
-          {/* Dirección */}
           <Text style={[styles.label, { color: theme.colors.secondary }]}>
             Dirección
           </Text>
@@ -183,7 +166,6 @@ export default function EditarRefugio() {
             style={[styles.input, { color: theme.colors.text }]}
           />
 
-          {/* Comuna */}
           <Text style={[styles.label, { color: theme.colors.secondary }]}>
             Comuna
           </Text>
@@ -196,17 +178,11 @@ export default function EditarRefugio() {
           />
 
           {loadingComuna && (
-            <ActivityIndicator
-              size="small"
-              color={theme.colors.secondary}
-              style={{ marginBottom: 8 }}
-            />
+            <ActivityIndicator size="small" color={theme.colors.secondary} />
           )}
 
           {sugerenciasComuna.length > 0 && (
-            <View
-              style={[styles.dropdown, { borderColor: theme.colors.accent }]}
-            >
+            <View style={[styles.dropdown, { borderColor: theme.colors.accent }]}>
               {sugerenciasComuna.slice(0, 3).map((dir, index) => (
                 <TouchableOpacity
                   key={index}
@@ -215,9 +191,7 @@ export default function EditarRefugio() {
                     styles.dropdownItem,
                     {
                       borderBottomWidth:
-                        index < Math.min(3, sugerenciasComuna.length) - 1
-                          ? 1
-                          : 0,
+                        index < Math.min(3, sugerenciasComuna.length) - 1 ? 1 : 0,
                       borderColor: theme.colors.accent,
                     },
                   ]}
@@ -231,7 +205,6 @@ export default function EditarRefugio() {
             </View>
           )}
 
-          {/* Teléfono */}
           <Text style={[styles.label, { color: theme.colors.secondary }]}>
             Teléfono
           </Text>
@@ -253,7 +226,6 @@ export default function EditarRefugio() {
             </Text>
           )}
 
-          {/* Botones */}
           <View style={styles.btnRow}>
             <TouchableOpacity
               onPress={handleSave}
@@ -292,11 +264,6 @@ const styles = StyleSheet.create({
     padding: 24,
     borderRadius: 12,
     borderWidth: 2,
-    ...(Platform.OS === "web"
-      ? {
-          boxShadow: "0 4px 14px rgba(0,0,0,0.15)",
-        }
-      : {}),
   },
   title: {
     fontSize: 22,
