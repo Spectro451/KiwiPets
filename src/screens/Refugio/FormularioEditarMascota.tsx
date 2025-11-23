@@ -206,6 +206,7 @@ export default function FormularioEditarMascotaScreen({ navigation, route }: any
     }));
 
     const mascotaActualizada: Partial<Mascota> = {
+      id_mascota,
       nombre,
       raza,
       edad,
@@ -799,7 +800,7 @@ export default function FormularioEditarMascotaScreen({ navigation, route }: any
                     color: theme.colors.text,
                   }}
                 >
-                  ¡Mascota creada con éxito!
+                  ¡Mascota actualizada con éxito!
                 </Text>
                 <TouchableOpacity
                   style={[styles.buttonModal, { backgroundColor: "#4CAF50" }]}
