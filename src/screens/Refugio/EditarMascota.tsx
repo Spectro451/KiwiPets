@@ -23,10 +23,9 @@ export default function EditarMascotasScreen({ navigation }: any) {
 
   const isSmall = width <= 480;
   const isTablet = width > 480 && width <= 840;
-
-  const GRID_MAX_WIDTH = isSmall ? "100%" : isTablet ? 720 : 840;
+  const CONTENT_WIDTH = isSmall ? "100%" : isTablet ? 500 : 900;
   const GRID_PADDING_HORIZONTAL = isSmall ? 12 : 20;
-  const GAP = isSmall ? 12 : 16;
+
 
   useFocusEffect(
     useCallback(() => {
@@ -47,27 +46,30 @@ export default function EditarMascotasScreen({ navigation }: any) {
   };
 
   const onGridLayout = (event: any) => {
-    const gridWidth = event.nativeEvent.layout.width;
+  const layoutWidth = event.nativeEvent.layout.width;
+  const minWidth = isSmall ? 160 : 150;
 
-    const minWidth = isSmall ? 160 : 150;
-    let cols = Math.max(1, Math.floor(gridWidth / minWidth));
+  let cols = Math.floor(layoutWidth / minWidth);
+  if (isSmall) cols = 2;
+  if (cols > 5) cols = 5;
+  if (cols < 1) cols = 1;
 
-    if (!isSmall) cols = Math.min(cols, 5);
+  const gap = isSmall ? 12 : 16;
+  const calculatedWidth = (layoutWidth - gap * (cols - 1)) / cols;
 
-    const calculated = (gridWidth - GAP * (cols - 1)) / cols;
-    setItemWidth(calculated);
-  };
+  setItemWidth(calculatedWidth);
+};
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.background }}>
       <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{
-          paddingHorizontal: GRID_PADDING_HORIZONTAL,
-          paddingTop: 20,
-          paddingBottom: 40,
-        }}
-      >
+    showsVerticalScrollIndicator={false}
+    contentContainerStyle={{
+      paddingHorizontal: GRID_PADDING_HORIZONTAL,
+      paddingTop: 20,
+      paddingBottom: 40,
+    }}
+  >
         {/* Header */}
         <View style={styles.header}>
           <Text style={[styles.title, { color: theme.colors.text }]}>
@@ -83,29 +85,32 @@ export default function EditarMascotasScreen({ navigation }: any) {
 
         {/* GRID */}
         <View
-          onLayout={onGridLayout}
-          style={[
-            styles.grid,
-            {
-              width: GRID_MAX_WIDTH,
-              alignSelf: "center",
-              gap: GAP,
-            },
-          ]}
-        >
+  onLayout={onGridLayout}
+  style={[
+    styles.grid,
+    {
+      width: CONTENT_WIDTH,  // ← como BorrarMascota
+      alignSelf: "center",
+      gap: isSmall ? 12 : 16,
+    },
+  ]}
+>
           {mascotas.map((item) => (
             <TouchableOpacity
               key={item.id_mascota}
               onPress={() => handleEdit(item.id_mascota)}
               activeOpacity={0.78}
-              style={[
-                styles.card,
-                {
-                  width: itemWidth,
-                  backgroundColor: theme.colors.backgroundSecondary,
-                  borderColor: theme.colors.backgroundTertiary,
-                },
-              ]}
+style={[
+  styles.card,
+  {
+    width: itemWidth,
+    backgroundColor: theme.colors.backgroundSecondary,
+    borderColor: theme.colors.backgroundTertiary,
+    padding: 8,               // igual que BorrarMascota
+    borderWidth: 1.5,         // igual que BorrarMascota
+    borderRadius: 14,         // igual que BorrarMascota
+  },
+]}
             >
               <View style={styles.imageBox}>
                 <Image
@@ -172,10 +177,10 @@ const styles = StyleSheet.create({
     objectFit: "cover",
   },
 
-  name: {
-    fontSize: 15,
-    fontWeight: "bold",
-    textAlign: "center",
-    width: "100%",
-  },
+ name: {
+  fontSize: 14,
+  fontWeight: "600",
+  textAlign: "center",
+  marginTop: 6,
+}
 });

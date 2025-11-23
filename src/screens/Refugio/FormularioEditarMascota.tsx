@@ -206,7 +206,6 @@ export default function FormularioEditarMascotaScreen({ navigation, route }: any
     }));
 
     const mascotaActualizada: Partial<Mascota> = {
-      id_mascota,
       nombre,
       raza,
       edad,
