@@ -19,8 +19,13 @@ import { Adopcion } from "../../types/adopcion";
 import { getAdopcion, deleteAdopcion } from "../../services/fetchAdopcion";
 
 const { width } = Dimensions.get("window");
-const isWeb = Platform.OS === "web";
-const CARD_WIDTH = isWeb ? width * 0.95 : Math.min(width * 0.95, 480);
+const MAX_CARD_WIDTH = 480;
+const CARD_WIDTH =
+  width <= 480
+    ? width * 0.92
+    : width <= 840
+    ? Math.min(width * 0.8, MAX_CARD_WIDTH)
+    : MAX_CARD_WIDTH;
 
 export default function AdopcionesScreen() {
   const { theme } = useTheme();
@@ -178,54 +183,65 @@ export default function AdopcionesScreen() {
 // Estilos
 // --------------------------------------------
 const styles = StyleSheet.create({
+  titulo: {
+    fontSize: 24,
+    fontWeight: "600",
+    textAlign: "center",
+    marginTop: 18,
+    marginBottom: 12,
+  },
+
   card: {
     flexDirection: "row",
     alignItems: "center",
-    marginVertical: 8,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
     borderWidth: 1,
-    borderRadius: 10,
-    padding: 10,
-    width: CARD_WIDTH,
+    borderRadius: 14,
+    marginVertical: 10,
+    width: "100%",
+    maxWidth: 480,
     alignSelf: "center",
+    gap: 14,
   },
 
   foto: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    marginHorizontal: 10,
+    width: 64,
+    height: 64,
+    borderRadius: 32,
     resizeMode: "cover",
   },
 
-  info: { flex: 1 },
+  info: {
+    flex: 1,
+    justifyContent: "center",
+  },
 
   nombre: {
-    fontSize: 16,
-    fontWeight: "bold",
+    fontSize: 17,
+    fontWeight: "600",
+    marginBottom: 2,
   },
 
   sub: {
-    fontSize: 12,
-  },
-
-  titulo: {
-    fontSize: 24,
-    fontWeight: "bold",
-    textAlign: "center",
-    marginVertical: 12,
+    fontSize: 13,
+    marginBottom: 1,
   },
 
   botonEliminar: {
-    padding: 15,
-    borderRadius: 10,
+    paddingVertical: 16,
+    borderRadius: 14,
     alignItems: "center",
-    marginVertical: 15,
-    width: CARD_WIDTH,
+    marginTop: 14,
+    marginBottom: 20,
+    width: "100%",
+    maxWidth: 480,
     alignSelf: "center",
   },
 
   botonTexto: {
     color: "#fff",
-    fontWeight: "bold",
+    fontWeight: "600",
+    fontSize: 16,
   },
 });

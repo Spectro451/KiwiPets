@@ -117,16 +117,16 @@ export default function ValidarRefugioScreen({ user }: Props) {
 
 const styles = StyleSheet.create({
   refugioContainer: { padding: 12, borderWidth: 1, borderRadius: 8, marginBottom: 12 },
-  refugioNombre: { fontWeight: "bold", fontSize: 16 },
+  refugioNombre: { fontWeight: "bold", fontSize: 17 },
   refugioInfo: { fontSize: 14, marginTop: 4 },
   modalBackground: { flex:1, backgroundColor:'rgba(0,0,0,0.6)', justifyContent:'center', alignItems:'center' },
   modalContainer: { width: 280, padding: 20, borderRadius: 10 },
-  modalText: { fontSize: 16, fontWeight:'bold', textAlign:'center', marginBottom: 15 },
+  modalText: { fontSize: 17, fontWeight:'bold', textAlign:'center', marginBottom: 15 },
   modalButtons: { flexDirection:'row', justifyContent:'space-between' },
   modalButton: { padding:10 },
   titulo: {
-    fontSize: 24,
-    fontWeight: "bold",
-    textAlign: "center"
+  fontSize: 26,
+  fontWeight: "bold",
+  textAlign: "center"
   },
 });

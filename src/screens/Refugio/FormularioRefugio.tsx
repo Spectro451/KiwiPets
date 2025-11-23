@@ -21,10 +21,15 @@ type FormularioRefugioProps = {
 };
 
 const { width } = Dimensions.get("window");
-const isWeb = Platform.OS === "web";
-const FORM_CARD_WIDTH = isWeb
-  ? Math.min(width * 0.6, 480)
-  : Math.min(width * 0.94, 400);
+
+const isSmall = width <= 480;
+const isTablet = width > 480 && width <= 840;
+
+const FORM_CARD_WIDTH = isSmall
+  ? width * 0.92
+  : isTablet
+  ? Math.min(width * 0.75, 480)
+  : 480;
 
 export default function FormularioRefugio({
   setRedirect,

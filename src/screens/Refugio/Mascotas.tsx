@@ -4,7 +4,9 @@ import { useTheme } from "../../theme/ThemeContext";
 export default function MascotasScreen({ navigation }: any) {
   const { theme } = useTheme();
   const { width } = useWindowDimensions();
-  const isSmallScreen = width < 600;
+  const isSmallScreen = width <= 480;
+  const isTablet = width > 480 && width <= 840;
+
 
   return (
     <View
@@ -15,7 +17,7 @@ export default function MascotasScreen({ navigation }: any) {
     >
       <Text style={[styles.title, { color: theme.colors.text }]}>Panel de Mascotas</Text>
 
-      <View style={{ width: isSmallScreen ? "100%" : 400 }}>
+      <View style={{ width: isSmallScreen ? "100%" : isTablet ? 420 : 420 }}>
         <TouchableOpacity
           style={[styles.button, { backgroundColor: theme.colors.backgroundSecondary }]}
           onPress={() => navigation.navigate("MisMascotas")}

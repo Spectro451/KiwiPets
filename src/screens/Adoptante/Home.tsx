@@ -1,11 +1,21 @@
 import { useCallback, useState, useRef } from "react";
-import { View, TouchableOpacity, Text, StyleSheet } from "react-native";
+import {
+  View,
+  TouchableOpacity,
+  Text,
+  StyleSheet,
+  useWindowDimensions,
+} from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import { useTheme } from "../../theme/ThemeContext";
 
 import { getMascotasCercanas } from "../../services/fetchMascotas";
 import { createAdopcion } from "../../services/fetchAdopcion";
-import { createFavorito, deleteFavorito, getFavorito } from "../../services/fetchFavoritos";
+import {
+  createFavorito,
+  deleteFavorito,
+  getFavorito,
+} from "../../services/fetchFavoritos";
 import { adoptanteByUsuarioId } from "../../services/fetchAdoptante";
 
 import PetSwipe from "../../components/petSwipe";
@@ -13,7 +23,7 @@ import SkeletonCard from "../../components/skeletonCard";
 import { useAuth } from "../../hooks/useAuth";
 
 // ======================================================
-//  ESTILOS DINÁMICOS (CORRECTOS PARA TYPESCRIPT)
+//  ESTILOS DINÁMICOS
 // ======================================================
 
 function emptyContainer(theme: any) {
@@ -57,16 +67,24 @@ function botonTexto(theme: any) {
 }
 
 // ======================================================
-//                   HOME SCREEN
+//                HOME SCREEN FINAL
 // ======================================================
 
 export default function HomeScreen() {
   const { theme } = useTheme();
   const { user } = useAuth();
+  const { width } = useWindowDimensions();
+
+  // breakpoints unificados
+  const isSmall = width <= 480;
+  const isTablet = width > 480 && width <= 840;
+  const isDesktop = width > 840;
+
+  // ancho máximo del contenedor central
+  const CONTENT_WIDTH = isSmall ? "100%" : isTablet ? 500 : 600;
 
   const [pets, setPets] = useState<any[]>([]);
   const [favoritos, setFavoritos] = useState<any[]>([]);
-
   const [loading, setLoading] = useState(true);
   const [sinResultados, setSinResultados] = useState(false);
 
@@ -80,14 +98,21 @@ export default function HomeScreen() {
   // ======================================================
   // Principal
   // ======================================================
-  const fetchMascotas = async (radio: number, vistasLocales: number[] = vistas) => {
+  const fetchMascotas = async (
+    radio: number,
+    vistasLocales: number[] = vistas
+  ) => {
     setLoading(true);
 
     try {
       const data = await getMascotasCercanas(radio);
 
-      const disponibles = data.filter((m: any) => m.estado_adopcion !== "Adoptado");
-      const filtradas = disponibles.filter((m: any) => !vistasLocales.includes(m.id_mascota));
+      const disponibles = data.filter(
+        (m: any) => m.estado_adopcion !== "Adoptado"
+      );
+      const filtradas = disponibles.filter(
+        (m: any) => !vistasLocales.includes(m.id_mascota)
+      );
 
       setPets(filtradas);
       setSinResultados(filtradas.length === 0);
@@ -131,11 +156,15 @@ export default function HomeScreen() {
     if (bloqueado) return;
     setBloqueado(true);
 
-    const existe = favoritos.find((f: any) => f.mascota.id_mascota === petId);
+    const existe = favoritos.find(
+      (f: any) => f.mascota.id_mascota === petId
+    );
 
     if (existe) {
       await deleteFavorito(existe.id);
-      setFavoritos((prev) => prev.filter((f) => f.mascota.id_mascota !== petId));
+      setFavoritos((prev) =>
+        prev.filter((f) => f.mascota.id_mascota !== petId)
+      );
     } else {
       const nuevo = await createFavorito(petId);
       if (nuevo) setFavoritos((prev) => [nuevo, ...prev]);
@@ -199,33 +228,51 @@ export default function HomeScreen() {
   if (!pets.length) {
     return (
       <View style={emptyContainer(theme)}>
-        <Text style={{ color: theme.colors.text }}>No hay mascotas disponibles.</Text>
+        <Text style={{ color: theme.colors.text }}>
+          No hay mascotas disponibles.
+        </Text>
       </View>
     );
   }
 
   // ======================================================
-  // UI PRINCIPAL
+  // UI PRINCIPAL — versión final responsiva
   // ======================================================
   return (
-    <View style={{ flex: 1, backgroundColor: theme.colors.background }}>
-      <PetSwipe
-        ref={swipeRef}
-        pets={pets}
-        onIndexChange={setIndexActual}
-        onSwipeEnd={async (dir: "left" | "right", petId: number) => {
-          if (dir === "right") {
-            await createAdopcion(petId);
-          }
+    <View
+      style={{
+        flex: 1,
+        backgroundColor: theme.colors.background,
+        paddingHorizontal: isSmall ? 10 : isTablet ? 20 : 40,
+        paddingTop: isSmall ? 10 : 20,
+        alignItems: "center",
+      }}
+    >
+      <View style={{ width: CONTENT_WIDTH }}>
+        <PetSwipe
+          ref={swipeRef}
+          pets={pets}
+          onIndexChange={setIndexActual}
+          onSwipeEnd={async (dir: "left" | "right", petId: number) => {
+            if (dir === "right") {
+              await createAdopcion(petId);
+            }
 
-          const nuevas = vistas.includes(petId) ? vistas : [...vistas, petId];
-          setVistas(nuevas);
-          fetchMascotas(radioBusqueda, nuevas);
-        }}
-      />
+            const nuevas =
+              vistas.includes(petId) ? vistas : [...vistas, petId];
+            setVistas(nuevas);
+            fetchMascotas(radioBusqueda, nuevas);
+          }}
+        />
+      </View>
 
-      {/* BOTONES INFERIORES */}
-      <View style={styles.buttons}>
+      {/* BOTONES AJUSTADOS AL MISMO ANCHO */}
+      <View
+        style={[
+          styles.buttons,
+          { width: CONTENT_WIDTH, paddingHorizontal: isSmall ? 6 : 12 },
+        ]}
+      >
         <TouchableOpacity
           style={botonInferior(theme, bloqueado)}
           onPress={() => ejecutarSwipe("left")}
@@ -235,11 +282,14 @@ export default function HomeScreen() {
 
         <TouchableOpacity
           style={botonInferior(theme, bloqueado)}
-          onPress={() => toggleFavorito(pets[indexActual].id_mascota)}
+          onPress={() =>
+            toggleFavorito(pets[indexActual].id_mascota)
+          }
         >
           <Text style={botonTexto(theme)}>
             {favoritos.some(
-              (f: any) => f.mascota.id_mascota === pets[indexActual].id_mascota
+              (f: any) =>
+                f.mascota.id_mascota === pets[indexActual].id_mascota
             )
               ? "❤️"
               : "Favorito"}
@@ -258,7 +308,7 @@ export default function HomeScreen() {
 }
 
 // ======================================================
-//      STYLESHEET — SOLO ESTILOS ESTÁTICOS
+//      STYLESHEET — NO SE MODIFICA
 // ======================================================
 
 const styles = StyleSheet.create({

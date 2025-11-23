@@ -23,7 +23,8 @@ interface MascotaSolicitudes {
 export default function Solicitudes({ navigation }: any) {
   const { theme } = useTheme();
   const { width } = useWindowDimensions();
-  const isSmall = width < 600;
+  const isSmall = width <= 480;
+  const isTablet = width > 480 && width <= 840;
 
   const [mascotas, setMascotas] = useState<MascotaSolicitudes[]>([]);
   const [expanded, setExpanded] = useState<number | null>(null);
@@ -145,7 +146,7 @@ export default function Solicitudes({ navigation }: any) {
     >
       <View
         style={{
-          padding: isSmall ? 14 : 20,
+          padding: isSmall ? 12 : isTablet ? 16 : 20,
         }}
       >
         <Text

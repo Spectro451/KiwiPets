@@ -67,8 +67,14 @@ function btnCancel(theme: any) {
 export default function AgregarMascotaScreen({ navigation }: any) {
   const { theme } = useTheme();
   const { width } = useWindowDimensions();
+  const maxCardWidth = 480;
 
-  const cardWidth = width < 600 ? width * 0.92 : Math.min(width * 0.55, 460);
+  const cardWidth =
+  width <= 480
+    ? width * 0.92
+    : width <= 900
+    ? Math.min(width * 0.8, maxCardWidth)
+    : maxCardWidth;
 
   // ------------------------
   // CAMPOS PRINCIPALES
@@ -361,63 +367,84 @@ export default function AgregarMascotaScreen({ navigation }: any) {
 // ======================================================
 
 const styles = StyleSheet.create({
-  center: { alignItems: "center", paddingVertical: 20 },
+  center: {
+    alignItems: "center",
+    paddingVertical: 24,
+    paddingHorizontal: 16,
+  },
 
   card: {
     padding: 20,
-    borderRadius: 12,
-    borderWidth: 2,
+    borderRadius: 14,
+    borderWidth: 1.5,
+    width: "100%",
+    maxWidth: 480,
+    alignSelf: "center",
   },
 
   fotoBox: {
     width: "100%",
     aspectRatio: 1,
-    borderRadius: 12,
+    borderRadius: 14,
     borderWidth: 2,
-    marginBottom: 20,
-    alignItems: "center",
+    marginBottom: 24,
     justifyContent: "center",
+    alignItems: "center",
     overflow: "hidden",
   },
 
-  fotoImg: { width: "100%", height: "100%", resizeMode: "cover" },
+  fotoImg: {
+    width: "100%",
+    height: "100%",
+    resizeMode: "cover",
+  },
 
-  label: { fontSize: 15, fontWeight: "bold", marginBottom: 4 },
+  label: {
+    fontSize: 16,
+    fontWeight: "600",
+    marginBottom: 6,
+  },
 
   input: {
     borderWidth: 1,
-    borderRadius: 8,
-    padding: 10,
-    borderColor: "#777",
-    marginBottom: 12,
+    borderRadius: 10,
+    paddingVertical: 12,
+    paddingHorizontal: 12,
+    fontSize: 15,
+    marginBottom: 16,
+    minHeight: 46,
   },
 
   textarea: {
     borderWidth: 1,
-    borderRadius: 8,
-    padding: 10,
-    height: 90,
-    borderColor: "#777",
-    marginBottom: 12,
+    borderRadius: 10,
+    paddingVertical: 12,
+    paddingHorizontal: 12,
+    fontSize: 15,
+    marginBottom: 16,
+    minHeight: 110,
+    textAlignVertical: "top",
   },
 
   btnTxt: {
-    color: "#fff",
-    fontWeight: "bold",
+    fontWeight: "600",
     fontSize: 16,
+    color: "#fff",
   },
 
   modalBg: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "rgba(0,0,0,0.5)",
+    paddingHorizontal: 20,
+    backgroundColor: "rgba(0,0,0,0.55)",
   },
 
   modalBox: {
-    width: 280,
-    padding: 20,
-    borderRadius: 12,
+    width: "100%",
+    maxWidth: 360,
+    padding: 24,
+    borderRadius: 14,
     alignItems: "center",
   },
 });

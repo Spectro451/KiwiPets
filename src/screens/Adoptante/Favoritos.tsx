@@ -20,7 +20,14 @@ import SkeletonCard from "../../components/skeletonCard";
 export default function FavoritosScreen({ navigation }: any) {
   const { theme } = useTheme();
   const { width } = useWindowDimensions();
-  const isSmall = width < 600;
+  const MAX_CARD_WIDTH = 250;   // tamaño fijo ideal de las cards de Favoritos
+
+  const CARD_WIDTH =
+    width <= 480
+     ? width * 0.92
+     : width <= 840
+     ? Math.min(width * 0.45, MAX_CARD_WIDTH)
+     : MAX_CARD_WIDTH;
 
   const [favoritos, setFavoritos] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -76,7 +83,7 @@ export default function FavoritosScreen({ navigation }: any) {
       style={{ flex: 1, backgroundColor: theme.colors.background }}
       edges={["top", "bottom"]}
     >
-      <ScrollView contentContainerStyle={{ padding: isSmall ? 12 : 18 }}>
+      <ScrollView contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 16 }}>
         <View style={styles.header}>
           <Text style={[styles.title, { color: theme.colors.text }]}>
             Favoritos
@@ -90,8 +97,8 @@ export default function FavoritosScreen({ navigation }: any) {
         {/* LOADING */}
         {loading && (
           <View style={{ marginTop: 20 }}>
-            <SkeletonCard width={isSmall ? width * 0.9 : 250} />
-            <SkeletonCard width={isSmall ? width * 0.9 : 250} />
+            <SkeletonCard width={CARD_WIDTH} />
+            <SkeletonCard width={CARD_WIDTH} />
           </View>
         )}
 
@@ -114,8 +121,8 @@ export default function FavoritosScreen({ navigation }: any) {
           style={[
             styles.grid,
             {
-              gap: isSmall ? 12 : 16,
-              maxWidth: isSmall ? "100%" : 900,
+              gap: width <= 480 ? 12 : 16,
+              maxWidth: 900,
               alignSelf: "center",
             },
           ]}
@@ -129,7 +136,7 @@ export default function FavoritosScreen({ navigation }: any) {
                   {
                     backgroundColor: theme.colors.backgroundSecondary,
                     borderColor: theme.colors.backgroundTertiary,
-                    width: isSmall ? width * 0.9 : 250,
+                    width: CARD_WIDTH,
                   },
                 ]}
                 onPress={() => openModal(m)}
@@ -222,27 +229,31 @@ export default function FavoritosScreen({ navigation }: any) {
 }
 
 const styles = StyleSheet.create({
-  title: { fontSize: 24, fontWeight: "bold" },
+  title: {
+    fontSize: 24,
+    fontWeight: "600",
+  },
 
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 12,
+    marginBottom: 16,
   },
 
   grid: {
     flexDirection: "row",
     flexWrap: "wrap",
     justifyContent: "center",
-    marginTop: 10,
+    marginTop: 12,
   },
 
   card: {
-    borderWidth: 2,
+    borderWidth: 1.5,
     borderRadius: 14,
     overflow: "hidden",
-    paddingBottom: 12,
+    paddingBottom: 14,
+    alignItems: "center",
   },
 
   img: {
@@ -253,7 +264,7 @@ const styles = StyleSheet.create({
 
   name: {
     fontSize: 16,
-    fontWeight: "bold",
+    fontWeight: "600",
     textAlign: "center",
   },
 
@@ -267,22 +278,24 @@ const styles = StyleSheet.create({
 
   modal: {
     width: "100%",
-    maxWidth: 350,
-    borderWidth: 2,
+    maxWidth: 360,
+    borderWidth: 1.5,
     borderRadius: 14,
-    padding: 16,
+    padding: 20,
+    alignItems: "center",
   },
 
   modalBtn: {
-    paddingVertical: 12,
-    borderRadius: 10,
-    marginBottom: 10,
+    paddingVertical: 14,
+    borderRadius: 12,
+    width: "100%",
+    marginBottom: 12,
   },
 
   modalBtnText: {
     color: "#fff",
     fontSize: 16,
+    fontWeight: "600",
     textAlign: "center",
-    fontWeight: "bold",
   },
 });

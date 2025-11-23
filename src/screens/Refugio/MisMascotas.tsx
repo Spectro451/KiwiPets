@@ -17,7 +17,8 @@ import { useFocusEffect } from "@react-navigation/native";
 export default function MisMascotasScreen({ navigation }: any) {
   const { theme } = useTheme();
   const { width } = useWindowDimensions();
-  const isSmallScreen = width < 600;
+  const isSmall = width <= 480;
+  const isTablet = width > 480 && width <= 840;
 
   const [mascotas, setMascotas] = useState<any[]>([]);
   const [modalVisible, setModalVisible] = useState(false);
@@ -40,14 +41,15 @@ export default function MisMascotasScreen({ navigation }: any) {
 
   const onGridLayout = (event: any) => {
     const layoutWidth = event.nativeEvent.layout.width;
-    const minWidth = isSmallScreen ? 150 : 170;
-    let cols = Math.floor(layoutWidth / minWidth);
 
+    const minWidth = isSmall ? 150 : isTablet ? 160 : 180;
+
+    let cols = Math.floor(layoutWidth / minWidth);
     if (cols > 5) cols = 5;
     if (cols < 1) cols = 1;
 
-    const space = isSmallScreen ? 10 : 14;
-    const calculatedWidth = (layoutWidth - space * (cols - 1)) / cols;
+    const gap = isSmall ? 10 : 14;
+    const calculatedWidth = (layoutWidth - gap * (cols - 1)) / cols;
 
     setItemWidth(calculatedWidth);
   };
@@ -65,7 +67,7 @@ export default function MisMascotasScreen({ navigation }: any) {
       <ScrollView
         style={{ flex: 1 }}
         contentContainerStyle={{
-          padding: isSmallScreen ? 10 : 20,
+          padding: isSmall ? 10 : isTablet ? 16 : 24,
         }}
       >
         <View style={styles.header}>
@@ -83,7 +85,7 @@ export default function MisMascotasScreen({ navigation }: any) {
           style={[
             styles.grid,
             {
-              justifyContent: isSmallScreen ? "space-between" : "flex-start",
+              justifyContent: isSmall ? "space-between" : "flex-start",
             },
           ]}
         >

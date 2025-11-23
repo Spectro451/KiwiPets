@@ -199,23 +199,23 @@ export default function ProfileScreen({ route }: ProfileScreenProps) {
 
 const styles = StyleSheet.create({
   nombre: {
-    fontSize: 28,
+    fontSize: 26,
     fontWeight: "bold",
   },
   subtitulo: {
-    fontSize: 16,
+    fontSize: 15,
     marginTop: 4,
   },
   seccion: {
-    marginBottom: 20,
-    padding: 15,
+    marginBottom: 16,
+    padding: 14,
     borderRadius: 10,
   },
   seccionTitulo: {
-    fontSize: 16,
+    fontSize: 15,
   },
   seccionNumero: {
-    fontSize: 20,
+    fontSize: 19,
     fontWeight: "bold",
     marginTop: 4,
   },

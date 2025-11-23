@@ -107,12 +107,12 @@ const styles = StyleSheet.create({
     padding: 10,
   },
   name: {
-    fontSize: 18,
+    fontSize: 19,
     fontWeight: "bold",
     marginBottom: 4,
   },
   sub: {
-    fontSize: 13,
+    fontSize: 14,
     opacity: 0.75,
   },
 });

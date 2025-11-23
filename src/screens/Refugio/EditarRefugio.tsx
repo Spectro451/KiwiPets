@@ -23,10 +23,13 @@ type RootStackParamList = {
 type EditarRefugioRouteProp = RouteProp<RootStackParamList, "EditarRefugio">;
 
 const { width } = Dimensions.get("window");
-const isWeb = Platform.OS === "web";
-const CARD_WIDTH = isWeb
-  ? Math.min(width * 0.55, 520)
-  : Math.min(width * 0.94, 420);
+const isSmall = width <= 480;
+const isTablet = width > 480 && width <= 840;
+const CARD_WIDTH = isSmall
+  ? width * 0.92
+  : isTablet
+  ? Math.min(width * 0.7, 520)
+  : 520;
 
 export default function EditarRefugio() {
   const navigation = useNavigation();
@@ -138,7 +141,7 @@ export default function EditarRefugio() {
           justifyContent: "center",
           alignItems: "center",
           paddingVertical: 26,
-          paddingHorizontal: isWeb ? 40 : 20,
+          paddingHorizontal: isSmall ? 16 : 28,
         }}
         keyboardShouldPersistTaps="handled"
       >

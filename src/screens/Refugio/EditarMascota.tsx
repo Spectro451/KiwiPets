@@ -20,8 +20,13 @@ export default function EditarMascotasScreen({ navigation }: any) {
   const [itemWidth, setItemWidth] = useState(140);
 
   const { width } = useWindowDimensions();
-  const isSmallScreen = width < 620;
-  const isWeb = Platform.OS === "web";
+
+  const isSmall = width <= 480;
+  const isTablet = width > 480 && width <= 840;
+
+  const GRID_MAX_WIDTH = isSmall ? "100%" : isTablet ? 720 : 840;
+  const GRID_PADDING_HORIZONTAL = isSmall ? 12 : 20;
+  const GAP = isSmall ? 12 : 16;
 
   useFocusEffect(
     useCallback(() => {
@@ -44,14 +49,12 @@ export default function EditarMascotasScreen({ navigation }: any) {
   const onGridLayout = (event: any) => {
     const gridWidth = event.nativeEvent.layout.width;
 
-    const minWidth = isSmallScreen ? 160 : 150;
+    const minWidth = isSmall ? 160 : 150;
     let cols = Math.max(1, Math.floor(gridWidth / minWidth));
 
-    if (!isSmallScreen) cols = Math.min(cols, 5);
+    if (!isSmall) cols = Math.min(cols, 5);
 
-    const gap = isSmallScreen ? 12 : 16;
-    const calculated = (gridWidth - gap * (cols - 1)) / cols;
-
+    const calculated = (gridWidth - GAP * (cols - 1)) / cols;
     setItemWidth(calculated);
   };
 
@@ -60,7 +63,7 @@ export default function EditarMascotasScreen({ navigation }: any) {
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{
-          paddingHorizontal: isSmallScreen ? 12 : 24,
+          paddingHorizontal: GRID_PADDING_HORIZONTAL,
           paddingTop: 20,
           paddingBottom: 40,
         }}
@@ -84,9 +87,9 @@ export default function EditarMascotasScreen({ navigation }: any) {
           style={[
             styles.grid,
             {
-              width: isSmallScreen ? "100%" : 900,
+              width: GRID_MAX_WIDTH,
               alignSelf: "center",
-              gap: isSmallScreen ? 12 : 16,
+              gap: GAP,
             },
           ]}
         >
@@ -113,10 +116,7 @@ export default function EditarMascotasScreen({ navigation }: any) {
 
               <Text
                 numberOfLines={1}
-                style={[
-                  styles.name,
-                  { color: theme.colors.text },
-                ]}
+                style={[styles.name, { color: theme.colors.text }]}
               >
                 {item.nombre}
               </Text>
@@ -155,22 +155,22 @@ const styles = StyleSheet.create({
   },
 
   imageBox: {
-  width: "100%",
-  aspectRatio: 1,
-  borderRadius: 12,
-  overflow: "hidden",
-  marginBottom: 6,
-  backgroundColor: "#222", // evita parpadeos negros en RN
-  justifyContent: "center",
-  alignItems: "center",
-},
+    width: "100%",
+    aspectRatio: 1,
+    borderRadius: 12,
+    overflow: "hidden",
+    marginBottom: 6,
+    backgroundColor: "#222",
+    justifyContent: "center",
+    alignItems: "center",
+  },
 
   image: {
-  width: "100%",
-  height: "100%",
-  resizeMode: Platform.OS === "web" ? "contain" : "cover",
-  ...(Platform.OS === "web" ? { objectFit: "cover" } : {}), // evita crash
-},
+    width: "100%",
+    height: "100%",
+    resizeMode: Platform.OS === "web" ? "contain" : "cover",
+    objectFit: "cover",
+  },
 
   name: {
     fontSize: 15,

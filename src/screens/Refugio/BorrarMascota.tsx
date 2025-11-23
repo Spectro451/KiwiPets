@@ -1,16 +1,28 @@
 import { useCallback, useState } from "react";
-import { View, Text, Image, ScrollView, StyleSheet, TouchableOpacity, Modal } from "react-native";
+import {
+  View,
+  Text,
+  Image,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+  Modal,
+  useWindowDimensions,
+} from "react-native";
 import { useTheme } from "../../theme/ThemeContext";
-import { getMascotas, deleteMascotas } from "../../services/fetchMascotas";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useFocusEffect } from "@react-navigation/native";
 import Checkbox from "expo-checkbox";
-import { useWindowDimensions } from "react-native";
+
+import { getMascotas, deleteMascotas } from "../../services/fetchMascotas";
 
 export default function BorrarMascotasScreen({ navigation }: any) {
   const { theme } = useTheme();
   const { width } = useWindowDimensions();
-  const isSmallScreen = width < 600;
+
+  const isSmall = width <= 480;
+  const isTablet = width > 480 && width <= 840;
+  const CONTENT_WIDTH = isSmall ? "100%" : isTablet ? 500 : 900;
 
   const [mascotas, setMascotas] = useState<any[]>([]);
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
@@ -21,14 +33,10 @@ export default function BorrarMascotasScreen({ navigation }: any) {
   useFocusEffect(
     useCallback(() => {
       const fetchAsync = async () => {
-        try {
-          const data = await getMascotas();
-          setMascotas(data);
-          setSelectedIds([]);
-          setSelectAll(false);
-        } catch (error) {
-          console.error(error);
-        }
+        const data = await getMascotas();
+        setMascotas(data);
+        setSelectedIds([]);
+        setSelectAll(false);
       };
       fetchAsync();
     }, [])
@@ -51,29 +59,28 @@ export default function BorrarMascotasScreen({ navigation }: any) {
   };
 
   const handleDelete = async () => {
-    try {
-      await Promise.all(selectedIds.map((id) => deleteMascotas(id)));
-      const data = await getMascotas();
-      setMascotas(data);
-      setSelectedIds([]);
-      setSelectAll(false);
-      setModalVisible(false);
-    } catch (error) {
-      console.error(error);
-    }
+    await Promise.all(selectedIds.map((id) => deleteMascotas(id)));
+
+    const data = await getMascotas();
+    setMascotas(data);
+    setSelectedIds([]);
+    setSelectAll(false);
+    setModalVisible(false);
   };
 
   const onGridLayout = (event: any) => {
     const layoutWidth = event.nativeEvent.layout.width;
+    const minWidth = isSmall ? 160 : 150;
 
-    const minWidth = isSmallScreen ? 160 : 150;
-    let cols = isSmallScreen ? 2 : Math.floor(layoutWidth / minWidth);
+    let cols = Math.floor(layoutWidth / minWidth);
+    if (isSmall) cols = 2;
 
     if (cols > 5) cols = 5;
     if (cols < 1) cols = 1;
 
-    const space = isSmallScreen ? 12 : 10;
-    const calculatedWidth = (layoutWidth - space * (cols - 1)) / cols;
+    const gap = isSmall ? 12 : 16;
+    const calculatedWidth = (layoutWidth - gap * (cols - 1)) / cols;
+
     setItemWidth(calculatedWidth);
   };
 
@@ -81,39 +88,44 @@ export default function BorrarMascotasScreen({ navigation }: any) {
     <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.background }}>
       <ScrollView
         contentContainerStyle={{
-          padding: isSmallScreen ? 12 : 20,
+          paddingHorizontal: isSmall ? 12 : 20,
+          paddingTop: 16,
+          paddingBottom: 40,
+          alignItems: "center",
         }}
       >
-        <View style={styles.header}>
-          <Text style={[styles.title, { color: theme.colors.text }]}>Borrar Mascotas</Text>
-          <TouchableOpacity onPress={() => navigation.goBack()} style={{ padding: 10 }}>
-            <Text style={{ color: theme.colors.text, fontSize: 20 }}>← Volver</Text>
+        <View style={[styles.header, { width: CONTENT_WIDTH }]}>
+          <Text style={[styles.title, { color: theme.colors.text }]}>
+            Borrar Mascotas
+          </Text>
+
+          <TouchableOpacity onPress={() => navigation.goBack()}>
+            <Text style={{ color: theme.colors.text, fontSize: 20 }}>←</Text>
           </TouchableOpacity>
         </View>
 
-        {/* Acciones */}
-        <View style={styles.actions}>
+        <View style={[styles.actions, { width: CONTENT_WIDTH }]}>
           <TouchableOpacity onPress={toggleSelectAll} style={styles.actionButton}>
             <Text style={{ color: theme.colors.text }}>
               {selectAll ? "Deseleccionar todo" : "Seleccionar todo"}
             </Text>
           </TouchableOpacity>
 
-          <TouchableOpacity onPress={() => setModalVisible(true)} style={styles.actionButton}>
-            <Text style={{ color: "red" }}>Borrar</Text>
+          <TouchableOpacity
+            onPress={() => setModalVisible(true)}
+            style={styles.actionButton}
+          >
+            <Text style={{ color: theme.colors.error }}>Borrar</Text>
           </TouchableOpacity>
         </View>
 
-        {/* Grid */}
         <View
           onLayout={onGridLayout}
           style={[
             styles.grid,
             {
-              gap: isSmallScreen ? 12 : 16,
-              justifyContent: "flex-start",
-              maxWidth: isSmallScreen ? "100%" : 900,
-              alignSelf: "center",
+              width: CONTENT_WIDTH,
+              gap: isSmall ? 12 : 16,
             },
           ]}
         >
@@ -124,13 +136,11 @@ export default function BorrarMascotasScreen({ navigation }: any) {
                 styles.itemContainer,
                 {
                   width: itemWidth,
-                  padding: isSmallScreen ? 6 : 8,
                   backgroundColor: theme.colors.backgroundSecondary,
                   borderColor: theme.colors.backgroundTertiary,
                 },
               ]}
             >
-              {/* Checkbox */}
               <View style={styles.checkboxContainer}>
                 <Checkbox
                   value={selectedIds.includes(item.id_mascota)}
@@ -150,7 +160,11 @@ export default function BorrarMascotasScreen({ navigation }: any) {
               >
                 <View style={{ width: "100%", aspectRatio: 1 }}>
                   <Image
-                    source={item.foto ? { uri: item.foto } : undefined}
+                    source={
+                      item.foto
+                        ? { uri: item.foto }
+                        : { uri: "https://via.placeholder.com/400?text=Sin+Foto" }
+                    }
                     style={styles.image}
                   />
                 </View>
@@ -167,16 +181,20 @@ export default function BorrarMascotasScreen({ navigation }: any) {
         </View>
       </ScrollView>
 
-      {/* Modal */}
       <Modal transparent visible={modalVisible} animationType="fade">
         <View style={styles.modalBackground}>
           <View
             style={[
               styles.modalContainer,
-              { backgroundColor: theme.colors.background, borderColor: theme.colors.backgroundTertiary },
+              {
+                backgroundColor: theme.colors.background,
+                borderColor: theme.colors.backgroundTertiary,
+              },
             ]}
           >
-            <Text style={[styles.modalText, { color: theme.colors.text }]}>
+            <Text
+              style={[styles.modalText, { color: theme.colors.text }]}
+            >
               {selectedIds.length === 0
                 ? "Debe seleccionar al menos una mascota"
                 : `¿Borrar ${selectedIds.length} mascota(s)?`}
@@ -192,7 +210,7 @@ export default function BorrarMascotasScreen({ navigation }: any) {
 
               {selectedIds.length > 0 && (
                 <TouchableOpacity onPress={handleDelete} style={styles.modalButton}>
-                  <Text style={{ color: "red" }}>Borrar</Text>
+                  <Text style={{ color: theme.colors.error }}>Borrar</Text>
                 </TouchableOpacity>
               )}
             </View>
@@ -204,29 +222,90 @@ export default function BorrarMascotasScreen({ navigation }: any) {
 }
 
 const styles = StyleSheet.create({
-  title: { fontSize: 22, fontWeight: "bold", textAlign: "center", marginBottom: 15 },
-  actions: { flexDirection: "row", justifyContent: "space-between", marginBottom: 15 },
-  actionButton: { padding: 10 },
-  grid: { flexDirection: "row", flexWrap: "wrap", marginBottom: 20 },
-  itemContainer: { marginBottom: 10, borderWidth: 2, borderRadius: 12 },
-  checkboxContainer: { marginBottom: 5 },
-  image: { width: "100%", height: "100%", borderRadius: 10, resizeMode: "cover" },
-  name: { fontSize: 14, fontWeight: "bold", textAlign: "center", width: "100%" },
-  header: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
+  title: {
+    fontSize: 24,
+    fontWeight: "600",
+  },
+
+  header: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 16,
+  },
+
+  actions: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 16,
+  },
+
+  actionButton: {
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    borderRadius: 8,
+  },
+
+  grid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    marginBottom: 20,
+  },
+
+  itemContainer: {
+    padding: 8,
+    borderWidth: 1.5,
+    borderRadius: 14,
+    marginBottom: 10,
+  },
+
+  checkboxContainer: {
+    marginBottom: 6,
+  },
+
+  image: {
+    width: "100%",
+    height: "100%",
+    borderRadius: 12,
+    resizeMode: "cover",
+  },
+
+  name: {
+    fontSize: 14,
+    fontWeight: "600",
+    textAlign: "center",
+    marginTop: 6,
+  },
 
   modalBackground: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "rgba(0,0,0,0.6)",
+    backgroundColor: "rgba(0,0,0,0.55)",
   },
+
   modalContainer: {
-    width: 280,
+    width: 300,
     padding: 20,
-    borderRadius: 10,
-    borderWidth: 2,
+    borderRadius: 14,
+    borderWidth: 1.5,
   },
-  modalText: { fontSize: 18, fontWeight: "bold", textAlign: "center", marginBottom: 15 },
-  modalButtons: { flexDirection: "row", justifyContent: "space-between" },
-  modalButton: { padding: 10, alignItems: "center", flex: 1 },
+
+  modalText: {
+    fontSize: 17,
+    fontWeight: "600",
+    textAlign: "center",
+    marginBottom: 16,
+  },
+
+  modalButtons: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
+
+  modalButton: {
+    flex: 1,
+    paddingVertical: 12,
+    alignItems: "center",
+  },
 });

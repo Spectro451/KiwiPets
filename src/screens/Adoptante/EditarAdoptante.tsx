@@ -24,10 +24,15 @@ import { buscarDirecciones, Direccion } from "../../services/mapBox";
 import { RouteProp, useNavigation, useRoute } from "@react-navigation/native";
 
 const { width } = Dimensions.get("window");
-const isWeb = Platform.OS === "web";
-const FORM_CARD_WIDTH = isWeb
-  ? Math.min(width * 0.6, 480)
-  : Math.min(width * 0.94, 400);
+const MAX_CARD_WIDTH = 480;
+
+const FORM_CARD_WIDTH =
+  width <= 480
+    ? width * 0.92
+    : width <= 840
+    ? Math.min(width * 0.8, MAX_CARD_WIDTH)
+    : MAX_CARD_WIDTH;
+
 type RootStackParamList = {
   EditarAdoptante: { perfilData: any };
 };
@@ -542,24 +547,30 @@ export default function EditarAdoptante() {
 const styles = StyleSheet.create({
   label: {
     marginBottom: 6,
-    fontSize: 15,
-    fontWeight: "bold",
+    fontSize: 16,
+    fontWeight: "600",
   },
+
   input: {
     borderWidth: 1,
-    borderColor: "gray",
-    padding: 8,
-    borderRadius: 4,
-    marginBottom: 10,
+    borderRadius: 10,
+    paddingVertical: 12,
+    paddingHorizontal: 12,
+    fontSize: 15,
+    marginBottom: 16,
+    minHeight: 46,
   },
+
   error: {
     textAlign: "center",
-    marginBottom: 10,
+    marginBottom: 12,
+    fontSize: 14,
+    fontWeight: "500",
   },
+
   button: {
-    width: "100%",
     height: 48,
-    borderRadius: 10,
+    borderRadius: 12,
     alignItems: "center",
     justifyContent: "center",
   },

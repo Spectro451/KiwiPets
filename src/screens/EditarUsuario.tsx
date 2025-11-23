@@ -6,8 +6,15 @@ import { getUsuarioId, updateUsuario } from "../services/fetchUsuario";
 import { useNavigation } from "@react-navigation/native";
 
 const { width } = Dimensions.get("window");
-const isWeb = Platform.OS === "web";
-const FORM_CARD_WIDTH = isWeb ? Math.min(width * 0.6, 480) : Math.min(width * 0.94, 400);
+
+const isSmall = width <= 480;
+const isTablet = width > 480 && width <= 840;
+
+const FORM_CARD_WIDTH = isSmall
+  ? width * 0.92
+  : isTablet
+    ? Math.min(width * 0.7, 480)
+    : 480;
 
 export default function EditarUsuario() {
   const { theme } = useTheme();
@@ -111,24 +118,24 @@ export default function EditarUsuario() {
 
         {error && <Text style={[styles.error, { color: theme.colors.error }]}>{error}</Text>}
 
-          <View style={{ flexDirection: "row", justifyContent: "space-between", marginTop: 10 }}>
-            <TouchableOpacity
-              style={[styles.button, { flex: 1, backgroundColor: theme.colors.backgroundTertiary, marginRight: 5 }]}
-              onPress={handleSave}
-              disabled={saving}
-            >
-              <Text style={{ color: theme.colors.secondary, fontWeight: "bold" }}>
-                {saving ? "Guardando..." : "Guardar"}
-              </Text>
-            </TouchableOpacity>
+        <View style={{ flexDirection: "row", justifyContent: "space-between", marginTop: 10 }}>
+          <TouchableOpacity
+            style={[styles.button, { flex: 1, backgroundColor: theme.colors.backgroundTertiary, marginRight: 5 }]}
+            onPress={handleSave}
+            disabled={saving}
+          >
+            <Text style={{ color: theme.colors.secondary, fontWeight: "bold" }}>
+              {saving ? "Guardando..." : "Guardar"}
+            </Text>
+          </TouchableOpacity>
 
-            <TouchableOpacity
-              style={[styles.button, { flex: 1, backgroundColor: theme.colors.error, marginLeft: 5 }]}
-              onPress={() => navigation.goBack()}
-            >
-              <Text style={{ color: theme.colors.secondary, fontWeight: "bold" }}>Cancelar</Text>
-            </TouchableOpacity>
-          </View>
+          <TouchableOpacity
+            style={[styles.button, { flex: 1, backgroundColor: theme.colors.error, marginLeft: 5 }]}
+            onPress={() => navigation.goBack()}
+          >
+            <Text style={{ color: theme.colors.secondary, fontWeight: "bold" }}>Cancelar</Text>
+          </TouchableOpacity>
+        </View>
       </View>
     </View>
   );

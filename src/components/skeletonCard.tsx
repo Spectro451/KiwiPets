@@ -1,6 +1,8 @@
 import React, { useEffect, useRef } from "react";
-import { View, Animated, StyleSheet, Platform } from "react-native";
+import { View, Animated, StyleSheet, Platform, Dimensions } from "react-native";
 import { useTheme } from "../theme/ThemeContext";
+
+const { width: screenWidth } = Dimensions.get("window");
 
 interface Props {
   width?: number;
@@ -27,7 +29,6 @@ export default function SkeletonCard({ width = 180 }: Props) {
     ).start();
   }, []);
 
-  // Color neutro siempre disponible en cualquier theme
   const baseColor = theme.colors.backgroundSecondary;
 
   return (
@@ -35,7 +36,7 @@ export default function SkeletonCard({ width = 180 }: Props) {
       style={[
         styles.card,
         {
-          width,
+          width: screenWidth < 840 ? 160 : width,
           backgroundColor: theme.colors.card,
           borderColor: theme.colors.border,
           shadowColor: Platform.OS === "web" ? "transparent" : "#000",

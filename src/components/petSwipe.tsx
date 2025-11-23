@@ -111,7 +111,10 @@ const PetSwipe = forwardRef((props: Props, ref) => {
         }}
         {...panResponder.panHandlers}
       >
-        <PetCard mascota={pets[index]} width={260} />
+        <PetCard
+          mascota={pets[index]}
+          width={width < 840 ? 230 : 260}
+        />
       </Animated.View>
     </View>
   );

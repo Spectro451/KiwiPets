@@ -2,25 +2,25 @@ export const lightTheme = {
   mode: "light",
 
   colors: {
-    /* === NUEVOS COLORES === */
+    /*NUEVOS COLORES MOOD CLARO */
     background: "#FFFFFF",
     backgroundSecondary: "#F4F4F4",
     backgroundTertiary: "#DDDDDD",
     card: "#FFFFFF",
 
     text: "#222222",
-    textSecondary: "#555555",
+    textSecondary: "#aba9a9ff",
 
     accent: "#3CA374",
 
-    error: "#C62828",
-    errorDeshabilitado: "#8E5050",
+    error: "#ff0000ff",
+    errorDeshabilitado: "#ff0000ff",
 
     success: "#2E7D32",
 
     border: "#CCCCCC",
 
-    /* === COMPATIBILIDAD TOTAL CON TU CÓDIGO ANTIGUO === */
+    /*COMPATIBILIDAD TOTAL CON TU CÓDIGO ANTIGUO*/
     primary: "#000000ff",
     secondary: "#6D6875",
 

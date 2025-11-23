@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   ScrollView,
   Platform,
+  useWindowDimensions,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useTheme } from "../../theme/ThemeContext";
@@ -17,9 +18,21 @@ import { getAdopcionId, updateAdopcion } from "../../services/fetchAdopcion";
 import { EstadoAdopcion } from "../../types/enums";
 
 export default function Detalles({ route }: any) {
+  const { width } = useWindowDimensions();
   const { id } = route.params;
   const navigation = useNavigation();
   const { theme } = useTheme();
+
+  const isSmall = width <= 480;
+  const isTablet = width > 480 && width <= 840;
+
+  const CARD_WIDTH = isSmall
+    ? "100%"
+    : isTablet
+    ? 600
+    : 700; // centro controlado sin estirarse
+
+  const SCROLL_PADDING = isSmall ? 14 : 20;
 
   const [adopcion, setAdopcion] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -88,29 +101,35 @@ export default function Detalles({ route }: any) {
   const a = adopcion;
 
   return (
-    <SafeAreaView
-      style={{ flex: 1, backgroundColor: theme.colors.background }}
-      edges={["top", "bottom"]}
-    >
-      <ScrollView contentContainerStyle={styles.scroll}>
-        {/* Botón Back */}
+    <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.background }}>
+      <ScrollView
+        contentContainerStyle={[
+          styles.scroll,
+          {
+            paddingHorizontal: SCROLL_PADDING,
+            paddingTop: SCROLL_PADDING,
+            alignItems: "center",
+          },
+        ]}
+      >
         <TouchableOpacity
           onPress={() => navigation.goBack()}
-          style={styles.backRow}
+          style={{ width: CARD_WIDTH }}
         >
           <Text style={[styles.backIcon, { color: theme.colors.text }]}>←</Text>
         </TouchableOpacity>
 
-        {/* Título */}
-        <Text style={[styles.screenTitle, { color: theme.colors.text }]}>
+        <Text
+          style={[styles.screenTitle, { color: theme.colors.text, width: CARD_WIDTH }]}
+        >
           Detalles de la Adopción
         </Text>
 
-        {/* CARD ─ Mascota */}
         <View
           style={[
             styles.card,
             {
+              width: CARD_WIDTH,
               backgroundColor: theme.colors.backgroundSecondary,
               borderColor: theme.colors.backgroundTertiary,
             },
@@ -121,33 +140,17 @@ export default function Detalles({ route }: any) {
           </Text>
 
           <InfoRow label="Nombre" value={a.mascota?.nombre} theme={theme} />
-          <InfoRow
-            label="Raza"
-            value={a.mascota?.raza || "No especificada"}
-            theme={theme}
-          />
-          <InfoRow
-            label="Edad"
-            value={`${a.mascota?.edad} años`}
-            theme={theme}
-          />
-          <InfoRow
-            label="Personalidad"
-            value={a.mascota?.personalidad}
-            theme={theme}
-          />
-          <InfoRow
-            label="Descripción"
-            value={a.mascota?.descripcion}
-            theme={theme}
-          />
+          <InfoRow label="Raza" value={a.mascota?.raza || "No especificada"} theme={theme} />
+          <InfoRow label="Edad" value={`${a.mascota?.edad} años`} theme={theme} />
+          <InfoRow label="Personalidad" value={a.mascota?.personalidad} theme={theme} />
+          <InfoRow label="Descripción" value={a.mascota?.descripcion} theme={theme} />
         </View>
 
-        {/* CARD ─ Adoptante */}
         <View
           style={[
             styles.card,
             {
+              width: CARD_WIDTH,
               backgroundColor: theme.colors.backgroundSecondary,
               borderColor: theme.colors.backgroundTertiary,
             },
@@ -158,28 +161,16 @@ export default function Detalles({ route }: any) {
           </Text>
 
           <InfoRow label="Nombre" value={a.adoptante?.nombre} theme={theme} />
-          <InfoRow
-            label="Teléfono"
-            value={a.adoptante?.telefono}
-            theme={theme}
-          />
-          <InfoRow
-            label="Dirección"
-            value={a.adoptante?.direccion}
-            theme={theme}
-          />
-          <InfoRow
-            label="Motivo adopción"
-            value={a.adoptante?.motivo_adopcion}
-            theme={theme}
-          />
+          <InfoRow label="Teléfono" value={a.adoptante?.telefono} theme={theme} />
+          <InfoRow label="Dirección" value={a.adoptante?.direccion} theme={theme} />
+          <InfoRow label="Motivo adopción" value={a.adoptante?.motivo_adopcion} theme={theme} />
         </View>
 
-        {/* CARD ─ Proceso */}
         <View
           style={[
             styles.card,
             {
+              width: CARD_WIDTH,
               backgroundColor: theme.colors.backgroundSecondary,
               borderColor: theme.colors.backgroundTertiary,
             },
@@ -197,15 +188,11 @@ export default function Detalles({ route }: any) {
           />
         </View>
 
-        {/* BOTONES */}
         {a.estado === "En proceso" && (
-          <View style={styles.actionRow}>
+          <View style={[styles.actionRow, { width: CARD_WIDTH }]}>
             <TouchableOpacity
               onPress={aprobar}
-              style={[
-                styles.actionButton,
-                { backgroundColor: theme.colors.accent },
-              ]}
+              style={[styles.actionButton, { backgroundColor: theme.colors.accent }]}
             >
               <Text style={styles.actionText}>Aprobar</Text>
             </TouchableOpacity>
@@ -220,13 +207,16 @@ export default function Detalles({ route }: any) {
         )}
       </ScrollView>
 
-      {/* MODAL ─ Rechazo */}
       <Modal visible={modalRechazo} transparent animationType="fade">
         <View style={styles.modalBg}>
           <View
             style={[
               styles.modalCard,
-              { backgroundColor: theme.colors.background },
+              {
+                width: isSmall ? 300 : 380,
+                backgroundColor: theme.colors.background,
+                borderColor: theme.colors.backgroundTertiary,
+              },
             ]}
           >
             <Text style={[styles.modalTitle, { color: theme.colors.text }]}>
@@ -263,9 +253,7 @@ export default function Detalles({ route }: any) {
                 ]}
                 onPress={() => setModalRechazo(false)}
               >
-                <Text
-                  style={[styles.modalBtnTxt, { color: theme.colors.text }]}
-                >
+                <Text style={[styles.modalBtnTxt, { color: theme.colors.text }]}>
                   Cancelar
                 </Text>
               </TouchableOpacity>
@@ -274,13 +262,12 @@ export default function Detalles({ route }: any) {
         </View>
       </Modal>
 
-      {/* MODAL ─ Éxito */}
       <Modal visible={modalExito} transparent animationType="fade">
         <View style={styles.modalBg}>
           <View
             style={[
               styles.modalCard,
-              { backgroundColor: theme.colors.background },
+              { width: isSmall ? 300 : 360, backgroundColor: theme.colors.background },
             ]}
           >
             <Text style={[styles.modalTitle, { color: theme.colors.text }]}>

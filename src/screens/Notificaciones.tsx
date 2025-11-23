@@ -276,7 +276,15 @@ export default function NotificacionesScreen({ navigation }: any) {
   );
 }
 
-const CARD_WIDTH = isWeb ? width * 0.95 : Math.min(width * 0.95, 480);
+const isSmall = width <= 480;
+const isTablet = width > 480 && width <= 840;
+
+const CARD_WIDTH = isSmall
+  ? width * 0.92
+  : isTablet
+  ? Math.min(width * 0.85, 520)
+  : 520;
+  
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 10 },
   itemContainer: {

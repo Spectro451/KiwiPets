@@ -58,16 +58,19 @@ export default function Transferir({ navigation }: any) {
 
   // ------------------- GRID -------------------
   const onGridLayout = (event: any) => {
-    const { width } = event.nativeEvent.layout;
+    const layoutWidth = event.nativeEvent.layout.width;
 
-    const minWidth = 160;
-    let cols = Math.floor(width / minWidth);
+    const isSmall = layoutWidth <= 480;
+    const isTablet = layoutWidth > 480 && layoutWidth <= 840;
 
-    if (cols > 5) cols = 5;
-    if (cols < 1) cols = 1;
+    const minWidth = isSmall ? 150 : 170;
 
-    const gap = 12;
-    const calculated = (width - gap * (cols - 1)) / cols;
+    let cols = Math.max(1, Math.floor(layoutWidth / minWidth));
+    if (!isSmall) cols = Math.min(cols, 5);
+
+    const gap = isSmall ? 10 : 14;
+    const calculated = (layoutWidth - gap * (cols - 1)) / cols;
+
     setItemWidth(calculated);
   };
 

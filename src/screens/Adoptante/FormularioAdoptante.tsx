@@ -569,24 +569,30 @@ export default function FormularioAdoptante({
 const styles = StyleSheet.create({
   label: {
     marginBottom: 6,
-    fontSize: 15,
-    fontWeight: "bold",
+    fontSize: 16,
+    fontWeight: "600",
   },
+
   input: {
     borderWidth: 1,
-    borderColor: "gray",
-    padding: 8,
-    borderRadius: 4,
-    marginBottom: 10,
+    borderRadius: 10,
+    paddingVertical: 12,
+    paddingHorizontal: 12,
+    fontSize: 15,
+    marginBottom: 16,
+    minHeight: 46,
   },
+
   error: {
     textAlign: "center",
-    marginBottom: 10,
+    fontSize: 14,
+    marginBottom: 12,
+    fontWeight: "500",
   },
+
   button: {
-    width: "100%",
     height: 48,
-    borderRadius: 10,
+    borderRadius: 12,
     alignItems: "center",
     justifyContent: "center",
   },
