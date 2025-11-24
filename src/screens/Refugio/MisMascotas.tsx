@@ -85,7 +85,9 @@ export default function MisMascotasScreen({ navigation }: any) {
           style={[
             styles.grid,
             {
-              justifyContent: isSmall ? "space-between" : "flex-start",
+              justifyContent: isSmall ? "space-between" : "center",
+              alignSelf: "center",
+              gap: isSmall ? 10 : 14,
             },
           ]}
         >

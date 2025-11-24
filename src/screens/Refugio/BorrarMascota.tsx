@@ -88,102 +88,114 @@ export default function BorrarMascotasScreen({ navigation }: any) {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.background }}>
       <ScrollView
-  contentContainerStyle={{
-    paddingHorizontal: isSmall ? 12 : 20,
-    paddingTop: 16,
-    paddingBottom: 40,
-  }}
->
+        contentContainerStyle={{
+          paddingHorizontal: isSmall ? 12 : 20,
+          paddingTop: 16,
+          paddingBottom: 40,
+        }}
+      >
 
 
-          {/* Header */}
-          <View style={styles.header}>
-            <Text style={[styles.title, { color: theme.colors.text }]}>
-              Borrar Mascotas
-            </Text>
+        {/* Header */}
+        <View style={styles.header}>
+          <Text style={[styles.title, { color: theme.colors.text }]}>
+            Borrar Mascotas
+          </Text>
 
-            <TouchableOpacity onPress={() => navigation.goBack()}>
-              <Text style={{ color: theme.colors.text, fontSize: 20 }}>
-                ← Volver</Text>
-            </TouchableOpacity>
-          </View>
+          <TouchableOpacity onPress={() => navigation.goBack()}>
+            <Text style={{ color: theme.colors.text, fontSize: 20 }}>
+              ← Volver</Text>
+          </TouchableOpacity>
+        </View>
 
-          <View style={[styles.actions, { width: CONTENT_WIDTH }]}>
-            <TouchableOpacity onPress={toggleSelectAll} style={styles.actionButton}>
-              <Text style={{ color: theme.colors.text }}>
-                {selectAll ? "Deseleccionar todo" : "Seleccionar todo"}
-              </Text>
-            </TouchableOpacity>
+       <View
+    style={{
+      width: "100%",
+      alignItems: "flex-end",
+      marginBottom: 10,
+    }}
+  >
+    <TouchableOpacity
+      onPress={() => setModalVisible(true)}
+      style={styles.actionButton}
+    >
+      <Text style={{ color: theme.colors.error }}>Borrar</Text>
+    </TouchableOpacity>
+  </View>
 
-            <TouchableOpacity
-              onPress={() => setModalVisible(true)}
-              style={styles.actionButton}
+  <View style={{ width: "100%", marginBottom: 16 }}>
+    <TouchableOpacity
+      onPress={toggleSelectAll}
+      style={styles.actionButton}
+    >
+      <Text style={{ color: theme.colors.text }}>
+        {selectAll ? "Deseleccionar todo" : "Seleccionar todo"}
+      </Text>
+    </TouchableOpacity>
+  </View>
+
+
+        <View
+          onLayout={onGridLayout}
+          style={[
+            styles.grid,
+            {
+              width: CONTENT_WIDTH,
+              alignSelf: "center",
+              gap: isSmall ? 12 : 16,
+            },
+          ]}
+        >
+          {mascotas.map((item) => (
+            <View
+              key={item.id_mascota}
+              style={[
+                styles.itemContainer,
+                {
+                  width: itemWidth,
+                  backgroundColor: theme.colors.backgroundSecondary,
+                  borderColor: theme.colors.backgroundTertiary,
+                },
+              ]}
             >
-              <Text style={{ color: theme.colors.error }}>Borrar</Text>
-            </TouchableOpacity>
-          </View>
+              <View style={styles.checkboxContainer}>
+                <Checkbox
+                  value={selectedIds.includes(item.id_mascota)}
+                  onValueChange={() => toggleSelect(item.id_mascota)}
+                  color={
+                    selectedIds.includes(item.id_mascota)
+                      ? theme.colors.accent
+                      : undefined
+                  }
+                />
+              </View>
 
-          <View
-            onLayout={onGridLayout}
-            style={[
-              styles.grid,
-              {
-                width: CONTENT_WIDTH,
-                alignSelf: "center",
-                gap: isSmall ? 12 : 16,
-              },
-            ]}
-          >
-            {mascotas.map((item) => (
-              <View
-                key={item.id_mascota}
-                style={[
-                  styles.itemContainer,
-                  {
-                    width: itemWidth,
-                    backgroundColor: theme.colors.backgroundSecondary,
-                    borderColor: theme.colors.backgroundTertiary,
-                  },
-                ]}
+              <TouchableOpacity
+                onPress={() => toggleSelect(item.id_mascota)}
+                activeOpacity={0.7}
+                style={{ width: "100%" }}
               >
-                <View style={styles.checkboxContainer}>
-                  <Checkbox
-                    value={selectedIds.includes(item.id_mascota)}
-                    onValueChange={() => toggleSelect(item.id_mascota)}
-                    color={
-                      selectedIds.includes(item.id_mascota)
-                        ? theme.colors.accent
-                        : undefined
+                <View style={{ width: "100%", aspectRatio: 1 }}>
+                  <Image
+                    source={
+                      item.foto
+                        ? { uri: item.foto }
+                        : { uri: "https://via.placeholder.com/400?text=Sin+Foto" }
                     }
+                    style={styles.image}
                   />
                 </View>
 
-                <TouchableOpacity
-                  onPress={() => toggleSelect(item.id_mascota)}
-                  activeOpacity={0.7}
-                  style={{ width: "100%" }}
+                <Text
+                  style={[styles.name, { color: theme.colors.text }]}
+                  numberOfLines={1}
                 >
-                  <View style={{ width: "100%", aspectRatio: 1 }}>
-                    <Image
-                      source={
-                        item.foto
-                          ? { uri: item.foto }
-                          : { uri: "https://via.placeholder.com/400?text=Sin+Foto" }
-                      }
-                      style={styles.image}
-                    />
-                  </View>
+                  {item.nombre}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          ))}
 
-                  <Text
-                    style={[styles.name, { color: theme.colors.text }]}
-                    numberOfLines={1}
-                  >
-                    {item.nombre}
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            ))}
-          
         </View>
       </ScrollView>
 
