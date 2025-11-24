@@ -12,7 +12,7 @@ import {
   Platform,
   Modal,
 } from "react-native";
-import { useFocusEffect, useNavigation } from "@react-navigation/native";
+import { useFocusEffect } from "@react-navigation/native";
 import { Notificaciones } from "../types/notificaciones";
 import {
   deleteNotificaciones,
@@ -21,15 +21,25 @@ import {
 } from "../services/fetchNotificaciones";
 import { useAuth } from "../hooks/useAuth";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { getAdopcion, getAdopcionId } from "../services/fetchAdopcion";
-import { EstadoAdopcion } from "../types/enums";
 
 const { width } = Dimensions.get("window");
+const isSmall = width <= 480;     // móviles pequeños
+const isTablet = width > 480 && width <= 1024;  // tablets
 const isWeb = Platform.OS === "web";
+
+// El card debe adaptarse
+const CARD_WIDTH =
+  width < 500
+    ? width * 0.92
+    : width < 900
+    ? width * 0.85
+    : 600;                            // móvil: 92%
+
 
 export default function NotificacionesScreen({ navigation }: any) {
   const { theme } = useTheme();
   const { user } = useAuth();
+
   const [notificaciones, setNotificaciones] = useState<Notificaciones[]>([]);
   const [seleccionadas, setSeleccionadas] = useState<number[]>([]);
   const [loading, setLoading] = useState(false);
@@ -43,10 +53,7 @@ export default function NotificacionesScreen({ navigation }: any) {
     setLoading(true);
     try {
       const data = await getNotificaciones();
-      console.log("Total notif:", data.length);
       setNotificaciones(data);
-    } catch (err) {
-      console.error(err);
     } finally {
       setLoading(false);
     }
@@ -64,6 +71,14 @@ export default function NotificacionesScreen({ navigation }: any) {
     );
   };
 
+  const toggleSeleccionarTodo = () => {
+    setSeleccionadas(
+      seleccionadas.length === notificaciones.length
+        ? []
+        : notificaciones.map((n) => n.id)
+    );
+  };
+
   const eliminarSeleccionadas = async () => {
     if (seleccionadas.length === 0) {
       Alert.alert("Debe seleccionar al menos una");
@@ -73,7 +88,6 @@ export default function NotificacionesScreen({ navigation }: any) {
 
     setBotonBloqueado(true);
 
-    // Aqui separa leido de no leida
     const seleccionadasLeidas = notificaciones.filter(
       (n) => seleccionadas.includes(n.id) && n.leido
     );
@@ -82,11 +96,8 @@ export default function NotificacionesScreen({ navigation }: any) {
       (n) => seleccionadas.includes(n.id) && !n.leido
     );
 
-    // Mostrar modal para no leida
     if (noLeidas.length > 0) {
-      setMensajeSeleccionado(
-        `Debe marcar como leido antes de borrar la notificacion`
-      );
+      setMensajeSeleccionado("Debe marcar como leída antes de borrar.");
       setModalVisible(true);
     }
 
@@ -96,12 +107,10 @@ export default function NotificacionesScreen({ navigation }: any) {
     }
 
     try {
-      // Solo eliminar las leídas
       await Promise.all(
         seleccionadasLeidas.map((n) => deleteNotificaciones(n.id))
       );
 
-      // Actualizar la lista de notificaciones y las seleccionadas
       const idsEliminadas = seleccionadasLeidas.map((n) => n.id);
       setNotificaciones((prev) =>
         prev.filter((n) => !idsEliminadas.includes(n.id))
@@ -109,15 +118,12 @@ export default function NotificacionesScreen({ navigation }: any) {
       setSeleccionadas((prev) =>
         prev.filter((id) => !idsEliminadas.includes(id))
       );
-    } catch (err) {
-      console.error("Error al borrar notificaciones:", err);
     } finally {
       setBotonBloqueado(false);
     }
   };
 
   const handlePress = async (item: Notificaciones) => {
-    // Marcar como leída si no lo está
     if (!item.leido) {
       await marcarLeida(item.id);
       setNotificaciones((prev) =>
@@ -126,35 +132,10 @@ export default function NotificacionesScreen({ navigation }: any) {
     }
 
     if (user?.tipo === "Refugio" && item.adopcionId) {
-      try {
-        const adopcion = await getAdopcionId(item.adopcionId);
-
-        if (
-          adopcion.adoptante &&
-          adopcion.estado === EstadoAdopcion.EN_PROCESO
-        ) {
-          navigation.push("DetalleAdopcion", { id: item.adopcionId });
-          return;
-        }
-        setMensajeSeleccionado(item.mensaje || "Notificación sin detalle");
-        setModalVisible(true);
-      } catch {
-        setMensajeSeleccionado(item.mensaje || "Notificación sin detalle");
-        setModalVisible(true);
-      }
-    } else if (user?.tipo === "Adoptante") {
-      setMensajeSeleccionado(item.mensaje || "Notificación sin detalle");
-      setModalVisible(true);
-    }
-  };
-
-  const toggleSeleccionarTodo = () => {
-    if (seleccionadas.length === notificaciones.length) {
-      // Si todas están seleccionadas, deselecciona todo
-      setSeleccionadas([]);
+      navigation.push("DetalleAdopcion", { id: item.adopcionId });
     } else {
-      // Si no todas están seleccionadas, selecciona todas
-      setSeleccionadas(notificaciones.map((n) => n.id));
+      setMensajeSeleccionado(item.mensaje);
+      setModalVisible(true);
     }
   };
 
@@ -177,7 +158,7 @@ export default function NotificacionesScreen({ navigation }: any) {
         style={{ marginRight: 10 }}
       />
 
-      <TouchableOpacity onPress={() => handlePress(item)} style={{ flex: 1 }}>
+      <TouchableOpacity style={{ flex: 1 }} onPress={() => handlePress(item)}>
         <Text
           style={[
             styles.nombre,
@@ -196,63 +177,69 @@ export default function NotificacionesScreen({ navigation }: any) {
 
   return (
     <SafeAreaView
-      edges={["top"]}
-      style={{
-        flex: 1,
-        backgroundColor: theme.colors.background,
-        paddingTop: isSmall ? 20 : 30,   // Ajuste coherente con otras pantallas
-      }}
+      edges={["top", "bottom"]}
+      style={{ flex: 1, backgroundColor: theme.colors.background }}
     >
-      <Text style={[styles.titulo, { color: theme.colors.text }]}>
-        Mis notificaciones
-      </Text>
-      <TouchableOpacity
-        style={[
-          styles.botonEliminar,
-          {
-            backgroundColor:
-              notificaciones.length > 0
-                ? theme.colors.accent
-                : theme.colors.errorDeshabilitado,
-            opacity: notificaciones.length > 0 ? 1 : 0.6,
-            marginBottom: 10,
-          },
-        ]}
-        onPress={toggleSeleccionarTodo}
-        disabled={notificaciones.length === 0}
-      >
-        <Text style={styles.botonTexto}>
-          {seleccionadas.length === notificaciones.length
-            ? "Deseleccionar todo"
-            : "Seleccionar todo"}
-        </Text>
-      </TouchableOpacity>
-      <FlatList
-        data={notificaciones}
-        keyExtractor={(item) => item.id.toString()}
-        renderItem={renderItem}
-        refreshing={loading}
-        onRefresh={fetchNotificaciones}
-        style={{ flex: 1 }}
-        initialNumToRender={notificaciones.length} // fuerza renderizado de todos
-      />
-      <TouchableOpacity
-        style={[
-          styles.botonEliminar,
-          {
-            backgroundColor:
-              seleccionadas.length > 0
-                ? theme.colors.error
-                : theme.colors.errorDeshabilitado,
-            opacity: seleccionadas.length > 0 ? 1 : 0.6,
-          },
-        ]}
-        onPress={eliminarSeleccionadas}
-        disabled={seleccionadas.length === 0 || botonBloqueado}
-      >
-        <Text style={styles.botonTexto}>Eliminar seleccionadas</Text>
-      </TouchableOpacity>
+      <View style={styles.wrapper}>
+  <Text style={[styles.titulo, { color: theme.colors.text }]}>
+    Mis Notificaciones
+  </Text>
 
+  {/* Botón seleccionar todo */}
+  <TouchableOpacity
+    style={[
+      styles.botonEliminar,
+      {
+        backgroundColor:
+          notificaciones.length > 0
+            ? theme.colors.accent
+            : theme.colors.errorDeshabilitado,
+        opacity: notificaciones.length > 0 ? 1 : 0.6,
+        width: CARD_WIDTH,
+      },
+    ]}
+    onPress={toggleSeleccionarTodo}
+    disabled={notificaciones.length === 0}
+  >
+    <Text style={styles.botonTexto}>
+      {seleccionadas.length === notificaciones.length
+        ? "Deseleccionar todo"
+        : "Seleccionar todo"}
+    </Text>
+  </TouchableOpacity>
+
+  {/* Lista */}
+  <FlatList
+    data={notificaciones}
+    keyExtractor={(item) => item.id.toString()}
+    renderItem={renderItem}
+    refreshing={loading}
+    onRefresh={fetchNotificaciones}
+    contentContainerStyle={{ paddingBottom: 40 }}
+    showsVerticalScrollIndicator={false}
+  />
+
+  {/* Botón eliminar */}
+  <TouchableOpacity
+    style={[
+      styles.botonEliminar,
+      {
+        backgroundColor:
+          seleccionadas.length > 0
+            ? theme.colors.error
+            : theme.colors.errorDeshabilitado,
+        opacity: seleccionadas.length > 0 ? 1 : 0.6,
+        width: CARD_WIDTH,
+      },
+    ]}
+    onPress={eliminarSeleccionadas}
+    disabled={seleccionadas.length === 0 || botonBloqueado}
+  >
+    <Text style={styles.botonTexto}>Eliminar seleccionadas</Text>
+  </TouchableOpacity>
+</View>
+
+      {/* MODAL */}
       <Modal visible={modalVisible} transparent animationType="fade">
         <View style={styles.modalOverlay}>
           <View
@@ -265,10 +252,7 @@ export default function NotificacionesScreen({ navigation }: any) {
               {mensajeSeleccionado}
             </Text>
             <TouchableOpacity
-              style={[
-                styles.botonCerrar,
-                { backgroundColor: theme.colors.accent },
-              ]}
+              style={[styles.botonCerrar, { backgroundColor: theme.colors.accent }]}
               onPress={() => setModalVisible(false)}
             >
               <Text style={styles.botonTexto}>Cerrar</Text>
@@ -278,19 +262,11 @@ export default function NotificacionesScreen({ navigation }: any) {
       </Modal>
     </SafeAreaView>
   );
+
+
 }
 
-const isSmall = width <= 480;
-const isTablet = width > 480 && width <= 840;
-
-const CARD_WIDTH = isSmall
-  ? width * 0.92
-  : isTablet
-    ? Math.min(width * 0.85, 520)
-    : 520;
-
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 10 },
   itemContainer: {
     flexDirection: "row",
     alignItems: "center",
@@ -301,7 +277,6 @@ const styles = StyleSheet.create({
     width: CARD_WIDTH,
     alignSelf: "center",
   },
-  info: { flex: 1 },
   nombre: { fontSize: 16, fontWeight: "bold" },
   fecha: { fontSize: 12 },
   botonEliminar: {
@@ -333,4 +308,11 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     alignItems: "center",
   },
+wrapper: {
+  flex: 1,
+  width: "100%",
+  paddingHorizontal: isWeb ? 0 : 20,  
+  paddingTop: 20,
+  alignItems: "center",      // centra SOLO contenido interno
+},
 });

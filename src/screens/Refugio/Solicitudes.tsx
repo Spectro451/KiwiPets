@@ -25,6 +25,12 @@ export default function Solicitudes({ navigation }: any) {
   const { width } = useWindowDimensions();
   const isSmall = width <= 480;
   const isTablet = width > 480 && width <= 840;
+  const CARD_WIDTH =
+  width < 500
+    ? width * 0.92
+    : width < 900
+    ? width * 0.85
+    : 600;
 
   const [mascotas, setMascotas] = useState<MascotaSolicitudes[]>([]);
   const [expanded, setExpanded] = useState<number | null>(null);
