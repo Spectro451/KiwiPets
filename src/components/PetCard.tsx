@@ -54,7 +54,7 @@ export default function PetCard({
       </View>
 
       <View style={styles.info}>
-        <Text style={[styles.name, { color: theme.colors.text }]} numberOfLines={1}>
+        <Text style={[styles.name, { color: theme.colors.secondary }]} numberOfLines={1}>
           {mascota.nombre}
         </Text>
 
@@ -65,10 +65,30 @@ export default function PetCard({
         <Text style={[styles.sub, { color: theme.colors.text }]}>
           {mascota.especie || "Sin especie"}
         </Text>
+
+        <Text style={[styles.sub, { color: theme.colors.text }]}>
+          {mascota.raza || "Sin raza"}
+        </Text>
+
+        <Text style={[styles.sub, { color: theme.colors.text }]}>
+          {mascota.genero || "Sin género"}
+        </Text>
+
+        <Text style={[styles.title, { color: theme.colors.text }]}>
+          Descripción
+        </Text>
+        <Text style={[styles.sub, { color: theme.colors.text }]}>
+          {mascota.descripcion || "Sin descripción"}
+        </Text>
+
       </View>
     </TouchableOpacity>
   );
 }
+
+
+
+// Estilos
 
 const styles = StyleSheet.create({
   card: {
@@ -90,6 +110,11 @@ const styles = StyleSheet.create({
     aspectRatio: 1,
     position: "relative",
   },
+  title: {
+    fontSize: 15,
+    fontWeight: '700',
+    marginTop: 8,
+  },
   image: {
     width: "100%",
     height: "100%",
@@ -100,16 +125,17 @@ const styles = StyleSheet.create({
     top: 8,
     right: 8,
     padding: 6,
-    backgroundColor: "rgba(255,255,255,0.65)",
+    backgroundColor: "rgba(255, 255, 255, 0.65)",
     borderRadius: 20,
   },
   info: {
     padding: 10,
   },
   name: {
-    fontSize: 19,
+    fontSize: 20,
     fontWeight: "bold",
-    marginBottom: 4,
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 4,
   },
   sub: {
     fontSize: 14,

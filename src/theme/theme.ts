@@ -8,9 +8,9 @@ export const lightTheme = {
     secondary: "#e823d1ff",        
     accent: "#604ff7ff",                       
     text: "#000000ff",             
-    textSecondary: "#555",           
+    textSecondary: "#555555ff",           
     overlayBackground: "rgba(0,0,0,0.4)",
-    overlayText: "#cf8dffff",
+    overlayText: "#813db2ff",
     overlayTextShadow: "rgba(0,0,0,0.1)",
     error: "#ff0000ff",
     errorDeshabilitado: "#ff000080"
