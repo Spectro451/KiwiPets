@@ -117,7 +117,7 @@ const PetSwipe = forwardRef((props: Props, ref) => {
       >
         <PetCard
           mascota={currentPet}
-           width={width * 0.85}
+          width={Math.min(Math.max(width * 0.85, 230), 300)}
           // aquí respetamos tus nombres
           isFavorite={isFavorite ? isFavorite(currentPet.id_mascota) : false}
           onToggleFavorite={() => onToggleFavorito?.(currentPet.id_mascota)}
