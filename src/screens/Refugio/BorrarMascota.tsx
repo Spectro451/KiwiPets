@@ -23,6 +23,7 @@ export default function BorrarMascotasScreen({ navigation }: any) {
   const isSmall = width <= 480;
   const isTablet = width > 480 && width <= 840;
   const CONTENT_WIDTH = isSmall ? "100%" : isTablet ? 500 : 900;
+  const GRID_PADDING_HORIZONTAL = isSmall ? 12 : 20;
 
   const [mascotas, setMascotas] = useState<any[]>([]);
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
@@ -87,97 +88,102 @@ export default function BorrarMascotasScreen({ navigation }: any) {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.background }}>
       <ScrollView
-        contentContainerStyle={{
-          paddingHorizontal: isSmall ? 12 : 20,
-          paddingTop: 16,
-          paddingBottom: 40,
-          alignItems: "center",
-        }}
-      >
-        <View style={[styles.header, { width: CONTENT_WIDTH }]}>
-          <Text style={[styles.title, { color: theme.colors.text }]}>
-            Borrar Mascotas
-          </Text>
+  contentContainerStyle={{
+    paddingHorizontal: isSmall ? 12 : 20,
+    paddingTop: 16,
+    paddingBottom: 40,
+  }}
+>
 
-          <TouchableOpacity onPress={() => navigation.goBack()}>
-            <Text style={{ color: theme.colors.text, fontSize: 20 }}>←</Text>
-          </TouchableOpacity>
-        </View>
 
-        <View style={[styles.actions, { width: CONTENT_WIDTH }]}>
-          <TouchableOpacity onPress={toggleSelectAll} style={styles.actionButton}>
-            <Text style={{ color: theme.colors.text }}>
-              {selectAll ? "Deseleccionar todo" : "Seleccionar todo"}
+          {/* Header */}
+          <View style={styles.header}>
+            <Text style={[styles.title, { color: theme.colors.text }]}>
+              Borrar Mascotas
             </Text>
-          </TouchableOpacity>
 
-          <TouchableOpacity
-            onPress={() => setModalVisible(true)}
-            style={styles.actionButton}
-          >
-            <Text style={{ color: theme.colors.error }}>Borrar</Text>
-          </TouchableOpacity>
-        </View>
+            <TouchableOpacity onPress={() => navigation.goBack()}>
+              <Text style={{ color: theme.colors.text, fontSize: 20 }}>
+                ← Volver</Text>
+            </TouchableOpacity>
+          </View>
 
-        <View
-          onLayout={onGridLayout}
-          style={[
-            styles.grid,
-            {
-              width: CONTENT_WIDTH,
-              gap: isSmall ? 12 : 16,
-            },
-          ]}
-        >
-          {mascotas.map((item) => (
-            <View
-              key={item.id_mascota}
-              style={[
-                styles.itemContainer,
-                {
-                  width: itemWidth,
-                  backgroundColor: theme.colors.backgroundSecondary,
-                  borderColor: theme.colors.backgroundTertiary,
-                },
-              ]}
+          <View style={[styles.actions, { width: CONTENT_WIDTH }]}>
+            <TouchableOpacity onPress={toggleSelectAll} style={styles.actionButton}>
+              <Text style={{ color: theme.colors.text }}>
+                {selectAll ? "Deseleccionar todo" : "Seleccionar todo"}
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={() => setModalVisible(true)}
+              style={styles.actionButton}
             >
-              <View style={styles.checkboxContainer}>
-                <Checkbox
-                  value={selectedIds.includes(item.id_mascota)}
-                  onValueChange={() => toggleSelect(item.id_mascota)}
-                  color={
-                    selectedIds.includes(item.id_mascota)
-                      ? theme.colors.accent
-                      : undefined
-                  }
-                />
-              </View>
+              <Text style={{ color: theme.colors.error }}>Borrar</Text>
+            </TouchableOpacity>
+          </View>
 
-              <TouchableOpacity
-                onPress={() => toggleSelect(item.id_mascota)}
-                activeOpacity={0.7}
-                style={{ width: "100%" }}
+          <View
+            onLayout={onGridLayout}
+            style={[
+              styles.grid,
+              {
+                width: CONTENT_WIDTH,
+                alignSelf: "center",
+                gap: isSmall ? 12 : 16,
+              },
+            ]}
+          >
+            {mascotas.map((item) => (
+              <View
+                key={item.id_mascota}
+                style={[
+                  styles.itemContainer,
+                  {
+                    width: itemWidth,
+                    backgroundColor: theme.colors.backgroundSecondary,
+                    borderColor: theme.colors.backgroundTertiary,
+                  },
+                ]}
               >
-                <View style={{ width: "100%", aspectRatio: 1 }}>
-                  <Image
-                    source={
-                      item.foto
-                        ? { uri: item.foto }
-                        : { uri: "https://via.placeholder.com/400?text=Sin+Foto" }
+                <View style={styles.checkboxContainer}>
+                  <Checkbox
+                    value={selectedIds.includes(item.id_mascota)}
+                    onValueChange={() => toggleSelect(item.id_mascota)}
+                    color={
+                      selectedIds.includes(item.id_mascota)
+                        ? theme.colors.accent
+                        : undefined
                     }
-                    style={styles.image}
                   />
                 </View>
 
-                <Text
-                  style={[styles.name, { color: theme.colors.text }]}
-                  numberOfLines={1}
+                <TouchableOpacity
+                  onPress={() => toggleSelect(item.id_mascota)}
+                  activeOpacity={0.7}
+                  style={{ width: "100%" }}
                 >
-                  {item.nombre}
-                </Text>
-              </TouchableOpacity>
-            </View>
-          ))}
+                  <View style={{ width: "100%", aspectRatio: 1 }}>
+                    <Image
+                      source={
+                        item.foto
+                          ? { uri: item.foto }
+                          : { uri: "https://via.placeholder.com/400?text=Sin+Foto" }
+                      }
+                      style={styles.image}
+                    />
+                  </View>
+
+                  <Text
+                    style={[styles.name, { color: theme.colors.text }]}
+                    numberOfLines={1}
+                  >
+                    {item.nombre}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            ))}
+          
         </View>
       </ScrollView>
 
@@ -215,6 +221,7 @@ export default function BorrarMascotasScreen({ navigation }: any) {
               )}
             </View>
           </View>
+
         </View>
       </Modal>
     </SafeAreaView>
@@ -231,7 +238,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 16,
+    marginBottom: 20,
   },
 
   actions: {
