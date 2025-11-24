@@ -117,7 +117,17 @@ export default function Transferir({ navigation }: any) {
         </View>
 
         {/* GRID */}
-        <View style={styles.grid} onLayout={onGridLayout}>
+        <View
+          style={[
+            styles.grid,
+            {
+              justifyContent: "center",   // Centra la grilla
+              alignSelf: "center",        // Alinea contenedor en el centro
+            },
+          ]}
+          onLayout={onGridLayout}
+        >
+
           {mascotas.map((item) => (
             <TouchableOpacity
               key={item.id_mascota}
@@ -235,9 +245,9 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     flexWrap: "wrap",
     width: "100%",
-    justifyContent: "flex-start",
     gap: 12,
   },
+
   itemContainer: {
     borderWidth: 2,
     borderRadius: 10,
