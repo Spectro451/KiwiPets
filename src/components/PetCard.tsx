@@ -27,7 +27,7 @@ export default function PetCard({
       style={[
         styles.card,
         {
-          width: width || 260,
+          width: width || CARD_WIDTH,
           backgroundColor: theme.colors.backgroundSecondary,
           borderColor: theme.colors.backgroundTertiary,
           shadowColor: "#000",
@@ -60,18 +60,23 @@ export default function PetCard({
           {mascota.nombre}
         </Text>
 
+        <Text style={[styles.title, { color: theme.colors.text }]}>
+          Edad
+        </Text>
         <Text style={[styles.sub, { color: theme.colors.text }]}>
           {mascota.edad ? `${mascota.edad} años` : "Edad desconocida"}
         </Text>
 
+        <Text style={[styles.title, { color: theme.colors.text }]}>
+          Especie
+        </Text>
         <Text style={[styles.sub, { color: theme.colors.text }]}>
           {mascota.especie || "Sin especie"}
         </Text>
 
-        <Text style={[styles.sub, { color: theme.colors.text }]}>
-          {mascota.raza || "Sin raza"}
+        <Text style={[styles.title, { color: theme.colors.text }]}>
+          Género
         </Text>
-
         <Text style={[styles.sub, { color: theme.colors.text }]}>
           {mascota.genero || "Sin género"}
         </Text>
@@ -113,7 +118,7 @@ const styles = StyleSheet.create({
     position: "relative",
   },
   title: {
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: '700',
     marginTop: 8,
   },
