@@ -2,6 +2,8 @@ import React from "react";
 import { View, Text, Image, TouchableOpacity, StyleSheet, Platform } from "react-native";
 import { useTheme } from "../theme/ThemeContext";
 import { Ionicons } from "@expo/vector-icons"; // ← REEMPLAZO CORRECTO
+import { Dimensions } from "react-native";
+const CARD_WIDTH = Dimensions.get("window").width * 0.85;
 
 interface Props {
   mascota: any;
@@ -25,7 +27,7 @@ export default function PetCard({
       style={[
         styles.card,
         {
-          width: width || 180,
+          width: width || 260,
           backgroundColor: theme.colors.backgroundSecondary,
           borderColor: theme.colors.backgroundTertiary,
           shadowColor: "#000",
