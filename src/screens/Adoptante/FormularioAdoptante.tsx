@@ -433,7 +433,13 @@ export default function FormularioAdoptante({
           <Picker
             selectedValue={especiePreferida}
             onValueChange={(v) => setEspeciePreferida(v)}
-            style={[styles.input]}
+            style={[
+              styles.input,
+              {
+                backgroundColor: theme.colors.backgroundSecondary,
+                color: theme.colors.text,
+              },
+            ]}
           >
             {Object.values(EspeciePreferida).map((e) => (
               <Picker.Item key={e} label={e} value={e} />
@@ -446,7 +452,13 @@ export default function FormularioAdoptante({
           <Picker
             selectedValue={tipoVivienda}
             onValueChange={(v) => setTipoVivienda(v)}
-            style={[styles.input]}
+            style={[
+              styles.input,
+              {
+                backgroundColor: theme.colors.backgroundSecondary,
+                color: theme.colors.text,
+              },
+            ]}
           >
             {Object.values(Vivienda).map((v) => (
               <Picker.Item key={v} label={v} value={v} />
@@ -459,7 +471,13 @@ export default function FormularioAdoptante({
           <Picker
             selectedValue={sexo}
             onValueChange={(v) => setSexo(v)}
-            style={[styles.input]}
+            style={[
+              styles.input,
+              {
+                backgroundColor: theme.colors.backgroundSecondary,
+                color: theme.colors.text,
+              },
+            ]}
           >
             {Object.values(Sexo).map((s) => (
               <Picker.Item key={s} label={s} value={s} />
@@ -472,7 +490,13 @@ export default function FormularioAdoptante({
           <Picker
             selectedValue={edadBuscada}
             onValueChange={(v) => setEdadBuscada(v)}
-            style={[styles.input]}
+            style={[
+              styles.input,
+              {
+                backgroundColor: theme.colors.backgroundSecondary,
+                color: theme.colors.text,
+              },
+            ]}
           >
             {Object.values(Edad).map((e) => (
               <Picker.Item key={e} label={e} value={e} />
@@ -507,9 +531,7 @@ export default function FormularioAdoptante({
                 styles.button,
                 {
                   flex: 1,
-                  backgroundColor: saving
-                    ? theme.colors.backgroundTertiary
-                    : theme.colors.accent,
+                  backgroundColor: theme.colors.backgroundTertiary,
                 },
               ]}
             >
@@ -552,11 +574,12 @@ const styles = StyleSheet.create({
   },
   input: {
     borderWidth: 1,
-    borderRadius: 10,
+    borderColor: "gray",
     paddingVertical: 12,
     paddingHorizontal: 12,
     fontSize: 15,
     marginBottom: 16,
+    borderRadius: 10,
     minHeight: 46,
   },
   error: {

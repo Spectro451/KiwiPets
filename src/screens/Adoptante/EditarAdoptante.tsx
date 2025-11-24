@@ -41,10 +41,13 @@ type EditarAdoptanteRouteProp = RouteProp<
   RootStackParamList,
   "EditarAdoptante"
 >;
+
 export default function EditarAdoptante() {
   const route = useRoute<EditarAdoptanteRouteProp>();
   const navigation = useNavigation();
   const { perfilData } = route.params;
+
+  const { theme } = useTheme();
 
   const [rutActual, setRutActual] = useState<string | null>(perfilData.rut);
   const [adoptanteRut, setAdoptanteRut] = useState<string | null>(
@@ -89,7 +92,6 @@ export default function EditarAdoptante() {
   const [error, setError] = useState<string | null>(null);
   const [sugerenciasComuna, setSugerenciasComuna] = useState<Direccion[]>([]);
   const [loadingComuna, setLoadingComuna] = useState(false);
-  const { theme } = useTheme();
 
   const handleSave = async () => {
     if (!adoptanteRut) return;
@@ -141,7 +143,7 @@ export default function EditarAdoptante() {
     }
 
     setSaving(true);
-    setError(null); // solo reseteamos aquí, justo antes de enviar al backend
+    setError(null);
 
     try {
       await updateAdoptante(rutActual!, {
@@ -189,8 +191,7 @@ export default function EditarAdoptante() {
     try {
       const results = await buscarDirecciones(text);
       setSugerenciasComuna(results);
-    } catch (err) {
-      console.error(err);
+    } catch {
       setSugerenciasComuna([]);
     } finally {
       setLoadingComuna(false);
@@ -203,9 +204,6 @@ export default function EditarAdoptante() {
     setLongitud(dir.longitud);
     setSugerenciasComuna([]);
     setComunaSeleccionada(dir.comuna);
-
-    console.log("Comuna seleccionada:", dir.comuna);
-    console.log("Latitud:", dir.latitud, "Longitud:", dir.longitud);
   };
 
   if (loading)
@@ -349,7 +347,7 @@ export default function EditarAdoptante() {
             <TextInput
               value={edad.toString()}
               onChangeText={(t) => {
-                const soloNumeros = t.replace(/[^0-9]/g, ""); // elimina letras
+                const soloNumeros = t.replace(/[^0-9]/g, "");
                 setEdad(soloNumeros ? Number(soloNumeros) : 0);
               }}
               placeholder="Edad"
@@ -405,13 +403,15 @@ export default function EditarAdoptante() {
 
             {experienciaMascotas === "Si" && (
               <>
-                <Text style={[styles.label, { color: theme.colors.secondary }]}>
+                <Text
+                  style={[styles.label, { color: theme.colors.secondary }]}
+                >
                   Cuántas mascotas tiene:
                 </Text>
                 <TextInput
                   value={cantidadMascotas.toString()}
                   onChangeText={(t) => {
-                    const soloNumeros = t.replace(/[^0-9]/g, ""); // elimina letras
+                    const soloNumeros = t.replace(/[^0-9]/g, "");
                     setCantidadMascotas(soloNumeros ? Number(soloNumeros) : 0);
                   }}
                   placeholder="Cantidad"
@@ -428,7 +428,10 @@ export default function EditarAdoptante() {
             <Picker
               selectedValue={especiePreferida}
               onValueChange={(v) => setEspeciePreferida(v)}
-              style={[styles.input, { color: theme.colors.primary }]}
+              style={[
+                styles.input,
+                { color: theme.colors.text, backgroundColor: theme.colors.backgroundSecondary },
+              ]}
             >
               {Object.values(EspeciePreferida).map((e) => (
                 <Picker.Item key={e} label={e} value={e} />
@@ -441,7 +444,10 @@ export default function EditarAdoptante() {
             <Picker
               selectedValue={tipoVivienda}
               onValueChange={(v) => setTipoVivienda(v)}
-              style={[styles.input, { color: theme.colors.primary }]}
+              style={[
+                styles.input,
+                { color: theme.colors.text, backgroundColor: theme.colors.backgroundSecondary },
+              ]}
             >
               {Object.values(Vivienda).map((v) => (
                 <Picker.Item key={v} label={v} value={v} />
@@ -454,7 +460,10 @@ export default function EditarAdoptante() {
             <Picker
               selectedValue={sexo}
               onValueChange={(v) => setSexo(v)}
-              style={[styles.input, { color: theme.colors.primary }]}
+              style={[
+                styles.input,
+                { color: theme.colors.text, backgroundColor: theme.colors.backgroundSecondary },
+              ]}
             >
               {Object.values(Sexo).map((s) => (
                 <Picker.Item key={s} label={s} value={s} />
@@ -467,7 +476,10 @@ export default function EditarAdoptante() {
             <Picker
               selectedValue={edadBuscada}
               onValueChange={(v) => setEdadBuscada(v)}
-              style={[styles.input, { color: theme.colors.primary }]}
+              style={[
+                styles.input,
+                { color: theme.colors.text, backgroundColor: theme.colors.backgroundSecondary },
+              ]}
             >
               {Object.values(Edad).map((e) => (
                 <Picker.Item key={e} label={e} value={e} />
@@ -553,6 +565,7 @@ const styles = StyleSheet.create({
 
   input: {
     borderWidth: 1,
+    borderColor: "gray",
     borderRadius: 10,
     paddingVertical: 12,
     paddingHorizontal: 12,

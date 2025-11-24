@@ -82,7 +82,7 @@ export default function FavoritosScreen({ navigation }: any) {
 
     let cols = Math.floor(gridWidth / minWidth);
     if (cols < 1) cols = 1;
-    if (cols > 4) cols = 4; // límite sano para Favoritos
+    if (cols > 4) cols = 4;
 
     const gap = isSmall ? 10 : 14;
     const calculated = (gridWidth - gap * (cols - 1)) / cols;
@@ -209,14 +209,20 @@ export default function FavoritosScreen({ navigation }: any) {
             </Text>
 
             <TouchableOpacity
-              style={[styles.modalBtn, { backgroundColor: "#3CA374" }]}
+              style={[
+                styles.modalBtn,
+                { backgroundColor: theme.colors.accent },
+              ]}
               onPress={() => handleAdoptar(modalMascota.id_mascota)}
             >
               <Text style={styles.modalBtnText}>Adoptar</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={[styles.modalBtn, { backgroundColor: "#C62828" }]}
+              style={[
+                styles.modalBtn,
+                { backgroundColor: theme.colors.error },
+              ]}
               onPress={() =>
                 handleEliminarFavorito(modalMascota.id_mascota)
               }
@@ -225,7 +231,10 @@ export default function FavoritosScreen({ navigation }: any) {
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={[styles.modalBtn, { backgroundColor: "#777" }]}
+              style={[
+                styles.modalBtn,
+                { backgroundColor: theme.colors.backgroundTertiary },
+              ]}
               onPress={closeModal}
             >
               <Text style={styles.modalBtnText}>Cancelar</Text>

@@ -35,9 +35,6 @@ export default function AdopcionesScreen() {
   const [loading, setLoading] = useState(false);
   const [bloqueado, setBloqueado] = useState(false);
 
-  // --------------------------------------------
-  // Cargar adopciones
-  // --------------------------------------------
   const fetchData = async () => {
     try {
       setLoading(true);
@@ -56,18 +53,12 @@ export default function AdopcionesScreen() {
     }, [])
   );
 
-  // --------------------------------------------
-  // Seleccionar / deseleccionar
-  // --------------------------------------------
   const toggleSeleccion = (id: number) => {
     setSeleccionadas((prev) =>
       prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
     );
   };
 
-  // --------------------------------------------
-  // Eliminar seleccionadas
-  // --------------------------------------------
   const eliminarSeleccionadas = async () => {
     if (seleccionadas.length === 0) {
       Alert.alert("Selecciona al menos una solicitud.");
@@ -79,10 +70,7 @@ export default function AdopcionesScreen() {
 
     try {
       await Promise.all(
-        seleccionadas.map((id) => {
-          console.log("Eliminando adopción ID:", id);
-          return deleteAdopcion(id);
-        })
+        seleccionadas.map((id) => deleteAdopcion(id))
       );
 
       setAdopciones((prev) =>
@@ -96,9 +84,6 @@ export default function AdopcionesScreen() {
     }
   };
 
-  // --------------------------------------------
-  // Render item
-  // --------------------------------------------
   const renderItem = ({ item }: { item: Adopcion }) => (
     <TouchableOpacity
       onPress={() => toggleSeleccion(item.id)}
@@ -139,9 +124,6 @@ export default function AdopcionesScreen() {
     </TouchableOpacity>
   );
 
-  // --------------------------------------------
-  // Vista
-  // --------------------------------------------
   return (
     <SafeAreaView
       edges={["top"]}
@@ -179,9 +161,6 @@ export default function AdopcionesScreen() {
   );
 }
 
-// --------------------------------------------
-// Estilos
-// --------------------------------------------
 const styles = StyleSheet.create({
   titulo: {
     fontSize: 24,

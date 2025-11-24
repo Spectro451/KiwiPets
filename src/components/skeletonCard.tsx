@@ -37,8 +37,8 @@ export default function SkeletonCard({ width = 180 }: Props) {
         styles.card,
         {
           width: screenWidth < 840 ? 160 : width,
-          backgroundColor: theme.colors.card,
-          borderColor: theme.colors.border,
+          backgroundColor: theme.colors.backgroundSecondary,   // OK
+          borderColor: theme.colors.textSecondary,             // bordes válidos
           shadowColor: Platform.OS === "web" ? "transparent" : "#000",
           opacity,
         },
