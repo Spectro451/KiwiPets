@@ -197,7 +197,11 @@ export default function NotificacionesScreen({ navigation }: any) {
   return (
     <SafeAreaView
       edges={["top"]}
-      style={{ flex: 1, backgroundColor: theme.colors.background }}
+      style={{
+        flex: 1,
+        backgroundColor: theme.colors.background,
+        paddingTop: isSmall ? 20 : 30,   // Ajuste coherente con otras pantallas
+      }}
     >
       <Text style={[styles.titulo, { color: theme.colors.text }]}>
         Mis notificaciones
@@ -282,9 +286,9 @@ const isTablet = width > 480 && width <= 840;
 const CARD_WIDTH = isSmall
   ? width * 0.92
   : isTablet
-  ? Math.min(width * 0.85, 520)
-  : 520;
-  
+    ? Math.min(width * 0.85, 520)
+    : 520;
+
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 10 },
   itemContainer: {
