@@ -46,19 +46,28 @@ export default function HomeScreen() {
   // ======================================================
   // Fetch
   // ======================================================
-  const fetchMascotas = async (radio: number, vistasLocales: number[] = vistas) => {
+  const fetchMascotas = async (
+    radio: number,
+    vistasLocales: number[] = vistas
+  ) => {
     setLoading(true);
 
     try {
       const data = await getMascotasCercanas(radio);
-      const disponibles = data.filter((m: any) => m.estado_adopcion !== "Adoptado");
-      const filtradas = disponibles.filter((m: any) => !vistasLocales.includes(m.id_mascota));
+      const disponibles = data.filter(
+        (m: any) => m.estado_adopcion !== "Adoptado"
+      );
+      const filtradas = disponibles.filter(
+        (m: any) => !vistasLocales.includes(m.id_mascota)
+      );
 
       setPets(filtradas);
       setSinResultados(filtradas.length === 0);
 
       const favs = await getFavorito();
-      setFavoritos(favs.filter((f: any) => f.adoptante?.usuario.id === user?.id));
+      setFavoritos(
+        favs.filter((f: any) => f.adoptante?.usuario.id === user?.id)
+      );
 
       setIndexActual(0);
     } catch {
@@ -96,7 +105,9 @@ export default function HomeScreen() {
 
     if (existe) {
       await deleteFavorito(existe.id);
-      setFavoritos((prev) => prev.filter((f) => f.mascota.id_mascota !== petId));
+      setFavoritos((prev) =>
+        prev.filter((f) => f.mascota.id_mascota !== petId)
+      );
     } else {
       const nuevo = await createFavorito(petId);
       if (nuevo) setFavoritos((prev) => [nuevo, ...prev]);
@@ -122,9 +133,27 @@ export default function HomeScreen() {
   // ======================================================
   if (loading) {
     return (
-      <View style={[styles.fullCenter, { backgroundColor: theme.colors.background }]}>
+      <View
+        style={[
+          styles.fullCenter,
+          { backgroundColor: theme.colors.background },
+        ]}
+      >
         <SkeletonCard />
-        <View style={{ height: 80 }} />
+        <View style={styles.buttons}>
+          {[...Array(2)].map((_, i) => (
+            <View
+              key={i}
+              style={[
+                styles.btnBottom,
+                {
+                  backgroundColor: theme.colors.backgroundTertiary,
+                  opacity: 0.5,
+                },
+              ]}
+            />
+          ))}
+        </View>
       </View>
     );
   }
@@ -134,7 +163,12 @@ export default function HomeScreen() {
   // ======================================================
   if (sinResultados) {
     return (
-      <View style={[styles.fullCenter, { backgroundColor: theme.colors.background }]}>
+      <View
+        style={[
+          styles.fullCenter,
+          { backgroundColor: theme.colors.background },
+        ]}
+      >
         <Text style={{ color: theme.colors.text }}>
           No se encontraron mascotas en tu radio de {radioBusqueda} km
         </Text>
@@ -162,8 +196,15 @@ export default function HomeScreen() {
 
   if (!pets.length) {
     return (
-      <View style={[styles.fullCenter, { backgroundColor: theme.colors.background }]}>
-        <Text style={{ color: theme.colors.text }}>No hay mascotas disponibles.</Text>
+      <View
+        style={[
+          styles.fullCenter,
+          { backgroundColor: theme.colors.background },
+        ]}
+      >
+        <Text style={{ color: theme.colors.text }}>
+          No hay mascotas disponibles.
+        </Text>
       </View>
     );
   }
@@ -172,12 +213,7 @@ export default function HomeScreen() {
   // UI principal
   // ======================================================
   return (
-    <View
-      style={[
-        styles.main,
-        { backgroundColor: theme.colors.background },
-      ]}
-    >
+    <View style={[styles.main, { backgroundColor: theme.colors.background }]}>
       <View style={{ width: CONTENT_WIDTH, alignItems: "center", flex: 1 }}>
         <PetSwipe
           ref={swipeRef}
@@ -216,15 +252,10 @@ export default function HomeScreen() {
             styles.btnBottom,
             { backgroundColor: theme.colors.backgroundTertiary },
           ]}
-          onPress={() => toggleFavorito(pets[indexActual].id_mascota)}
+          onPress={() => ejecutarSwipe("right")}
         >
           <Text style={{ color: theme.colors.secondary, fontWeight: "700" }}>
-            {favoritos.some(
-              (f: any) =>
-                f.mascota.id_mascota === pets[indexActual].id_mascota
-            )
-              ? "❤️"
-              : "Favorito"}
+            Like
           </Text>
         </TouchableOpacity>
       </View>

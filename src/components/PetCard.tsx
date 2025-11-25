@@ -1,5 +1,12 @@
 import React from "react";
-import { View, Text, Image, TouchableOpacity, StyleSheet, Platform } from "react-native";
+import {
+  View,
+  Text,
+  Image,
+  TouchableOpacity,
+  StyleSheet,
+  Platform,
+} from "react-native";
 import { useTheme } from "../theme/ThemeContext";
 import { Ionicons } from "@expo/vector-icons"; // ← REEMPLAZO CORRECTO
 import { Dimensions } from "react-native";
@@ -46,9 +53,12 @@ export default function PetCard({
           style={styles.image}
         />
 
-        <TouchableOpacity style={styles.favoriteButton} onPress={onToggleFavorite}>
+        <TouchableOpacity
+          style={styles.favoriteButton}
+          onPress={onToggleFavorite}
+        >
           <Ionicons
-            name={isFavorite ? "heart" : "heart-outline"} // ← ÍCONO EXISTENTE
+            name={isFavorite ? "heart" : "heart-outline"}
             size={22}
             color={isFavorite ? "#EF5350" : theme.colors.text}
           />
@@ -56,13 +66,14 @@ export default function PetCard({
       </View>
 
       <View style={styles.info}>
-        <Text style={[styles.name, { color: theme.colors.secondary }]} numberOfLines={1}>
+        <Text
+          style={[styles.name, { color: theme.colors.secondary }]}
+          numberOfLines={1}
+        >
           {mascota.nombre}
         </Text>
 
-        <Text style={[styles.title, { color: theme.colors.text }]}>
-          Edad
-        </Text>
+        <Text style={[styles.title, { color: theme.colors.text }]}>Edad</Text>
         <Text style={[styles.sub, { color: theme.colors.text }]}>
           {mascota.edad ? `${mascota.edad} años` : "Edad desconocida"}
         </Text>
@@ -74,9 +85,7 @@ export default function PetCard({
           {mascota.especie || "Sin especie"}
         </Text>
 
-        <Text style={[styles.title, { color: theme.colors.text }]}>
-          Género
-        </Text>
+        <Text style={[styles.title, { color: theme.colors.text }]}>Género</Text>
         <Text style={[styles.sub, { color: theme.colors.text }]}>
           {mascota.genero || "Sin género"}
         </Text>
@@ -87,13 +96,10 @@ export default function PetCard({
         <Text style={[styles.sub, { color: theme.colors.text }]}>
           {mascota.descripcion || "Sin descripción"}
         </Text>
-
       </View>
     </TouchableOpacity>
   );
 }
-
-
 
 // Estilos
 
@@ -119,7 +125,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 14,
-    fontWeight: '700',
+    fontWeight: "700",
     marginTop: 8,
   },
   image: {
