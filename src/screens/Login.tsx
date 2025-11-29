@@ -45,11 +45,26 @@ export default function LoginScreen  ({ setToken, setUser, navigation }: LoginPr
     }
     setLoadingLogin(true);
     try {
-      const data = await loginUsuario(email, contraseña);
-      if (!data?.token) {
-        setError(data?.message || "Correo o contraseña incorrectos");
-        return;
-      }
+      //const data = await loginUsuario(email, contraseña);
+      //if (!data?.token) {
+        //setError(data?.message || "Correo o contraseña incorrectos");
+        //return;
+      //}
+      
+      // 🔥 MODO OFFLINE TEMPORAL — LOGIN SIN BACKEND
+let data: any;
+
+if (true) {  // <-- puedes poner una variable aquí si quieres activar/desactivar
+  data = {
+    token: "fake-token-123",
+    id: 1,
+    tipo: "usuario",
+    admin: true,
+  };
+} else {
+  data = await loginUsuario(email, contraseña);
+}
+
 
       await AsyncStorage.setItem('token', data.token);
       await AsyncStorage.setItem(

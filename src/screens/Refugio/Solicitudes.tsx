@@ -26,11 +26,11 @@ export default function Solicitudes({ navigation }: any) {
   const isSmall = width <= 480;
   const isTablet = width > 480 && width <= 840;
   const CARD_WIDTH =
-  width < 500
-    ? width * 0.92
-    : width < 900
-    ? width * 0.85
-    : 600;
+    width < 500
+      ? width * 0.92
+      : width < 900
+        ? width * 0.85
+        : 600;
 
   const [mascotas, setMascotas] = useState<MascotaSolicitudes[]>([]);
   const [expanded, setExpanded] = useState<number | null>(null);
@@ -180,7 +180,10 @@ export default function Solicitudes({ navigation }: any) {
             data={mascotas}
             keyExtractor={(m) => m.id.toString()}
             renderItem={renderMascota}
-            contentContainerStyle={{ paddingBottom: 40 }}
+            contentContainerStyle={{
+              padding: isSmall ? 12 : isTablet ? 16 : 20,
+              paddingBottom: 40,
+            }}
           />
         )}
       </View>

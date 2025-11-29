@@ -635,13 +635,33 @@ export default function AgregarMascotaScreen({ navigation }: any) {
           <View style={[styles.modalBox, { backgroundColor: theme.colors.background }]}>
             <Text style={{ color: theme.colors.text, marginBottom: 20 }}>Selecciona una opción</Text>
 
-            <TouchableOpacity style={[btn(theme), { marginBottom: 10 }]} onPress={takePhoto}>
+            <TouchableOpacity
+              style={[
+                btn(theme),
+                {
+                  marginBottom: 12,
+                  width: "100%",        // << NUEVO
+                  paddingHorizontal: 16 // << NUEVO
+                },
+              ]}
+              onPress={takePhoto}
+            >
               <Text style={styles.btnTxt}>Tomar Foto</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={btn(theme)} onPress={pickImage}>
+            <TouchableOpacity
+              style={[
+                btn(theme),
+                {
+                  width: "100%",        // << NUEVO
+                  paddingHorizontal: 16 // << NUEVO
+                },
+              ]}
+              onPress={pickImage}
+            >
               <Text style={styles.btnTxt}>Elegir de la Galería</Text>
             </TouchableOpacity>
+
 
             <TouchableOpacity onPress={() => setModalFoto(false)} style={{ marginTop: 20 }}>
               <Text style={{ color: theme.colors.accent }}>Cerrar</Text>

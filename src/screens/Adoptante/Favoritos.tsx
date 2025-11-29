@@ -183,65 +183,96 @@ export default function FavoritosScreen({ navigation }: any) {
       </ScrollView>
 
       <Modal visible={modalVisible} transparent animationType="fade">
-        <View style={styles.modalBackdrop}>
-          <View
-            style={[
-              styles.modal,
-              {
-                backgroundColor: theme.colors.background,
-                borderColor: theme.colors.backgroundTertiary,
-              },
-            ]}
-          >
+  <View style={styles.modalBackground}>
+    <View
+      style={[
+        styles.modalContent,
+        {
+          backgroundColor: theme.colors.background,
+          borderColor: theme.colors.backgroundTertiary,
+        },
+      ]}
+    >
+      <ScrollView style={{ width: "100%" }}>
+        {modalMascota && (
+          <>
             <Text
-              style={{
-                color: theme.colors.text,
-                marginBottom: 16,
-                fontSize: 17,
-                textAlign: "center",
-              }}
+              style={[
+                styles.modalTitle,
+                { color: theme.colors.text },
+              ]}
             >
-              ¿Qué deseas hacer con{" "}
-              <Text style={{ fontWeight: "bold" }}>
-                {modalMascota?.nombre}
-              </Text>
-              ?
+              {modalMascota.nombre}
             </Text>
 
-            <TouchableOpacity
-              style={[
-                styles.modalBtn,
-                { backgroundColor: theme.colors.accent },
-              ]}
-              onPress={() => handleAdoptar(modalMascota.id_mascota)}
-            >
-              <Text style={styles.modalBtnText}>Adoptar</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[
-                styles.modalBtn,
-                { backgroundColor: theme.colors.error },
-              ]}
-              onPress={() =>
-                handleEliminarFavorito(modalMascota.id_mascota)
+            <Image
+              source={
+                modalMascota.foto
+                  ? { uri: modalMascota.foto }
+                  : undefined
               }
-            >
-              <Text style={styles.modalBtnText}>Eliminar Favorito</Text>
-            </TouchableOpacity>
+              style={styles.modalImage}
+            />
 
-            <TouchableOpacity
-              style={[
-                styles.modalBtn,
-                { backgroundColor: theme.colors.backgroundTertiary },
-              ]}
-              onPress={closeModal}
-            >
-              <Text style={styles.modalBtnText}>Cancelar</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
+            <View style={{ marginBottom: 10 }}>
+              <Text style={{ color: theme.colors.text }}>
+                Especie: {modalMascota.especie}
+              </Text>
+              <Text style={{ color: theme.colors.text }}>
+                Raza: {modalMascota.raza}
+              </Text>
+              <Text style={{ color: theme.colors.text }}>
+                Edad: {modalMascota.edad} años
+              </Text>
+              <Text style={{ color: theme.colors.text }}>
+                Género: {modalMascota.genero}
+              </Text>
+              <Text style={{ color: theme.colors.text }}>
+                Tamaño: {modalMascota.tamaño}
+              </Text>
+              <Text style={{ color: theme.colors.text }}>
+                Vacunado: {modalMascota.vacunado ? "Sí" : "No"}
+              </Text>
+              <Text style={{ color: theme.colors.text }}>
+                Esterilizado: {modalMascota.esterilizado ? "Sí" : "No"}
+              </Text>
+              <Text style={{ color: theme.colors.text }}>
+                Discapacidad: {modalMascota.discapacidad ? "Sí" : "No"}
+              </Text>
+              <Text style={{ color: theme.colors.text }}>
+                Requisitos adopción: {modalMascota.requisito_adopcion}
+              </Text>
+              <Text style={{ color: theme.colors.text }}>
+                Personalidad: {modalMascota.personalidad}
+              </Text>
+              <Text style={{ color: theme.colors.text }}>
+                Descripción: {modalMascota.descripcion}
+              </Text>
+            </View>
+          </>
+        )}
+      </ScrollView>
+
+      <TouchableOpacity
+        style={[
+          styles.button,
+          { backgroundColor: theme.colors.backgroundTertiary },
+        ]}
+        onPress={() => setModalVisible(false)}
+      >
+        <Text
+          style={{
+            color: theme.colors.text,
+            fontWeight: "bold",
+          }}
+        >
+          Cerrar
+        </Text>
+      </TouchableOpacity>
+    </View>
+  </View>
+</Modal>
+
     </SafeAreaView>
   );
 }
@@ -317,4 +348,40 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     textAlign: "center",
   },
+
+  modalBackground: {
+  flex: 1,
+  justifyContent: "center",
+  alignItems: "center",
+  backgroundColor: "rgba(0,0,0,0.45)",
+},
+modalContent: {
+  width: 350,
+  maxHeight: "85%",
+  borderRadius: 12,
+  padding: 20,
+  borderWidth: 2,
+  alignItems: "center",
+},
+modalTitle: {
+  fontSize: 20,
+  fontWeight: "bold",
+  marginBottom: 12,
+  textAlign: "center",
+},
+modalImage: {
+  width: "100%",
+  height: 260,
+  borderRadius: 10,
+  marginBottom: 12,
+  resizeMode: "cover",
+},
+button: {
+  width: "100%",
+  paddingVertical: 12,
+  borderRadius: 10,
+  alignItems: "center",
+  marginTop: 10,
+},
+
 });

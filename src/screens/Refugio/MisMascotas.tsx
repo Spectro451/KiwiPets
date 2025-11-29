@@ -19,6 +19,8 @@ export default function MisMascotasScreen({ navigation }: any) {
   const { width } = useWindowDimensions();
   const isSmall = width <= 480;
   const isTablet = width > 480 && width <= 840;
+  const CONTENT_WIDTH = isSmall ? "100%" : isTablet ? 500 : 900;
+  const GRID_PADDING_HORIZONTAL = isSmall ? 12 : 20;
 
   const [mascotas, setMascotas] = useState<any[]>([]);
   const [modalVisible, setModalVisible] = useState(false);
@@ -41,8 +43,8 @@ export default function MisMascotasScreen({ navigation }: any) {
 
   const onGridLayout = (event: any) => {
     const layoutWidth = event.nativeEvent.layout.width;
-
-    const minWidth = isSmall ? 150 : isTablet ? 160 : 180;
+    const minWidth = isSmall ? 160 : 150;
+    
 
     let cols = Math.floor(layoutWidth / minWidth);
     if (cols > 5) cols = 5;
@@ -67,7 +69,9 @@ export default function MisMascotasScreen({ navigation }: any) {
       <ScrollView
         style={{ flex: 1 }}
         contentContainerStyle={{
-          padding: isSmall ? 10 : isTablet ? 16 : 24,
+          paddingHorizontal: GRID_PADDING_HORIZONTAL,
+          paddingTop: 16,
+          paddingBottom: 40,
         }}
       >
         <View style={styles.header}>
@@ -85,9 +89,9 @@ export default function MisMascotasScreen({ navigation }: any) {
           style={[
             styles.grid,
             {
-              justifyContent: isSmall ? "space-between" : "center",
+              width: CONTENT_WIDTH,
               alignSelf: "center",
-              gap: isSmall ? 10 : 14,
+              gap: isSmall ? 12 : 16, // igual que BorrarMascotas
             },
           ]}
         >
