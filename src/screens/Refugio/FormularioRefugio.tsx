@@ -55,7 +55,6 @@ export default function FormularioRefugio({
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // ---- Cargar refugio por usuario ----
   useEffect(() => {
     const loadRefugio = async () => {
       setLoading(true);
@@ -65,12 +64,6 @@ export default function FormularioRefugio({
         if (!data) throw new Error("No se encontró refugio");
 
         setRefugioId(data.id);
-        setNombre(data.nombre || "");
-        setDireccion(data.direccion || "");
-        setTelefono(data.telefono || "");
-        setComuna(data.comuna || "");
-        setLatitud(data.latitud);
-        setLongitud(data.longitud);
       } catch (err: any) {
         setError(err.message || "Error al cargar datos del refugio");
       } finally {

@@ -2,13 +2,13 @@ import React, { useEffect, useRef } from "react";
 import { View, Animated, StyleSheet, Platform, Dimensions } from "react-native";
 import { useTheme } from "../theme/ThemeContext";
 
-const { width: screenWidth } = Dimensions.get("window");
+const CARD_WIDTH = Dimensions.get("window").width * 0.85;
 
 interface Props {
   width?: number;
 }
 
-export default function SkeletonCard({ width = 180 }: Props) {
+export default function SkeletonPetCard({ width }: Props) {
   const { theme } = useTheme();
   const opacity = useRef(new Animated.Value(0.4)).current;
 
@@ -18,86 +18,201 @@ export default function SkeletonCard({ width = 180 }: Props) {
         Animated.timing(opacity, {
           toValue: 1,
           duration: 600,
-          useNativeDriver: Platform.OS !== "web",
+          useNativeDriver: true,
         }),
         Animated.timing(opacity, {
           toValue: 0.4,
           duration: 600,
-          useNativeDriver: Platform.OS !== "web",
+          useNativeDriver: true,
         }),
       ])
     ).start();
   }, []);
 
-  const baseColor = theme.colors.backgroundSecondary;
+  const skeletonColor = theme.colors.backgroundTertiary;
+  const cardWidth = width || CARD_WIDTH;
 
   return (
-    <Animated.View
-      style={[
-        styles.card,
-        {
-          width: screenWidth < 840 ? 160 : width,
-          backgroundColor: theme.colors.backgroundSecondary,   // OK
-          borderColor: theme.colors.textSecondary,             // bordes válidos
-          shadowColor: Platform.OS === "web" ? "transparent" : "#000",
-          opacity,
-        },
-      ]}
-    >
-      <View
+    <View style={styles.container}>
+      <Animated.View
         style={[
-          styles.imagePlaceholder,
-          { backgroundColor: baseColor },
+          styles.card,
+          {
+            width: cardWidth,
+            backgroundColor: theme.colors.backgroundSecondary,
+            borderColor: theme.colors.backgroundTertiary,
+            shadowColor: "#000",
+            opacity,
+          },
         ]}
-      />
+      >
+        {/* Image placeholder - igual que en PetCard */}
+        <View style={styles.imageWrapper}>
+          <View
+            style={[
+              styles.imagePlaceholder,
+              { backgroundColor: skeletonColor },
+            ]}
+          />
 
-      <View style={styles.content}>
-        <View
-          style={[
-            styles.textLine,
-            { width: "60%", backgroundColor: baseColor },
-          ]}
-        />
-        <View
-          style={[
-            styles.textLine,
-            { width: "40%", backgroundColor: baseColor },
-          ]}
-        />
-      </View>
-    </Animated.View>
+          {/* Favorite button placeholder */}
+          <View style={styles.favoriteButtonPlaceholder}>
+            <View
+              style={[
+                styles.heartPlaceholder,
+                { backgroundColor: skeletonColor },
+              ]}
+            />
+          </View>
+        </View>
+
+        {/* Info section */}
+        <View style={styles.info}>
+          {/* Nombre */}
+          <View
+            style={[styles.namePlaceholder, { backgroundColor: skeletonColor }]}
+          />
+
+          {/* Edad */}
+          <View style={styles.fieldContainer}>
+            <View
+              style={[
+                styles.titlePlaceholder,
+                { backgroundColor: skeletonColor },
+              ]}
+            />
+            <View
+              style={[
+                styles.subPlaceholder,
+                { backgroundColor: skeletonColor },
+              ]}
+            />
+          </View>
+
+          {/* Especie */}
+          <View style={styles.fieldContainer}>
+            <View
+              style={[
+                styles.titlePlaceholder,
+                { backgroundColor: skeletonColor },
+              ]}
+            />
+            <View
+              style={[
+                styles.subPlaceholder,
+                { backgroundColor: skeletonColor },
+              ]}
+            />
+          </View>
+
+          {/* Género */}
+          <View style={styles.fieldContainer}>
+            <View
+              style={[
+                styles.titlePlaceholder,
+                { backgroundColor: skeletonColor },
+              ]}
+            />
+            <View
+              style={[
+                styles.subPlaceholder,
+                { backgroundColor: skeletonColor },
+              ]}
+            />
+          </View>
+
+          {/* Descripción */}
+          <View style={styles.fieldContainer}>
+            <View
+              style={[
+                styles.titlePlaceholder,
+                { backgroundColor: skeletonColor },
+              ]}
+            />
+            <View
+              style={[
+                styles.descPlaceholder,
+                { backgroundColor: skeletonColor },
+              ]}
+            />
+          </View>
+        </View>
+      </Animated.View>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1, // Esto hará que ocupe el espacio disponible
+    justifyContent: "center",
+    alignItems: "center",
+  },
   card: {
     borderWidth: 2,
     borderRadius: 14,
-    overflow: "hidden",
     marginBottom: 12,
+    overflow: "hidden",
     elevation: 3,
     ...Platform.select({
       web: {
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.15,
+        shadowRadius: 6,
+        shadowOffset: { width: 0, height: 3 },
       },
     }),
   },
-
-  imagePlaceholder: {
+  imageWrapper: {
     width: "100%",
     aspectRatio: 1,
-    borderRadius: 12,
+    position: "relative",
   },
-
-  content: {
+  imagePlaceholder: {
+    width: "100%",
+    height: "100%",
+  },
+  favoriteButtonPlaceholder: {
+    position: "absolute",
+    top: 8,
+    right: 8,
+    padding: 6,
+    backgroundColor: "rgba(255, 255, 255, 0.65)",
+    borderRadius: 20,
+  },
+  heartPlaceholder: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+  },
+  info: {
     padding: 10,
-    gap: 6,
   },
-
-  textLine: {
-    height: 12,
-    borderRadius: 6,
+  namePlaceholder: {
+    height: 24,
+    borderRadius: 4,
+    marginBottom: 8,
+    width: "70%",
+  },
+  fieldContainer: {
+    marginTop: 8,
+  },
+  titlePlaceholder: {
+    height: 16,
+    borderRadius: 4,
+    width: 80,
+    marginBottom: 2,
+  },
+  subPlaceholder: {
+    height: 14,
+    borderRadius: 4,
+    width: "60%",
+    opacity: 0.75,
+  },
+  descPlaceholder: {
+    height: 14,
+    borderRadius: 4,
+    width: "100%",
+    marginTop: 2,
+    opacity: 0.75,
   },
 });

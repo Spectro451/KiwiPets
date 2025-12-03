@@ -131,7 +131,12 @@ export default function HomeScreen() {
   // ======================================================
   // Loading
   // ======================================================
+  // ======================================================
+  // Loading
+  // ======================================================
   if (loading) {
+    const petCardWidth = Math.min(Math.max(width * 0.85, 230), 300);
+
     return (
       <View
         style={[
@@ -139,20 +144,32 @@ export default function HomeScreen() {
           { backgroundColor: theme.colors.background },
         ]}
       >
-        <SkeletonCard />
-        <View style={styles.buttons}>
-          {[...Array(2)].map((_, i) => (
-            <View
-              key={i}
-              style={[
-                styles.btnBottom,
-                {
-                  backgroundColor: theme.colors.backgroundTertiary,
-                  opacity: 0.5,
-                },
-              ]}
-            />
-          ))}
+        <View style={{ width: CONTENT_WIDTH, alignItems: "center", flex: 1 }}>
+          {/* MISMO cálculo de ancho que PetSwipe */}
+          <View
+            style={{
+              width: petCardWidth,
+              flex: 1,
+              justifyContent: "center",
+            }}
+          >
+            <SkeletonCard width={petCardWidth} />
+          </View>
+
+          <View style={[styles.buttons, { width: "100%" }]}>
+            {[...Array(2)].map((_, i) => (
+              <View
+                key={i}
+                style={[
+                  styles.btnBottom,
+                  {
+                    backgroundColor: theme.colors.backgroundTertiary,
+                    opacity: 0.5,
+                  },
+                ]}
+              />
+            ))}
+          </View>
         </View>
       </View>
     );
@@ -291,7 +308,7 @@ const styles = StyleSheet.create({
   buttons: {
     flexDirection: "row",
     justifyContent: "space-around",
-    paddingVertical: 12,
+    paddingVertical: 0,
   },
 
   btnBottom: {
