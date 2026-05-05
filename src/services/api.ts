@@ -2,7 +2,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 
 export const api = axios.create({
-  baseURL: "https://kiwibd.kiwi-dev.xyz",
+  baseURL: "https://kiwipets-back.kiwi-dev.xyz",
   timeout: 10000,
 });
 
@@ -15,7 +15,7 @@ api.interceptors.request.use(
     }
     return config;
   },
-  (error) => Promise.reject(error)
+  (error) => Promise.reject(error),
 );
 
 //interceptor loco para cuando no tenga acceso
@@ -28,5 +28,5 @@ api.interceptors.response.use(
       await AsyncStorage.removeItem("user");
     }
     return Promise.reject(error);
-  }
+  },
 );

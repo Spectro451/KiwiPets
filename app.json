@@ -29,15 +29,14 @@
       "package": "com.spectro451.KiwiPets"
     },
     "web": {
-      "favicon": "./assets/Paw.png"
+      "favicon": "./assets/Paw.png",
+      "bundler": "metro"
     },
     "extra": {
       "eas": {
         "projectId": "5e35e121-c518-497a-a85c-b8febff5ad6f"
       }
     },
-    "plugins": [
-      "expo-font"
-    ]
+    "plugins": ["expo-font"]
   }
 }
